@@ -1,15 +1,18 @@
-import { NavLink, Outlet, useNavigate } from 'react-router-dom'
+import { NavLink, Outlet, Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../features/auth/AuthContext'
 import './Layout.css'
 
-const navItems = [
+const publicNavItems = [
+  { to: '/explore', label: 'Falesie' },
+  { to: '/users', label: 'Utenti' },
+]
+
+const privateNavItems = [
   { to: '/dashboard', label: 'Dashboard' },
-  { to: '/explore', label: 'Esplora' },
   { to: '/my-routes', label: 'Le mie vie' },
   { to: '/sessions', label: 'Sessioni' },
   { to: '/projects', label: 'Progetti' },
   { to: '/analytics', label: 'Analisi' },
-  { to: '/users', label: 'Utenti' },
   { to: '/settings', label: 'Impostazioni' },
   { to: '/admin', label: 'Admin' },
 ]
@@ -26,6 +29,8 @@ export default function Layout() {
   const displayName = user?.user_metadata?.display_name as string | undefined
   const label = displayName ?? user?.email ?? ''
 
+  const navItems = user ? [...publicNavItems, ...privateNavItems] : publicNavItems
+
   return (
     <div className="layout">
       <aside className="sidebar">
@@ -34,19 +39,27 @@ export default function Layout() {
           <span className="brand-name">Capital Climbing</span>
         </div>
         <nav>
-          {navItems.map(({ to, label }) => (
+          {navItems.map(({ to, label: navLabel }) => (
             <NavLink
               key={to}
               to={to}
               className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}
             >
-              {label}
+              {navLabel}
             </NavLink>
           ))}
         </nav>
         <div className="sidebar-footer">
-          <span className="sidebar-user">{label}</span>
-          <button className="btn-signout" onClick={handleSignOut}>Esci</button>
+          {user ? (
+            <>
+              <span className="sidebar-user">{label}</span>
+              <button className="btn-signout" onClick={handleSignOut}>Esci</button>
+            </>
+          ) : (
+            <Link to="/login" className="btn-signout" style={{ textAlign: 'center', display: 'block' }}>
+              Accedi
+            </Link>
+          )}
         </div>
       </aside>
       <main className="main">

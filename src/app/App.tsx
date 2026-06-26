@@ -7,16 +7,17 @@ import LoginPage from '../routes/LoginPage'
 import RegisterPage from '../routes/RegisterPage'
 import ForgotPasswordPage from '../routes/ForgotPasswordPage'
 import CheckEmailPage from '../routes/CheckEmailPage'
-import DashboardPage from '../routes/DashboardPage'
 import ExplorePage from '../routes/ExplorePage'
+import RegionPage from '../routes/RegionPage'
 import CragDetailPage from '../routes/CragDetailPage'
 import RouteDetailPage from '../routes/RouteDetailPage'
+import UsersPage from '../routes/UsersPage'
+import UserProfilePage from '../routes/UserProfilePage'
+import DashboardPage from '../routes/DashboardPage'
 import MyRoutesPage from '../routes/MyRoutesPage'
 import SessionsPage from '../routes/SessionsPage'
 import ProjectsPage from '../routes/ProjectsPage'
 import AnalyticsPage from '../routes/AnalyticsPage'
-import UsersPage from '../routes/UsersPage'
-import UserProfilePage from '../routes/UserProfilePage'
 import SettingsPage from '../routes/SettingsPage'
 import AdminPage from '../routes/AdminPage'
 import AdminImportPage from '../routes/AdminImportPage'
@@ -29,26 +30,36 @@ export default function App() {
       <HashRouter>
         <AuthProvider>
           <Routes>
+            {/* Pagine auth — senza layout */}
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
             <Route path="/forgot-password" element={<ForgotPasswordPage />} />
             <Route path="/check-email" element={<CheckEmailPage />} />
-            <Route element={<AuthGuard><Layout /></AuthGuard>}>
-              <Route path="/dashboard" element={<DashboardPage />} />
+
+            {/* Pagine con layout */}
+            <Route element={<Layout />}>
+              {/* Pubbliche — accessibili senza account */}
               <Route path="/explore" element={<ExplorePage />} />
+              <Route path="/regions/:regionId" element={<RegionPage />} />
               <Route path="/crags/:cragId" element={<CragDetailPage />} />
               <Route path="/routes/:routeId" element={<RouteDetailPage />} />
-              <Route path="/my-routes" element={<MyRoutesPage />} />
-              <Route path="/sessions" element={<SessionsPage />} />
-              <Route path="/projects" element={<ProjectsPage />} />
-              <Route path="/analytics" element={<AnalyticsPage />} />
               <Route path="/users" element={<UsersPage />} />
               <Route path="/u/:username" element={<UserProfilePage />} />
-              <Route path="/settings" element={<SettingsPage />} />
-              <Route path="/admin" element={<AdminPage />} />
-              <Route path="/admin/import" element={<AdminImportPage />} />
+
+              {/* Private — richiedono login */}
+              <Route element={<AuthGuard />}>
+                <Route path="/dashboard" element={<DashboardPage />} />
+                <Route path="/my-routes" element={<MyRoutesPage />} />
+                <Route path="/sessions" element={<SessionsPage />} />
+                <Route path="/projects" element={<ProjectsPage />} />
+                <Route path="/analytics" element={<AnalyticsPage />} />
+                <Route path="/settings" element={<SettingsPage />} />
+                <Route path="/admin" element={<AdminPage />} />
+                <Route path="/admin/import" element={<AdminImportPage />} />
+              </Route>
             </Route>
-            <Route path="*" element={<Navigate to="/dashboard" replace />} />
+
+            <Route path="*" element={<Navigate to="/explore" replace />} />
           </Routes>
         </AuthProvider>
       </HashRouter>

@@ -40,12 +40,47 @@ export interface Source {
   created_at: string
 }
 
+export interface Country {
+  id: string
+  name: string
+  iso2: string
+  slug: string
+  created_at: string
+  updated_at: string
+}
+
+export interface Region {
+  id: string
+  country_id: string
+  name: string
+  normalized_name: string
+  slug: string
+  created_at: string
+  updated_at: string
+}
+
+export interface Area {
+  id: string
+  region_id: string
+  name: string
+  normalized_name: string
+  slug: string
+  area_type: string
+  description: string | null
+  created_at: string
+  updated_at: string
+}
+
 export interface Crag {
   id: string
   name: string
   normalized_name: string
   country: string
+  country_id: string | null
   region: string | null
+  region_id: string | null
+  area_id: string | null
+  municipality: string | null
   province: string | null
   latitude: number | null
   longitude: number | null
@@ -94,6 +129,8 @@ export interface Route {
   first_ascent: string | null
   bolter: string | null
   description: string | null
+  line_order: number | null
+  position_label: string | null
   created_at: string
   updated_at: string
 }
