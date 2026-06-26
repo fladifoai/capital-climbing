@@ -41,46 +41,119 @@ function sortAscents(list: AscentWithRoute[], sort: SortKey): AscentWithRoute[] 
   })
 }
 
+const ATTEMPT_FULL: Record<string, string> = {
+  onsight: 'On-sight', flash: 'Flash', redpoint: 'Redpoint',
+  second: '2° giro', third: '3° giro', four_plus: '4° giro o oltre',
+}
+
 interface AscentRowProps {
   a: AscentWithRoute
   onDelete: (id: string, name: string) => void
   isPending: boolean
 }
 function AscentRow({ a, onDelete, isPending }: AscentRowProps) {
+  const [open, setOpen] = useState(false)
   const grade = a.grade_at_ascent ?? a.route?.official_grade
   const type = a.attempt_type
+
   return (
-    <div className="ascent-card-row">
-      <div className="ascent-row-main">
-        <Link to={`/routes/${a.route?.id}`} className="ascent-row-name">
-          {a.route?.name ?? '—'}
-        </Link>
-        <div className="ascent-row-sub">
-          <Link to={`/crags/${a.route?.sector?.crag?.id}`} style={{ color: 'inherit', textDecoration: 'none' }}>
-            {a.route?.sector?.crag?.name}
-          </Link>
-          {a.route?.sector?.name ? ` › ${a.route.sector.name}` : ''}
+    <div className={`ascent-card-row${open ? ' expanded' : ''}`}>
+      {/* Header — clicca per espandere */}
+      <div className="ascent-row-header" onClick={() => setOpen(o => !o)} style={{ cursor: 'pointer' }}>
+        <div className="ascent-row-main">
+          <span className="ascent-row-name">
+            {a.route?.name ?? '—'}
+          </span>
+          <div className="ascent-row-sub">
+            <Link
+              to={`/crags/${a.route?.sector?.crag?.id}`}
+              style={{ color: 'inherit', textDecoration: 'none' }}
+              onClick={e => e.stopPropagation()}
+            >
+              {a.route?.sector?.crag?.name}
+            </Link>
+            {a.route?.sector?.name ? ` › ${a.route.sector.name}` : ''}
+          </div>
+        </div>
+        <div className="ascent-row-meta">
+          {grade && <span className="grade-badge">{grade}</span>}
+          {type && (
+            <span style={{ fontSize: 11, fontWeight: 700, color: ATTEMPT_COLORS[type] ?? '#2d5a27' }}>
+              {ATTEMPT_LABELS[type] ?? type}
+            </span>
+          )}
+          {a.status === 'attempted' && !type && (
+            <span style={{ fontSize: 11, color: '#8a9a87' }}>Tentativo</span>
+          )}
+          <Stars n={a.quality ?? null} />
+          <span className="ascent-row-date">{a.date}</span>
+          <span style={{ fontSize: 11, color: '#8a9a87' }}>{open ? '▲' : '▼'}</span>
+          <button
+            className="btn-secondary"
+            style={{ fontSize: 11, padding: '2px 7px', color: '#c0392b' }}
+            onClick={e => { e.stopPropagation(); onDelete(a.id, a.route?.name ?? '') }}
+            disabled={isPending}
+          >×</button>
         </div>
       </div>
-      <div className="ascent-row-meta">
-        {grade && <span className="grade-badge">{grade}</span>}
-        {type && (
-          <span style={{ fontSize: 11, fontWeight: 700, color: ATTEMPT_COLORS[type] ?? '#2d5a27' }}>
-            {ATTEMPT_LABELS[type] ?? type}
-          </span>
-        )}
-        {a.status === 'attempted' && !type && (
-          <span style={{ fontSize: 11, color: '#8a9a87' }}>Tentativo</span>
-        )}
-        <Stars n={a.quality ?? null} />
-        <span className="ascent-row-date">{a.date}</span>
-        <button
-          className="btn-secondary"
-          style={{ fontSize: 11, padding: '2px 7px', color: '#c0392b' }}
-          onClick={() => onDelete(a.id, a.route?.name ?? '')}
-          disabled={isPending}
-        >×</button>
-      </div>
+
+      {/* Pannello dettagli */}
+      {open && (
+        <div className="ascent-detail-panel">
+          <div className="ascent-detail-grid">
+            <div className="ascent-detail-item">
+              <span className="ascent-detail-label">Via</span>
+              <Link to={`/routes/${a.route?.id}`} style={{ color: '#2d5a27', fontWeight: 600, textDecoration: 'none' }}>
+                {a.route?.name}
+              </Link>
+            </div>
+            <div className="ascent-detail-item">
+              <span className="ascent-detail-label">Data</span>
+              <span>{a.date}</span>
+            </div>
+            <div className="ascent-detail-item">
+              <span className="ascent-detail-label">Tipo</span>
+              <span>{type ? ATTEMPT_FULL[type] : a.status === 'attempted' ? 'Tentativo' : '—'}</span>
+            </div>
+            <div className="ascent-detail-item">
+              <span className="ascent-detail-label">Grado salita</span>
+              <span>{a.grade_at_ascent ?? '—'}</span>
+            </div>
+            {a.personal_grade && (
+              <div className="ascent-detail-item">
+                <span className="ascent-detail-label">Grado personale</span>
+                <span>{a.personal_grade}</span>
+              </div>
+            )}
+            <div className="ascent-detail-item">
+              <span className="ascent-detail-label">Bellezza</span>
+              <span>{a.quality ? <Stars n={a.quality} /> : '—'}</span>
+            </div>
+            {a.effort != null && (
+              <div className="ascent-detail-item">
+                <span className="ascent-detail-label">Sforzo</span>
+                <span>{a.effort}/10</span>
+              </div>
+            )}
+            {a.kneepad_used != null && (
+              <div className="ascent-detail-item">
+                <span className="ascent-detail-label">Ginocchiera</span>
+                <span>{a.kneepad_used ? 'Sì' : 'No'}</span>
+              </div>
+            )}
+            <div className="ascent-detail-item">
+              <span className="ascent-detail-label">Visibilità</span>
+              <span>{a.visibility === 'public' ? 'Pubblica' : 'Privata'}</span>
+            </div>
+          </div>
+          {a.notes && (
+            <div className="ascent-detail-notes">
+              <span className="ascent-detail-label">Note</span>
+              <p>{a.notes}</p>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   )
 }

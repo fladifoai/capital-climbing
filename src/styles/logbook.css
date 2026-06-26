@@ -191,3 +191,61 @@
   border-left: 3px solid #2d5a27;
   border-radius: 0 8px 8px 0;
 }
+
+/* Expanded row */
+.ascent-card-row.expanded {
+  border-color: #2d5a27;
+}
+
+.ascent-row-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 14px;
+}
+
+/* Override old padding since header now has it */
+.ascent-card-row {
+  padding: 0;
+}
+
+/* Detail panel */
+.ascent-detail-panel {
+  border-top: 1px solid #e8ece7;
+  background: #f7f9f6;
+  padding: 12px 14px;
+  border-radius: 0 0 8px 8px;
+}
+
+.ascent-detail-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 10px 16px;
+  margin-bottom: 10px;
+}
+
+.ascent-detail-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 13px;
+}
+
+.ascent-detail-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #8a9a87;
+}
+
+.ascent-detail-notes {
+  font-size: 13px;
+  color: #4a5a48;
+}
+
+.ascent-detail-notes p {
+  margin: 4px 0 0;
+  line-height: 1.5;
+}
