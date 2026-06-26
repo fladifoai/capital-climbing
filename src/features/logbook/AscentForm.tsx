@@ -3,15 +3,19 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useRouteSearch, type AscentFormValues, type RouteSearchResult } from './hooks'
+import {
+  ATTEMPT_SELECTOR_OPTIONS,
+  resolveAttemptFields,
+  type AttemptBucket,
+} from '../../analytics/calculations/attempt-buckets'
 import '../../styles/admin.css'
 
-const ATTEMPT_OPTIONS: { value: string; label: string }[] = [
-  { value: 'onsight', label: 'On-sight' },
-  { value: 'flash', label: 'Flash' },
+const STYLE_OPTIONS = [
+  { value: 'onsight',  label: 'On-sight' },
+  { value: 'flash',    label: 'Flash' },
   { value: 'redpoint', label: 'Redpoint' },
-  { value: 'second', label: '2° giro' },
-  { value: 'third', label: '3° giro' },
-  { value: 'four_plus', label: '4+' },
+  { value: 'repeat',   label: 'Ripetizione' },
+  { value: 'unknown',  label: 'Non specificato' },
 ]
 
 const optStr = z
@@ -28,7 +32,6 @@ const optNum = z
 const ascentSchema = z.object({
   date: z.string().min(1, 'Data richiesta'),
   status: z.enum(['completed', 'attempted']),
-  attempt_type: optStr,
   grade_at_ascent: optStr,
   personal_grade: optStr,
   quality: optNum,
@@ -39,6 +42,8 @@ const ascentSchema = z.object({
 })
 
 type AscentSchema = z.infer<typeof ascentSchema>
+
+const BUCKET_OPTIONS = ATTEMPT_SELECTOR_OPTIONS.filter(o => o.isBucket)
 
 interface Props {
   preselectedRoute?: RouteSearchResult
@@ -53,6 +58,9 @@ export default function AscentForm({ preselectedRoute, onSubmit, onCancel, isLoa
   const [showDropdown, setShowDropdown] = useState(false)
   const [quality, setQuality] = useState<number | null>(null)
   const [hoverStar, setHoverStar] = useState<number | null>(null)
+  const [ascentStyle, setAscentStyle] = useState<string>('onsight')
+  const [attemptRaw, setAttemptRaw] = useState<string | null>(null)
+  const [attemptExact, setAttemptExact] = useState<number | null>(null)
 
   const { data: results, isFetching } = useRouteSearch(preselectedRoute ? '' : query)
 
@@ -61,13 +69,15 @@ export default function AscentForm({ preselectedRoute, onSubmit, onCancel, isLoa
     defaultValues: {
       date: new Date().toISOString().slice(0, 10),
       status: 'completed',
-      attempt_type: 'onsight',
       visibility: 'public',
       grade_at_ascent: preselectedRoute?.official_grade ?? '',
     },
   })
 
   const status = watch('status')
+  const isRedpoint = ascentStyle === 'redpoint'
+  const selectedBucketOpt = ATTEMPT_SELECTOR_OPTIONS.find(o => o.value === attemptRaw)
+  const isLargeBucket = selectedBucketOpt?.isBucket === true
 
   function handleRouteSelect(route: RouteSearchResult) {
     setSelectedRoute(route)
@@ -78,11 +88,18 @@ export default function AscentForm({ preselectedRoute, onSubmit, onCancel, isLoa
 
   function handleFormSubmit(data: AscentSchema) {
     if (!selectedRoute) return
+    const { attempt_count, attempt_bucket } = resolveAttemptFields(
+      isRedpoint ? (attemptRaw ?? null) : null,
+      isRedpoint ? attemptExact : null
+    )
     onSubmit({
       route_id: selectedRoute.id,
       date: data.date,
       status: data.status,
-      attempt_type: (data.attempt_type as AscentFormValues['attempt_type']) ?? null,
+      attempt_type: null,
+      ascent_style: status === 'completed' ? ascentStyle : null,
+      attempt_count,
+      attempt_bucket: attempt_bucket as AttemptBucket | null,
       grade_at_ascent: data.grade_at_ascent ?? selectedRoute.official_grade,
       grade_numeric_at_ascent: selectedRoute.grade_numeric,
       personal_grade: data.personal_grade ?? null,
@@ -96,7 +113,6 @@ export default function AscentForm({ preselectedRoute, onSubmit, onCancel, isLoa
 
   return (
     <form onSubmit={handleSubmit(handleFormSubmit)} className="inline-form">
-      {/* Route: show read-only when preselected, search when free */}
       {preselectedRoute ? (
         <div style={{ marginBottom: 16, padding: '10px 14px', background: '#f5f7f4', borderRadius: 8, fontSize: 13, color: '#2d5a27', fontWeight: 600 }}>
           Via: {preselectedRoute.crag_name} › {preselectedRoute.sector_name} › {preselectedRoute.name}
@@ -113,7 +129,6 @@ export default function AscentForm({ preselectedRoute, onSubmit, onCancel, isLoa
             autoComplete="off"
           />
           {isFetching && <span style={{ fontSize: 11, color: '#8a9a87', marginTop: 2 }}>Ricerca…</span>}
-
           {showDropdown && results && results.length > 0 && (
             <div style={{
               position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 100,
@@ -137,11 +152,9 @@ export default function AscentForm({ preselectedRoute, onSubmit, onCancel, isLoa
               ))}
             </div>
           )}
-
           {showDropdown && query.length >= 2 && results?.length === 0 && !isFetching && (
             <div style={{ marginTop: 4, fontSize: 12, color: '#8a9a87' }}>Nessuna via trovata. Controllare il catalogo.</div>
           )}
-
           {selectedRoute && (
             <div style={{ marginTop: 6, fontSize: 12, color: '#2d5a27', fontWeight: 600 }}>
               ✓ {selectedRoute.crag_name} › {selectedRoute.sector_name} › {selectedRoute.name}
@@ -166,15 +179,52 @@ export default function AscentForm({ preselectedRoute, onSubmit, onCancel, isLoa
         </div>
 
         {status === 'completed' && (
-          <div className="form-group">
-            <label>Tipo</label>
-            <select {...register('attempt_type')}>
-              <option value="">—</option>
-              {ATTEMPT_OPTIONS.map(o => (
-                <option key={o.value} value={o.value}>{o.label}</option>
-              ))}
-            </select>
-          </div>
+          <>
+            <div className="form-group">
+              <label>Modalità</label>
+              <select
+                value={ascentStyle}
+                onChange={e => { setAscentStyle(e.target.value); setAttemptRaw(null); setAttemptExact(null) }}
+              >
+                {STYLE_OPTIONS.map(o => (
+                  <option key={o.value} value={o.value}>{o.label}</option>
+                ))}
+              </select>
+            </div>
+
+            {isRedpoint && (
+              <div className="form-group">
+                <label>Numero di giri</label>
+                <select
+                  value={attemptRaw ?? ''}
+                  onChange={e => { setAttemptRaw(e.target.value || null); setAttemptExact(null) }}
+                >
+                  <option value="">— Seleziona —</option>
+                  {ATTEMPT_SELECTOR_OPTIONS.map(o => (
+                    <option key={o.value} value={o.value}>{o.label}</option>
+                  ))}
+                </select>
+              </div>
+            )}
+
+            {isRedpoint && isLargeBucket && (
+              <div className="form-group">
+                <label>
+                  Numero esatto <span style={{ fontWeight: 400, fontSize: 11, color: '#8a9a87', textTransform: 'none' }}>(opzionale)</span>
+                </label>
+                <input
+                  type="number"
+                  min={parseInt(attemptRaw?.split('_')[0] ?? '11')}
+                  placeholder="es. 14"
+                  value={attemptExact ?? ''}
+                  onChange={e => setAttemptExact(e.target.value ? parseInt(e.target.value) : null)}
+                />
+                <span style={{ fontSize: 11, color: '#8a9a87', marginTop: 2 }}>
+                  Fascia: {BUCKET_OPTIONS.find(o => o.value === attemptRaw)?.label}
+                </span>
+              </div>
+            )}
+          </>
         )}
 
         <div className="form-group">

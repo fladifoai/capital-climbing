@@ -143,6 +143,11 @@ export interface Ascent {
   date: string
   status: AscentStatus
   attempt_type: AttemptType | null
+  ascent_style: string | null
+  attempt_count: number | null
+  attempt_bucket: string | null
+  legacy_attempt_type: string | null
+  needs_review: boolean
   grade_at_ascent: string | null
   grade_numeric_at_ascent: number | null
   score: number | null

@@ -96,6 +96,88 @@
   font-size: 13px;
 }
 
+/* Filter bar */
+.analytics-filter-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.filter-reset-btn {
+  padding: 5px 12px;
+  border-radius: 20px;
+  border: 1px solid #c0392b;
+  background: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  color: #c0392b;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.filter-reset-btn:hover { background: #c0392b; color: #fff; }
+
+/* Tabs */
+.analytics-tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 20px;
+  border-bottom: 2px solid #e0e0d8;
+  flex-wrap: wrap;
+}
+
+.analytics-tab {
+  padding: 8px 18px;
+  border: none;
+  background: none;
+  font-size: 13px;
+  font-weight: 600;
+  color: #8a9a87;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+.analytics-tab:hover { color: #2d5a27; }
+.analytics-tab.active { color: #2d5a27; border-bottom-color: #2d5a27; }
+
+.analytics-tab-content {
+  animation: fade-in 0.15s ease;
+}
+
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Chart description */
+.chart-description {
+  font-size: 12px;
+  color: #8a9a87;
+  margin: -8px 0 14px;
+}
+
+/* Placeholder / coming soon */
+.chart-placeholder { opacity: 0.6; }
+.chart-coming-soon { font-style: italic; }
+
+/* Scatter tooltip */
+.chart-tooltip {
+  background: #fff;
+  border: 1px solid #e0e0d8;
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 12px;
+  max-width: 220px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+.chart-tooltip-title { font-weight: 700; margin-bottom: 2px; }
+.chart-tooltip-sub { color: #6a7a68; margin-bottom: 6px; }
+.chart-tooltip-row { display: flex; gap: 10px; align-items: baseline; }
+.chart-tooltip-date { color: #8a9a87; margin-top: 4px; font-size: 11px; }
+
 @media (max-width: 600px) {
   .kpi-grid { grid-template-columns: repeat(3, 1fr); }
+  .analytics-tab { padding: 8px 12px; font-size: 12px; }
 }

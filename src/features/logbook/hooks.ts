@@ -41,6 +41,9 @@ export interface AscentFormValues {
   date: string
   status: 'completed' | 'attempted'
   attempt_type: AttemptType | null
+  ascent_style: string | null
+  attempt_count: number | null
+  attempt_bucket: string | null
   grade_at_ascent: string | null
   grade_numeric_at_ascent: number | null
   personal_grade: string | null
@@ -61,6 +64,7 @@ export function useCreateAscent() {
           ...values,
           user_id: userId,
           score: null,
+          needs_review: false,
         })
         .select()
         .single()
