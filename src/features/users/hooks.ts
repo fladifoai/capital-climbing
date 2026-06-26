@@ -84,6 +84,7 @@ export interface FeedAscent {
   date: string
   grade_at_ascent: string | null
   attempt_type: string | null
+  ascent_style: string | null
   notes: string | null
   profile: { username: string; display_name: string | null; avatar_url: string | null } | null
   route: {
@@ -111,7 +112,7 @@ export function useFeedAscents(userId: string) {
       const { data, error } = await supabase
         .from('ascents')
         .select(`
-          id, user_id, date, grade_at_ascent, attempt_type, notes,
+          id, user_id, date, grade_at_ascent, attempt_type, ascent_style, notes,
           route:routes(id, name, official_grade, sector:sectors(name, crag:crags(id, name)))
         `)
         .in('user_id', ids)

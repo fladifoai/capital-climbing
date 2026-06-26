@@ -13,6 +13,11 @@ ALTER TABLE public.ascents
   ADD COLUMN IF NOT EXISTS needs_review       boolean NOT NULL DEFAULT false;
 
 ALTER TABLE public.ascents
+  DROP CONSTRAINT IF EXISTS ascents_ascent_style_check,
+  DROP CONSTRAINT IF EXISTS ascents_attempt_count_check,
+  DROP CONSTRAINT IF EXISTS ascents_attempt_bucket_check;
+
+ALTER TABLE public.ascents
   ADD CONSTRAINT ascents_ascent_style_check CHECK (
     ascent_style IS NULL OR ascent_style IN ('onsight','flash','redpoint','repeat','unknown')
   ),

@@ -14,7 +14,8 @@ function initials(profile: Profile): string {
 }
 
 const ATTEMPT_LABELS: Record<string, string> = {
-  onsight: 'OS', flash: 'FL', second: '2G', third: '3G', four_plus: '4+', redpoint: 'RP',
+  onsight: 'OS', flash: 'FL', redpoint: 'RP', second: 'RP', third: 'RP', four_plus: 'RP',
+  repeat: 'Rip', unknown: '?',
 }
 
 export default function UserProfilePage() {
@@ -117,9 +118,9 @@ export default function UserProfilePage() {
                 {(a.grade_at_ascent ?? a.route?.official_grade) && (
                   <span className="grade-badge">{a.grade_at_ascent ?? a.route?.official_grade}</span>
                 )}
-                {a.attempt_type && (
+                {(a.ascent_style ?? a.attempt_type) && (
                   <span style={{ fontSize: 11, fontWeight: 700, color: '#2d5a27' }}>
-                    {ATTEMPT_LABELS[a.attempt_type] ?? a.attempt_type}
+                    {ATTEMPT_LABELS[a.ascent_style ?? a.attempt_type ?? ''] ?? (a.ascent_style ?? a.attempt_type)}
                   </span>
                 )}
                 <span className="profile-ascent-date">{a.date}</span>

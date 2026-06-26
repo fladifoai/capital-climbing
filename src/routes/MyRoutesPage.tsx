@@ -8,10 +8,12 @@ import '../styles/catalog.css'
 import '../styles/logbook.css'
 
 const ATTEMPT_LABELS: Record<string, string> = {
-  onsight: 'OS', flash: 'FL', redpoint: 'RP', second: '2G', third: '3G', four_plus: '4+',
+  onsight: 'OS', flash: 'FL', redpoint: 'RP', second: 'RP', third: 'RP', four_plus: 'RP',
+  repeat: 'Rip', unknown: '?',
 }
 const ATTEMPT_COLORS: Record<string, string> = {
-  onsight: '#1a6e2c', flash: '#c47800', redpoint: '#c0392b', second: '#2d5a27', third: '#4a8a42', four_plus: '#4a8a42',
+  onsight: '#1a6e2c', flash: '#c47800', redpoint: '#c0392b', second: '#c0392b', third: '#c0392b', four_plus: '#c0392b',
+  repeat: '#5a7ab8', unknown: '#aac0a7',
 }
 
 type SortKey = 'date_desc' | 'date_asc' | 'grade_desc' | 'grade_asc' | 'quality_desc'
@@ -54,7 +56,7 @@ interface AscentRowProps {
 function AscentRow({ a, onDelete, isPending }: AscentRowProps) {
   const [open, setOpen] = useState(false)
   const grade = a.grade_at_ascent ?? a.route?.official_grade
-  const type = a.attempt_type
+  const type = a.ascent_style ?? a.attempt_type
 
   return (
     <div className={`ascent-card-row${open ? ' expanded' : ''}`}>

@@ -1,7 +1,8 @@
 import { useState, useCallback } from 'react'
 import type { AnalyticsFilters } from '../types'
 import { DEFAULT_FILTERS } from '../types'
-import type { AttemptType } from '../../types/database'
+import type { AscentStyle } from '../calculations/ascent-style'
+import type { AttemptBucket } from '../calculations/attempt-buckets'
 
 export function useAnalyticsFilters() {
   const [filters, setFilters] = useState<AnalyticsFilters>(DEFAULT_FILTERS)
@@ -10,8 +11,12 @@ export function useAnalyticsFilters() {
     setFilters(f => ({ ...f, yearFilter: year }))
   }, [])
 
-  const setAttemptTypes = useCallback((types: AttemptType[] | 'all') => {
-    setFilters(f => ({ ...f, attemptTypes: types }))
+  const setAscentStyles = useCallback((styles: AscentStyle[] | 'all') => {
+    setFilters(f => ({ ...f, ascentStyles: styles }))
+  }, [])
+
+  const setAttemptBuckets = useCallback((buckets: AttemptBucket[] | 'all') => {
+    setFilters(f => ({ ...f, attemptBuckets: buckets }))
   }, [])
 
   const setGradeRange = useCallback((min: number | null, max: number | null) => {
@@ -22,9 +27,10 @@ export function useAnalyticsFilters() {
 
   const isDefault =
     filters.yearFilter === 'all' &&
-    filters.attemptTypes === 'all' &&
+    filters.ascentStyles === 'all' &&
+    filters.attemptBuckets === 'all' &&
     filters.gradeMin === null &&
     filters.gradeMax === null
 
-  return { filters, setYear, setAttemptTypes, setGradeRange, reset, isDefault }
+  return { filters, setYear, setAscentStyles, setAttemptBuckets, setGradeRange, reset, isDefault }
 }

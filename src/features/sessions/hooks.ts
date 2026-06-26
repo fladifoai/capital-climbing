@@ -6,6 +6,7 @@ export interface SessionAscent {
   id: string
   grade_at_ascent: string | null
   attempt_type: string | null
+  ascent_style: string | null
   route: { id: string; name: string } | null
 }
 
@@ -20,7 +21,7 @@ export function useMySessions(userId: string) {
     queryFn: async (): Promise<SessionWithCrag[]> => {
       const { data, error } = await supabase
         .from('sessions')
-        .select('*, crag:crags(id, name), ascents(id, grade_at_ascent, attempt_type, route:routes(id, name))')
+        .select('*, crag:crags(id, name), ascents(id, grade_at_ascent, attempt_type, ascent_style, route:routes(id, name))')
         .eq('user_id', userId)
         .order('date', { ascending: false })
       if (error) throw error
