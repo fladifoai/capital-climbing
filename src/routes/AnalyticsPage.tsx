@@ -342,7 +342,7 @@ export default function AnalyticsPage() {
               />
               <Tooltip
                 contentStyle={{ fontSize: 11, borderRadius: 8 }}
-                formatter={(value: number, name: string) => [numToGrade(Math.round(value)), name === 'best' ? 'Massimo' : 'Media']}
+                formatter={(value, name) => [typeof value === 'number' ? numToGrade(Math.round(value)) : value, name === 'best' ? 'Massimo' : 'Media']}
               />
               <Legend formatter={(v) => v === 'best' ? 'Grado massimo' : 'Media'} wrapperStyle={{ fontSize: 11 }} />
               <Line type="monotone" dataKey="best" stroke={GREEN} strokeWidth={2} dot={{ r: 3 }} name="best" />
