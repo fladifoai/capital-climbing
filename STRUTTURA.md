@@ -1,7 +1,7 @@
 # Struttura del progetto — Capital Climbing
 
 > Aggiornato automaticamente. Esegui `npm run structure` per rigenerare.
-> Ultimo aggiornamento: 26/06/2026, 10:45:36
+> Ultimo aggiornamento: 26/06/2026, 10:59:36
 
 ## Come leggere questo file
 
@@ -34,9 +34,6 @@ Capital Climbing/
 │   ├── 14_CRAGS_PAGE_SPEC.md  — Specifica tecnica pagina Falesie
 │   ├── CLAUDE.md  — Regole permanenti per Claude Code
 │   └── crag_catalog_template.csv  — Template CSV per importare falesie
-├── **legacy/**  — Prototipo HTML originale (conservato, non usato)
-│   ├── climbtrack_v2.html  — Versione alternativa del prototipo
-│   └── index.html  — Prototipo completo con Supabase auth integrato
 ├── **public/**  — File statici serviti direttamente (icone, favicon)
 │   ├── favicon.svg
 │   └── icons.svg
