@@ -39,17 +39,18 @@ const ascentSchema = z.object({
 type AscentSchema = z.infer<typeof ascentSchema>
 
 interface Props {
+  preselectedRoute?: RouteSearchResult
   onSubmit: (values: AscentFormValues) => void
   onCancel: () => void
   isLoading?: boolean
 }
 
-export default function AscentForm({ onSubmit, onCancel, isLoading }: Props) {
-  const [query, setQuery] = useState('')
-  const [selectedRoute, setSelectedRoute] = useState<RouteSearchResult | null>(null)
+export default function AscentForm({ preselectedRoute, onSubmit, onCancel, isLoading }: Props) {
+  const [query, setQuery] = useState(preselectedRoute?.name ?? '')
+  const [selectedRoute, setSelectedRoute] = useState<RouteSearchResult | null>(preselectedRoute ?? null)
   const [showDropdown, setShowDropdown] = useState(false)
 
-  const { data: results, isFetching } = useRouteSearch(query)
+  const { data: results, isFetching } = useRouteSearch(preselectedRoute ? '' : query)
 
   const { register, handleSubmit, watch, setValue, formState: { errors } } = useForm<AscentSchema>({
     resolver: zodResolver(ascentSchema) as import('react-hook-form').Resolver<AscentSchema>,
@@ -58,6 +59,7 @@ export default function AscentForm({ onSubmit, onCancel, isLoading }: Props) {
       status: 'completed',
       attempt_type: 'onsight',
       visibility: 'public',
+      grade_at_ascent: preselectedRoute?.official_grade ?? '',
     },
   })
 
@@ -89,52 +91,59 @@ export default function AscentForm({ onSubmit, onCancel, isLoading }: Props) {
 
   return (
     <form onSubmit={handleSubmit(handleFormSubmit)} className="inline-form">
-      {/* Route search */}
-      <div className="form-group" style={{ marginBottom: 16, position: 'relative' }}>
-        <label>Via * <span style={{ fontWeight: 400, textTransform: 'none', fontSize: 11, color: '#8a9a87' }}>(cerca per nome)</span></label>
-        <input
-          value={query}
-          onChange={e => { setQuery(e.target.value); setSelectedRoute(null); setShowDropdown(true) }}
-          onFocus={() => query.length >= 2 && setShowDropdown(true)}
-          placeholder="es. Spigolo giallo…"
-          autoComplete="off"
-        />
-        {isFetching && <span style={{ fontSize: 11, color: '#8a9a87', marginTop: 2 }}>Ricerca…</span>}
+      {/* Route: show read-only when preselected, search when free */}
+      {preselectedRoute ? (
+        <div style={{ marginBottom: 16, padding: '10px 14px', background: '#f5f7f4', borderRadius: 8, fontSize: 13, color: '#2d5a27', fontWeight: 600 }}>
+          Via: {preselectedRoute.crag_name} › {preselectedRoute.sector_name} › {preselectedRoute.name}
+          {preselectedRoute.official_grade && <span className="grade-badge" style={{ marginLeft: 10 }}>{preselectedRoute.official_grade}</span>}
+        </div>
+      ) : (
+        <div className="form-group" style={{ marginBottom: 16, position: 'relative' }}>
+          <label>Via * <span style={{ fontWeight: 400, textTransform: 'none', fontSize: 11, color: '#8a9a87' }}>(cerca per nome)</span></label>
+          <input
+            value={query}
+            onChange={e => { setQuery(e.target.value); setSelectedRoute(null); setShowDropdown(true) }}
+            onFocus={() => query.length >= 2 && setShowDropdown(true)}
+            placeholder="es. Spigolo giallo…"
+            autoComplete="off"
+          />
+          {isFetching && <span style={{ fontSize: 11, color: '#8a9a87', marginTop: 2 }}>Ricerca…</span>}
 
-        {showDropdown && results && results.length > 0 && (
-          <div style={{
-            position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 100,
-            background: '#fff', border: '1px solid #e0e0d8', borderRadius: 8,
-            boxShadow: '0 4px 16px rgba(0,0,0,0.1)', maxHeight: 260, overflowY: 'auto',
-          }}>
-            {results.map(r => (
-              <div
-                key={r.id}
-                onClick={() => handleRouteSelect(r)}
-                style={{ padding: '10px 14px', cursor: 'pointer', borderBottom: '1px solid #f0f0e8', fontSize: 13 }}
-                onMouseEnter={e => (e.currentTarget.style.background = '#f5f7f4')}
-                onMouseLeave={e => (e.currentTarget.style.background = '')}
-              >
-                <div style={{ fontWeight: 600 }}>{r.name}</div>
-                <div style={{ fontSize: 11, color: '#8a9a87' }}>
-                  {r.crag_name} › {r.sector_name}
-                  {r.official_grade && <span className="grade-badge" style={{ marginLeft: 8 }}>{r.official_grade}</span>}
+          {showDropdown && results && results.length > 0 && (
+            <div style={{
+              position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 100,
+              background: '#fff', border: '1px solid #e0e0d8', borderRadius: 8,
+              boxShadow: '0 4px 16px rgba(0,0,0,0.1)', maxHeight: 260, overflowY: 'auto',
+            }}>
+              {results.map(r => (
+                <div
+                  key={r.id}
+                  onClick={() => handleRouteSelect(r)}
+                  style={{ padding: '10px 14px', cursor: 'pointer', borderBottom: '1px solid #f0f0e8', fontSize: 13 }}
+                  onMouseEnter={e => (e.currentTarget.style.background = '#f5f7f4')}
+                  onMouseLeave={e => (e.currentTarget.style.background = '')}
+                >
+                  <div style={{ fontWeight: 600 }}>{r.name}</div>
+                  <div style={{ fontSize: 11, color: '#8a9a87' }}>
+                    {r.crag_name} › {r.sector_name}
+                    {r.official_grade && <span className="grade-badge" style={{ marginLeft: 8 }}>{r.official_grade}</span>}
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
-        )}
+              ))}
+            </div>
+          )}
 
-        {showDropdown && query.length >= 2 && results?.length === 0 && !isFetching && (
-          <div style={{ marginTop: 4, fontSize: 12, color: '#8a9a87' }}>Nessuna via trovata. Controllare il catalogo.</div>
-        )}
+          {showDropdown && query.length >= 2 && results?.length === 0 && !isFetching && (
+            <div style={{ marginTop: 4, fontSize: 12, color: '#8a9a87' }}>Nessuna via trovata. Controllare il catalogo.</div>
+          )}
 
-        {selectedRoute && (
-          <div style={{ marginTop: 6, fontSize: 12, color: '#2d5a27', fontWeight: 600 }}>
-            ✓ {selectedRoute.crag_name} › {selectedRoute.sector_name} › {selectedRoute.name}
-          </div>
-        )}
-      </div>
+          {selectedRoute && (
+            <div style={{ marginTop: 6, fontSize: 12, color: '#2d5a27', fontWeight: 600 }}>
+              ✓ {selectedRoute.crag_name} › {selectedRoute.sector_name} › {selectedRoute.name}
+            </div>
+          )}
+        </div>
+      )}
 
       <div className="form-grid">
         <div className={`form-group${errors.date ? ' error' : ''}`}>

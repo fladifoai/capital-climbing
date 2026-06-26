@@ -160,6 +160,26 @@ export function useSectorsWithRoutes(cragId: string) {
   })
 }
 
+export function useRoute(routeId: string) {
+  return useQuery({
+    queryKey: ['route', routeId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('routes')
+        .select('*, sector:sectors(id, name, crag:crags(id, name, region_id, region))')
+        .eq('id', routeId)
+        .single()
+      if (error) throw error
+      return data as Route & {
+        sector: Pick<Sector, 'id' | 'name'> & {
+          crag: Pick<Crag, 'id' | 'name' | 'region_id' | 'region'>
+        }
+      }
+    },
+    enabled: !!routeId,
+  })
+}
+
 export function useItalyStats() {
   return useQuery({
     queryKey: ['italy-stats'],
