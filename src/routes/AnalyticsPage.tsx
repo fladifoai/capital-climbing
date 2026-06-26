@@ -3,6 +3,7 @@ import {
   ResponsiveContainer, BarChart, Bar, XAxis, YAxis,
   CartesianGrid, Tooltip, Cell, Legend,
   ScatterChart, Scatter, ZAxis,
+  LineChart, Line,
 } from 'recharts'
 import { useAuth } from '../features/auth/AuthContext'
 import { useMyAscents } from '../features/logbook/hooks'
@@ -23,14 +24,24 @@ import {
   computeAscentModeBreakdown,
   computeAttemptBucketBreakdown,
   computeModeByAttempt,
+  computeMaxByStylePerPeriod,
+  computeCumulativeMax,
+  computeUniqueVsRepeatPerMonth,
+  computeDayOfWeekDistribution,
+  computeSeasonalDistribution,
+  computeGradeDistribution,
+  computeUniquePyramid,
+  computeMaxByStyleByYear,
+  computeTopCragsByUniqueRoutes,
+  computeTopCragsByAvgGrade,
+  computeSessionsPerMonth,
 } from '../analytics/metrics/ascents'
-import { LineChart, Line } from 'recharts'
 import { ASCENT_STYLE_LABELS, ASCENT_STYLE_COLORS, ASCENT_STYLE_ORDER } from '../analytics/calculations/ascent-style'
 import { ATTEMPT_BUCKET_LABELS, type AttemptBucket } from '../analytics/calculations/attempt-buckets'
 import type { AscentStyle } from '../analytics/calculations/ascent-style'
 import '../styles/analytics.css'
 
-type Tab = 'panoramica' | 'progressione' | 'volume' | 'profilo' | 'falesie' | 'qualita'
+type Tab = 'panoramica' | 'progressione' | 'volume' | 'profilo' | 'falesie' | 'efficienza' | 'qualita'
 
 const SCATTER_STYLE_COLORS: Record<string, string> = {
   onsight: '#1a6e2c',
@@ -58,11 +69,12 @@ function ScatterTooltipContent({ active, payload }: { active?: boolean; payload?
   )
 }
 
-function KpiCard({ value, label }: { value: string | number; label: string }) {
+function KpiCard({ value, label, sub }: { value: string | number; label: string; sub?: string }) {
   return (
     <div className="kpi-card">
       <div className="kpi-value">{value}</div>
       <div className="kpi-label">{label}</div>
+      {sub && <div className="kpi-sub">{sub}</div>}
     </div>
   )
 }
@@ -78,6 +90,19 @@ function QualityBar({ label, value, total, warn }: { label: string; value: numbe
       <div className="quality-row-value" style={{ color: warn && value > 0 ? '#c0392b' : undefined }}>
         {value} <span>({pct}%)</span>
       </div>
+    </div>
+  )
+}
+
+function WithinBar({ label, value, total, color = '#2d5a27' }: { label: string; value: number; total: number; color?: string }) {
+  const pct = total > 0 ? Math.round((value / total) * 100) : 0
+  return (
+    <div className="quality-row">
+      <div className="quality-row-label">{label}</div>
+      <div className="quality-bar-wrap">
+        <div className="quality-bar-fill" style={{ width: `${pct}%`, background: color }} />
+      </div>
+      <div className="quality-row-value">{value} <span>({pct}%)</span></div>
     </div>
   )
 }
@@ -109,13 +134,17 @@ export default function AnalyticsPage() {
 
   const dataQuality = useMemo(() => computeDataQuality(ascents ?? []), [ascents])
 
-  // Tab: Panoramica
+  // ── Panoramica ─────────────────────────────────────────────────────────────
   const progressionLineData = useMemo(
     () => computeGradeProgressionLine(filtered, filters.yearFilter),
     [filtered, filters.yearFilter]
   )
+  const monthlyData = useMemo(
+    () => computeMonthlyActivity(filtered, filters.yearFilter),
+    [filtered, filters.yearFilter]
+  )
 
-  // Tab: Progressione (scatter)
+  // ── Progressione ───────────────────────────────────────────────────────────
   const progressionPoints = useMemo(() => computeGradeProgression(filtered), [filtered])
   const scatterByStyle = useMemo(() => {
     return ASCENT_STYLE_ORDER.reduce<Record<string, typeof progressionPoints>>((acc, style) => {
@@ -129,29 +158,43 @@ export default function AnalyticsPage() {
       return acc
     }, {})
   }, [progressionPoints])
-
-  // Tab: Volume
-  const monthlyData = useMemo(
-    () => computeMonthlyActivity(filtered, filters.yearFilter),
+  const cumulativeMax = useMemo(() => computeCumulativeMax(filtered), [filtered])
+  const maxByStylePerPeriod = useMemo(
+    () => computeMaxByStylePerPeriod(filtered, filters.yearFilter),
     [filtered, filters.yearFilter]
   )
+  const maxByStyleByYear = useMemo(() => computeMaxByStyleByYear(ascents ?? []), [ascents])
 
-  // Tab: Profilo tecnico
+  // ── Volume ─────────────────────────────────────────────────────────────────
+  const uniqueVsRepeat = useMemo(
+    () => computeUniqueVsRepeatPerMonth(filtered, filters.yearFilter),
+    [filtered, filters.yearFilter]
+  )
+  const sessionsPerMonth = useMemo(
+    () => computeSessionsPerMonth(sessions ?? [], filters.yearFilter),
+    [sessions, filters.yearFilter]
+  )
+  const dayOfWeek = useMemo(() => computeDayOfWeekDistribution(filtered), [filtered])
+  const seasonal = useMemo(() => computeSeasonalDistribution(filtered), [filtered])
+
+  // ── Profilo tecnico ────────────────────────────────────────────────────────
   const pyramidData = useMemo(() => computeGradePyramid(filtered), [filtered])
+  const uniquePyramid = useMemo(() => computeUniquePyramid(filtered), [filtered])
+  const gradeDist = useMemo(() => computeGradeDistribution(filtered), [filtered])
   const modeBreakdown = useMemo(() => computeAscentModeBreakdown(filtered), [filtered])
   const bucketBreakdown = useMemo(() => computeAttemptBucketBreakdown(filtered), [filtered])
   const modeByAttempt = useMemo(() => computeModeByAttempt(filtered), [filtered])
 
-  // Tab: Falesie
+  // ── Falesie ────────────────────────────────────────────────────────────────
   const topCrags = useMemo(() => computeTopCrags(filtered), [filtered])
+  const topCragsByUnique = useMemo(() => computeTopCragsByUniqueRoutes(filtered), [filtered])
+  const topCragsByGrade = useMemo(() => computeTopCragsByAvgGrade(filtered), [filtered])
 
   if (!user) return null
   if (loadingAscents) return <div className="loading-state">Caricamento analisi…</div>
 
-  // DEBUG TEMPORANEO — rimuovere dopo diagnosi
-  const debugInfo = `user=${user.id.slice(0,8)}… | ascents=${ascents?.length ?? 'undefined'} | error=${ascentsError ? String(ascentsQueryError) : 'nessuno'}`
-
   const activeStyleFilter = filters.ascentStyles === 'all' ? null : filters.ascentStyles
+  const total = kpis.totalAscents
 
   function toggleStyle(style: AscentStyle) {
     if (filters.ascentStyles === 'all') {
@@ -169,23 +212,20 @@ export default function AnalyticsPage() {
     { key: 'panoramica',   label: 'Panoramica' },
     { key: 'progressione', label: 'Progressione' },
     { key: 'volume',       label: 'Volume' },
-    { key: 'profilo',      label: 'Profilo tecnico' },
+    { key: 'profilo',      label: 'Gradi e modalità' },
     { key: 'falesie',      label: 'Falesie' },
+    { key: 'efficienza',   label: 'Efficienza' },
     { key: 'qualita',      label: 'Qualità dati' },
   ]
 
   return (
     <div className="analytics-page">
-      {/* DEBUG TEMPORANEO */}
-      <div style={{ background: '#fffff0', border: '1px solid #cc0', borderRadius: 6, padding: '6px 12px', marginBottom: 12, fontSize: 11, fontFamily: 'monospace', color: '#555' }}>
-        🔍 {debugInfo}
-      </div>
       {ascentsError && (
         <div className="chart-section" style={{ borderColor: '#f5c6cb', background: '#fff5f5', marginBottom: 16 }}>
           <h2 style={{ color: '#c0392b' }}>Errore caricamento dati</h2>
           <p className="chart-description">
             {ascentsQueryError instanceof Error ? ascentsQueryError.message : 'Errore sconosciuto dal server.'}
-            {' '}Controlla la console (F12) per dettagli. Potrebbe mancare la migrazione 011 su Supabase.
+            {' '}Controlla la console (F12) per dettagli.
           </p>
         </div>
       )}
@@ -193,11 +233,11 @@ export default function AnalyticsPage() {
         <div className="chart-section" style={{ borderColor: '#bee5eb', background: '#f0f8ff', marginBottom: 16 }}>
           <h2>Nessuna ascensione nel logbook</h2>
           <p className="chart-description">
-            Non ci sono ascensioni nel database. Aggiungi le prime salite dal logbook oppure
-            verifica che la migrazione <code>006_seed_catalog_and_logbook.sql</code> sia stata eseguita su Supabase <b>dopo</b> la registrazione.
+            Aggiungi le prime salite dal logbook.
           </p>
         </div>
       )}
+
       <div className="analytics-header">
         <h1>Analisi</h1>
         <div className="analytics-filter-bar">
@@ -214,7 +254,6 @@ export default function AnalyticsPage() {
               >{y}</button>
             ))}
           </div>
-
           <div className="style-filter">
             {ASCENT_STYLE_ORDER.filter(s => s !== 'unknown').map(style => {
               const active = activeStyleFilter?.includes(style) ?? false
@@ -231,38 +270,52 @@ export default function AnalyticsPage() {
               )
             })}
           </div>
-
           {!isDefault && (
             <button className="filter-reset-btn" onClick={reset} aria-label="Azzera filtri">✕ Reset</button>
           )}
         </div>
       </div>
 
-      {/* KPI — gruppo attività */}
+      {/* ── KPI Attività ── */}
       <div className="kpi-section-label">Attività</div>
       <div className="kpi-grid">
-        <KpiCard value={kpis.totalAscents} label="Salite" />
+        <KpiCard value={kpis.totalAscents} label="Salite totali" />
         <KpiCard value={kpis.uniqueRoutes} label="Vie uniche" />
+        <KpiCard value={kpis.repeatCount} label="Ripetizioni" sub={total > 0 ? `${kpis.repeatPct}%` : undefined} />
         <KpiCard value={kpis.totalSessions} label="Sessioni" />
         <KpiCard value={kpis.activeDays} label="Giorni attivi" />
         <KpiCard value={kpis.totalCrags} label="Falesie" />
-        <KpiCard value={kpis.activeProjects} label="Progetti" />
+        <KpiCard value={kpis.activeProjects} label="Progetti attivi" />
+        {kpis.lastSessionDaysAgo != null && (
+          <KpiCard value={`${kpis.lastSessionDaysAgo}gg`} label="Dall'ultima sessione" />
+        )}
       </div>
 
-      {/* KPI — gruppo prestazione */}
+      {/* ── KPI Prestazione ── */}
       <div className="kpi-section-label">Prestazione</div>
       <div className="kpi-grid">
-        <KpiCard value={kpis.bestOnsightLabel} label="Max OS" />
+        <KpiCard value={kpis.bestOnsightLabel} label="Max On-sight" />
         <KpiCard value={kpis.bestFlashLabel} label="Max Flash" />
-        <KpiCard value={kpis.bestRedpointLabel} label="Max RP" />
+        <KpiCard value={kpis.bestRedpointLabel} label="Max Redpoint" />
         <KpiCard value={kpis.avgGradeLabel} label="Grado medio" />
         <KpiCard value={kpis.medianGradeLabel} label="Grado mediano" />
+        <KpiCard value={`${kpis.osPct}%`} label="On-sight" />
+        <KpiCard value={`${kpis.flashPct}%`} label="Flash" />
+        <KpiCard value={`${kpis.rpPct}%`} label="Redpoint" />
         <KpiCard value={`${kpis.osFlashPct}%`} label="OS + Flash" />
-        <KpiCard value={kpis.within3} label="≤ 3 giri" />
-        <KpiCard value={kpis.within5} label="≤ 5 giri" />
       </div>
 
-      {/* Tab nav */}
+      {/* ── KPI Chiusure ── */}
+      <div className="kpi-section-label">Chiusure per numero di giri</div>
+      <div className="kpi-grid">
+        <KpiCard value={kpis.within1} label="Al 1° giro" sub={total > 0 ? `${Math.round((kpis.within1 / total) * 100)}%` : undefined} />
+        <KpiCard value={kpis.within3} label="Entro 3 giri" sub={total > 0 ? `${Math.round((kpis.within3 / total) * 100)}%` : undefined} />
+        <KpiCard value={kpis.within5} label="Entro 5 giri" sub={total > 0 ? `${Math.round((kpis.within5 / total) * 100)}%` : undefined} />
+        <KpiCard value={kpis.within10} label="Entro 10 giri" sub={total > 0 ? `${Math.round((kpis.within10 / total) * 100)}%` : undefined} />
+        <KpiCard value={kpis.beyond10} label="Oltre 10 giri" sub={total > 0 ? `${Math.round((kpis.beyond10 / total) * 100)}%` : undefined} />
+      </div>
+
+      {/* ── Tab nav ── */}
       <div className="analytics-tabs" role="tablist">
         {TABS.map(({ key, label }) => (
           <button
@@ -275,7 +328,9 @@ export default function AnalyticsPage() {
         ))}
       </div>
 
-      {/* ── Tab: Panoramica ── */}
+      {/* ────────────────────────────────────────────────────────────────────────
+          Tab: Panoramica
+      ──────────────────────────────────────────────────────────────────────── */}
       {activeTab === 'panoramica' && (
         <div className="analytics-tab-content" role="tabpanel">
 
@@ -283,7 +338,7 @@ export default function AnalyticsPage() {
             <h2>Progressione grado nel tempo</h2>
             <p className="chart-description">Grado massimo e medio per periodo. {filtered.length} ascensioni.</p>
             {progressionLineData.length < 2 ? (
-              <div className="chart-empty">Servono almeno 2 periodi con dati per mostrare la progressione.</div>
+              <div className="chart-empty">Servono almeno 2 periodi con dati.</div>
             ) : (
               <ResponsiveContainer width="100%" height={220}>
                 <LineChart data={progressionLineData} margin={{ top: 4, right: 16, left: -10, bottom: 0 }}>
@@ -391,9 +446,12 @@ export default function AnalyticsPage() {
         </div>
       )}
 
-      {/* ── Tab: Progressione ── */}
+      {/* ────────────────────────────────────────────────────────────────────────
+          Tab: Progressione
+      ──────────────────────────────────────────────────────────────────────── */}
       {activeTab === 'progressione' && (
         <div className="analytics-tab-content" role="tabpanel">
+
           <div className="chart-section">
             <h2>Ascensioni nel tempo</h2>
             <p className="chart-description">Ogni punto = una via completata. {filtered.length} ascensioni nel periodo.</p>
@@ -430,6 +488,63 @@ export default function AnalyticsPage() {
               </ResponsiveContainer>
             )}
           </div>
+
+          <div className="chart-section">
+            <h2>Massimo storico progressivo</h2>
+            <p className="chart-description">Ogni punto segna un nuovo record personale di grado.</p>
+            {cumulativeMax.length === 0 ? (
+              <div className="chart-empty">Nessun dato con grado disponibile.</div>
+            ) : (
+              <ResponsiveContainer width="100%" height={220}>
+                <LineChart data={cumulativeMax} margin={{ top: 4, right: 16, left: -10, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0e8" />
+                  <XAxis
+                    dataKey="dateTs" type="number" domain={['auto', 'auto']} scale="time"
+                    tick={{ fontSize: 10 }}
+                    tickFormatter={(ts: number) => {
+                      const d = new Date(ts)
+                      return `${d.getFullYear()}/${String(d.getMonth() + 1).padStart(2, '0')}`
+                    }}
+                  />
+                  <YAxis
+                    dataKey="gradeValue" type="number" domain={['auto', 'auto']}
+                    tick={{ fontSize: 10 }} tickFormatter={(n: number) => numToGrade(n)} width={36}
+                  />
+                  <Tooltip
+                    contentStyle={{ fontSize: 11, borderRadius: 8 }}
+                    formatter={(v) => [numToGrade(Number(v)), 'Record']}
+                    labelFormatter={(ts) => new Date(Number(ts)).toLocaleDateString('it-IT')}
+                  />
+                  <Line type="stepAfter" dataKey="gradeValue" stroke="#2d5a27" strokeWidth={2} dot={{ r: 4, fill: '#2d5a27' }} name="Record" />
+                </LineChart>
+              </ResponsiveContainer>
+            )}
+          </div>
+
+          <div className="chart-section">
+            <h2>Massimo OS / Flash / Redpoint per periodo</h2>
+            <p className="chart-description">Grado massimo raggiunto per modalità in ogni periodo.</p>
+            {maxByStylePerPeriod.length === 0 ? (
+              <div className="chart-empty">Nessun dato.</div>
+            ) : (
+              <ResponsiveContainer width="100%" height={220}>
+                <LineChart data={maxByStylePerPeriod} margin={{ top: 4, right: 16, left: -10, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0e8" />
+                  <XAxis dataKey="label" tick={{ fontSize: 10 }} interval="preserveStartEnd" />
+                  <YAxis allowDecimals={false} tick={{ fontSize: 10 }} tickFormatter={(n: number) => numToGrade(n)} domain={['auto', 'auto']} />
+                  <Tooltip
+                    contentStyle={{ fontSize: 11, borderRadius: 8 }}
+                    formatter={(v, name) => [v != null ? numToGrade(Number(v)) : '—', name === 'onsight' ? 'On-sight' : name === 'flash' ? 'Flash' : 'Redpoint']}
+                  />
+                  <Legend wrapperStyle={{ fontSize: 11 }} formatter={(v: string) => v === 'onsight' ? 'On-sight' : v === 'flash' ? 'Flash' : 'Redpoint'} />
+                  <Line type="monotone" dataKey="onsight"  stroke="#1a6e2c" strokeWidth={2} dot={{ r: 3 }} connectNulls name="onsight" />
+                  <Line type="monotone" dataKey="flash"    stroke="#e07b00" strokeWidth={2} dot={{ r: 3 }} connectNulls name="flash" />
+                  <Line type="monotone" dataKey="redpoint" stroke="#c0392b" strokeWidth={2} dot={{ r: 3 }} connectNulls name="redpoint" />
+                </LineChart>
+              </ResponsiveContainer>
+            )}
+          </div>
+
           <div className="chart-section">
             <h2>Progressione grado nel tempo</h2>
             <p className="chart-description">Grado massimo e medio per periodo.</p>
@@ -453,56 +568,207 @@ export default function AnalyticsPage() {
             )}
           </div>
 
-          <div className="chart-section chart-placeholder">
-            <h2>Massimo OS / Flash / Redpoint per anno</h2>
-            <div className="chart-empty chart-coming-soon">Disponibile nella prossima fase.</div>
+          <div className="chart-section">
+            <h2>Massimo OS / Flash / RP per anno (tutti i periodi)</h2>
+            <p className="chart-description">Record annuale per modalità, senza filtro anno.</p>
+            {maxByStyleByYear.length === 0 ? (
+              <div className="chart-empty">Nessun dato.</div>
+            ) : (
+              <div style={{ overflowX: 'auto' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+                  <thead>
+                    <tr style={{ background: '#f5f5f0' }}>
+                      <th style={{ padding: '6px 10px', textAlign: 'left', fontWeight: 600 }}>Anno</th>
+                      <th style={{ padding: '6px 10px', textAlign: 'center', color: '#1a6e2c' }}>On-sight</th>
+                      <th style={{ padding: '6px 10px', textAlign: 'center', color: '#e07b00' }}>Flash</th>
+                      <th style={{ padding: '6px 10px', textAlign: 'center', color: '#c0392b' }}>Redpoint</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {maxByStyleByYear.map(row => (
+                      <tr key={row.year} style={{ borderTop: '1px solid #eee' }}>
+                        <td style={{ padding: '6px 10px', fontWeight: 600 }}>{row.year}</td>
+                        <td style={{ padding: '6px 10px', textAlign: 'center', color: '#1a6e2c' }}>{row.onsightLabel}</td>
+                        <td style={{ padding: '6px 10px', textAlign: 'center', color: '#e07b00' }}>{row.flashLabel}</td>
+                        <td style={{ padding: '6px 10px', textAlign: 'center', color: '#c0392b' }}>{row.redpointLabel}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
+
         </div>
       )}
 
-      {/* ── Tab: Volume ── */}
+      {/* ────────────────────────────────────────────────────────────────────────
+          Tab: Volume
+      ──────────────────────────────────────────────────────────────────────── */}
       {activeTab === 'volume' && (
         <div className="analytics-tab-content" role="tabpanel">
-          <div className="chart-section">
-            <h2>Attività nel tempo{filters.yearFilter !== 'all' ? ` — ${filters.yearFilter}` : ''}</h2>
-            <p className="chart-description">{filtered.length} ascensioni nel periodo selezionato.</p>
-            {monthlyData.every(d => d.count === 0) ? (
-              <div className="chart-empty">Nessuna salita nel periodo.</div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+
+            <div className="chart-section" style={{ marginBottom: 0 }}>
+              <h2>Salite per mese{filters.yearFilter !== 'all' ? ` — ${filters.yearFilter}` : ''}</h2>
+              {monthlyData.every(d => d.count === 0) ? (
+                <div className="chart-empty">Nessuna salita nel periodo.</div>
+              ) : (
+                <ResponsiveContainer width="100%" height={220}>
+                  <BarChart data={monthlyData} margin={{ top: 4, right: 8, left: -20, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#f0f0e8" />
+                    <XAxis dataKey="label" tick={{ fontSize: 10 }} interval="preserveStartEnd" />
+                    <YAxis allowDecimals={false} tick={{ fontSize: 10 }} />
+                    <Tooltip contentStyle={{ fontSize: 11, borderRadius: 8 }} formatter={(v) => [v, 'Salite']} />
+                    <Bar dataKey="count" fill="#2d5a27" radius={[3, 3, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              )}
+            </div>
+
+            <div className="chart-section" style={{ marginBottom: 0 }}>
+              <h2>Sessioni per mese</h2>
+              {sessionsPerMonth.every(d => d.count === 0) ? (
+                <div className="chart-empty">Nessuna sessione nel periodo.</div>
+              ) : (
+                <ResponsiveContainer width="100%" height={220}>
+                  <BarChart data={sessionsPerMonth} margin={{ top: 4, right: 8, left: -20, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#f0f0e8" />
+                    <XAxis dataKey="label" tick={{ fontSize: 10 }} interval="preserveStartEnd" />
+                    <YAxis allowDecimals={false} tick={{ fontSize: 10 }} />
+                    <Tooltip contentStyle={{ fontSize: 11, borderRadius: 8 }} formatter={(v) => [v, 'Sessioni']} />
+                    <Bar dataKey="count" fill="#5a7ab8" radius={[3, 3, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              )}
+            </div>
+
+          </div>
+
+          <div className="chart-section" style={{ marginTop: 16 }}>
+            <h2>Vie uniche vs ripetizioni per mese</h2>
+            <p className="chart-description">Prima volta su una via = unica; visite successive = ripetizione.</p>
+            {uniqueVsRepeat.every(d => d.unique === 0 && d.repeat === 0) ? (
+              <div className="chart-empty">Nessun dato nel periodo.</div>
             ) : (
               <ResponsiveContainer width="100%" height={220}>
-                <BarChart data={monthlyData} margin={{ top: 4, right: 8, left: -20, bottom: 0 }}>
+                <BarChart data={uniqueVsRepeat} margin={{ top: 4, right: 16, left: -20, bottom: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#f0f0e8" />
                   <XAxis dataKey="label" tick={{ fontSize: 10 }} interval="preserveStartEnd" />
                   <YAxis allowDecimals={false} tick={{ fontSize: 10 }} />
-                  <Tooltip contentStyle={{ fontSize: 11, borderRadius: 8 }} formatter={(v) => [v, 'Salite']} />
-                  <Bar dataKey="count" fill="#2d5a27" radius={[3, 3, 0, 0]} />
+                  <Tooltip contentStyle={{ fontSize: 11, borderRadius: 8 }} />
+                  <Legend wrapperStyle={{ fontSize: 11 }} />
+                  <Bar dataKey="unique" name="Vie uniche" stackId="a" fill="#2d5a27" />
+                  <Bar dataKey="repeat" name="Ripetizioni" stackId="a" fill="#aac0a7" radius={[3, 3, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             )}
           </div>
-          <div className="chart-section chart-placeholder">
-            <h2>Calendario attività</h2>
-            <div className="chart-empty chart-coming-soon">Disponibile nella prossima fase.</div>
-          </div>
-          <div className="chart-section chart-placeholder">
-            <h2>Efficienza per grado</h2>
-            <div className="chart-empty chart-coming-soon">Disponibile nella prossima fase.</div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginTop: 16 }}>
+
+            <div className="chart-section" style={{ marginBottom: 0 }}>
+              <h2>Distribuzione per giorno della settimana</h2>
+              {dayOfWeek.every(d => d.count === 0) ? (
+                <div className="chart-empty">Nessun dato.</div>
+              ) : (
+                <ResponsiveContainer width="100%" height={200}>
+                  <BarChart data={dayOfWeek} margin={{ top: 4, right: 8, left: -20, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#f0f0e8" />
+                    <XAxis dataKey="day" tick={{ fontSize: 10 }} />
+                    <YAxis allowDecimals={false} tick={{ fontSize: 10 }} />
+                    <Tooltip contentStyle={{ fontSize: 11, borderRadius: 8 }} formatter={(v) => [v, 'Salite']} />
+                    <Bar dataKey="count" fill="#4a8a42" radius={[3, 3, 0, 0]}>
+                      {dayOfWeek.map((d, i) => (
+                        <Cell key={d.day} fill={i === 0 || i === 6 ? '#e07b00' : '#4a8a42'} />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              )}
+            </div>
+
+            <div className="chart-section" style={{ marginBottom: 0 }}>
+              <h2>Distribuzione stagionale</h2>
+              <p className="chart-description">Salite per mese su tutti gli anni — mostra la stagione preferita.</p>
+              {seasonal.every(d => d.count === 0) ? (
+                <div className="chart-empty">Nessun dato.</div>
+              ) : (
+                <ResponsiveContainer width="100%" height={200}>
+                  <BarChart data={seasonal} margin={{ top: 4, right: 8, left: -20, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#f0f0e8" />
+                    <XAxis dataKey="month" tick={{ fontSize: 10 }} />
+                    <YAxis allowDecimals={false} tick={{ fontSize: 10 }} />
+                    <Tooltip contentStyle={{ fontSize: 11, borderRadius: 8 }} formatter={(v) => [v, 'Salite']} />
+                    <Bar dataKey="count" fill="#2d5a27" radius={[3, 3, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              )}
+            </div>
+
           </div>
         </div>
       )}
 
-      {/* ── Tab: Profilo tecnico ── */}
+      {/* ────────────────────────────────────────────────────────────────────────
+          Tab: Gradi e modalità (ex Profilo tecnico)
+      ──────────────────────────────────────────────────────────────────────── */}
       {activeTab === 'profilo' && (
         <div className="analytics-tab-content" role="tabpanel">
 
-          <div className="chart-section">
-            <h2>Piramide dei gradi</h2>
-            <p className="chart-description">{pyramidData.length} gradi con ascensioni nel periodo.</p>
-            {pyramidData.length === 0 ? (
-              <div className="chart-empty">Nessun dato per i filtri selezionati.</div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+
+            <div className="chart-section" style={{ marginBottom: 0 }}>
+              <h2>Distribuzione salite per grado</h2>
+              {gradeDist.length === 0 ? (
+                <div className="chart-empty">Nessun dato.</div>
+              ) : (
+                <ResponsiveContainer width="100%" height={Math.max(180, Math.min(gradeDist.length, 14) * 22)}>
+                  <BarChart data={gradeDist} layout="vertical" margin={{ top: 4, right: 8, left: 36, bottom: 4 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#f0f0e8" horizontal={false} />
+                    <XAxis type="number" allowDecimals={false} tick={{ fontSize: 10 }} />
+                    <YAxis type="category" dataKey="grade" tick={{ fontSize: 10 }} width={36} />
+                    <Tooltip contentStyle={{ fontSize: 11, borderRadius: 8 }} formatter={(v) => [v, 'Salite']} />
+                    <Bar dataKey="count" fill="#2d5a27" radius={[0, 3, 3, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              )}
+            </div>
+
+            <div className="chart-section" style={{ marginBottom: 0 }}>
+              <h2>Piramide dei gradi</h2>
+              <p className="chart-description">{pyramidData.length} gradi nel periodo.</p>
+              {pyramidData.length === 0 ? (
+                <div className="chart-empty">Nessun dato.</div>
+              ) : (
+                <ResponsiveContainer width="100%" height={Math.max(180, Math.min(pyramidData.length, 14) * 22)}>
+                  <BarChart data={pyramidData} layout="vertical" margin={{ top: 4, right: 16, left: 44, bottom: 4 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#f0f0e8" horizontal={false} />
+                    <XAxis type="number" allowDecimals={false} tick={{ fontSize: 10 }} />
+                    <YAxis type="category" dataKey="grade" tick={{ fontSize: 11 }} width={44} />
+                    <Tooltip contentStyle={{ fontSize: 11, borderRadius: 8 }} />
+                    <Legend wrapperStyle={{ fontSize: 11 }} />
+                    <Bar dataKey="onsight"  name="On-sight"    stackId="a" fill="#1a6e2c" />
+                    <Bar dataKey="flash"    name="Flash"       stackId="a" fill="#e07b00" />
+                    <Bar dataKey="redpoint" name="Redpoint"    stackId="a" fill="#c0392b" />
+                    <Bar dataKey="repeat"   name="Ripetizione" stackId="a" fill="#5a7ab8" />
+                    <Bar dataKey="unknown"  name="Non spec."   stackId="a" fill="#aac0a7" radius={[0, 3, 3, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              )}
+            </div>
+
+          </div>
+
+          <div className="chart-section" style={{ marginTop: 16 }}>
+            <h2>Piramide vie uniche</h2>
+            <p className="chart-description">Solo la prima ascensione per ogni via. Mostra quanto è largo il repertorio.</p>
+            {uniquePyramid.length === 0 ? (
+              <div className="chart-empty">Nessun dato.</div>
             ) : (
-              <ResponsiveContainer width="100%" height={Math.max(200, pyramidData.length * 32)}>
-                <BarChart data={pyramidData} layout="vertical" margin={{ top: 4, right: 16, left: 44, bottom: 4 }}>
+              <ResponsiveContainer width="100%" height={Math.max(200, uniquePyramid.length * 28)}>
+                <BarChart data={uniquePyramid} layout="vertical" margin={{ top: 4, right: 16, left: 44, bottom: 4 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#f0f0e8" horizontal={false} />
                   <XAxis type="number" allowDecimals={false} tick={{ fontSize: 10 }} />
                   <YAxis type="category" dataKey="grade" tick={{ fontSize: 11 }} width={44} />
@@ -551,7 +817,7 @@ export default function AnalyticsPage() {
             ) : (
               <ResponsiveContainer width="100%" height={Math.max(200, bucketBreakdown.length * 30)}>
                 <BarChart
-                  data={bucketBreakdown.map(e => ({ ...e, label: ATTEMPT_BUCKET_LABELS[e.bucket] }))}
+                  data={bucketBreakdown.map(e => ({ count: e.count, label: ATTEMPT_BUCKET_LABELS[e.bucket] }))}
                   layout="vertical" margin={{ top: 4, right: 24, left: 96, bottom: 0 }}
                 >
                   <CartesianGrid strokeDasharray="3 3" stroke="#f0f0e8" horizontal={false} />
@@ -589,42 +855,169 @@ export default function AnalyticsPage() {
             )}
           </div>
 
-          <div className="chart-section chart-placeholder">
-            <h2>Punti forti e anti-stile</h2>
-            <div className="chart-empty chart-coming-soon">Disponibile nella prossima fase.</div>
-          </div>
-
         </div>
       )}
 
-      {/* ── Tab: Falesie ── */}
+      {/* ────────────────────────────────────────────────────────────────────────
+          Tab: Falesie
+      ──────────────────────────────────────────────────────────────────────── */}
       {activeTab === 'falesie' && (
         <div className="analytics-tab-content" role="tabpanel">
-          <div className="chart-section">
-            <h2>Falesie più visitate</h2>
-            <p className="chart-description">{topCrags.length} falesie nel periodo selezionato.</p>
-            {topCrags.length === 0 ? (
-              <div className="chart-empty">Nessun dato per i filtri selezionati.</div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+
+            <div className="chart-section" style={{ marginBottom: 0 }}>
+              <h2>Top falesie per salite totali</h2>
+              {topCrags.length === 0 ? (
+                <div className="chart-empty">Nessun dato.</div>
+              ) : (
+                <ResponsiveContainer width="100%" height={Math.max(160, topCrags.length * 30)}>
+                  <BarChart data={topCrags} layout="vertical" margin={{ top: 4, right: 24, left: 8, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#f0f0e8" horizontal={false} />
+                    <XAxis type="number" allowDecimals={false} tick={{ fontSize: 10 }} />
+                    <YAxis type="category" dataKey="name" tick={{ fontSize: 10 }} width={110} />
+                    <Tooltip contentStyle={{ fontSize: 11, borderRadius: 8 }} formatter={(v) => [v, 'Salite']} />
+                    <Bar dataKey="count" fill="#4a8a42" radius={[0, 3, 3, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              )}
+            </div>
+
+            <div className="chart-section" style={{ marginBottom: 0 }}>
+              <h2>Top falesie per vie uniche</h2>
+              {topCragsByUnique.length === 0 ? (
+                <div className="chart-empty">Nessun dato.</div>
+              ) : (
+                <ResponsiveContainer width="100%" height={Math.max(160, topCragsByUnique.length * 30)}>
+                  <BarChart data={topCragsByUnique} layout="vertical" margin={{ top: 4, right: 24, left: 8, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#f0f0e8" horizontal={false} />
+                    <XAxis type="number" allowDecimals={false} tick={{ fontSize: 10 }} />
+                    <YAxis type="category" dataKey="name" tick={{ fontSize: 10 }} width={110} />
+                    <Tooltip contentStyle={{ fontSize: 11, borderRadius: 8 }} formatter={(v) => [v, 'Vie uniche']} />
+                    <Bar dataKey="count" fill="#2d5a27" radius={[0, 3, 3, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              )}
+            </div>
+
+          </div>
+
+          <div className="chart-section" style={{ marginTop: 16 }}>
+            <h2>Top falesie per grado medio</h2>
+            <p className="chart-description">Solo falesie con almeno 2 ascensioni con grado registrato.</p>
+            {topCragsByGrade.length === 0 ? (
+              <div className="chart-empty">Dati insufficienti (servono almeno 2 salite con grado per falesia).</div>
             ) : (
-              <ResponsiveContainer width="100%" height={Math.max(160, topCrags.length * 32)}>
-                <BarChart data={topCrags} layout="vertical" margin={{ top: 4, right: 24, left: 8, bottom: 0 }}>
+              <ResponsiveContainer width="100%" height={Math.max(160, topCragsByGrade.length * 30)}>
+                <BarChart data={topCragsByGrade} layout="vertical" margin={{ top: 4, right: 24, left: 8, bottom: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#f0f0e8" horizontal={false} />
-                  <XAxis type="number" allowDecimals={false} tick={{ fontSize: 10 }} />
+                  <XAxis type="number" allowDecimals={false} tick={{ fontSize: 10 }} tickFormatter={(n: number) => numToGrade(n)} />
                   <YAxis type="category" dataKey="name" tick={{ fontSize: 10 }} width={110} />
-                  <Tooltip contentStyle={{ fontSize: 11, borderRadius: 8 }} formatter={(v) => [v, 'Salite']} />
-                  <Bar dataKey="count" fill="#4a8a42" radius={[0, 3, 3, 0]} />
+                  <Tooltip
+                    contentStyle={{ fontSize: 11, borderRadius: 8 }}
+                    formatter={(v) => [numToGrade(Number(v)), 'Grado medio']}
+                  />
+                  <Bar dataKey="count" fill="#5a7ab8" radius={[0, 3, 3, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             )}
           </div>
-          <div className="chart-section chart-placeholder">
-            <h2>Analisi condizioni</h2>
-            <div className="chart-empty chart-coming-soon">Disponibile nella prossima fase.</div>
-          </div>
+
         </div>
       )}
 
-      {/* ── Tab: Qualità dati ── */}
+      {/* ────────────────────────────────────────────────────────────────────────
+          Tab: Efficienza
+      ──────────────────────────────────────────────────────────────────────── */}
+      {activeTab === 'efficienza' && (
+        <div className="analytics-tab-content" role="tabpanel">
+
+          <div className="chart-section">
+            <h2>Percentuale di chiusura per numero di giri</h2>
+            <p className="chart-description">
+              Quante vie vengono chiuse entro un certo numero di tentativi.
+              {' '}{filtered.length} ascensioni nel periodo.
+            </p>
+            {filtered.length === 0 ? (
+              <div className="chart-empty">Nessun dato nel periodo.</div>
+            ) : (
+              <div className="quality-panel">
+                <WithinBar label="Al 1° giro (OS + Flash)" value={kpis.within1} total={total} color="#1a6e2c" />
+                <WithinBar label="Entro 3 giri" value={kpis.within3} total={total} color="#2d5a27" />
+                <WithinBar label="Entro 5 giri" value={kpis.within5} total={total} color="#4a8a42" />
+                <WithinBar label="Entro 10 giri" value={kpis.within10} total={total} color="#7ab87a" />
+                <WithinBar label="Oltre 10 giri" value={kpis.beyond10} total={total} color="#c0392b" />
+              </div>
+            )}
+          </div>
+
+          <div className="chart-section">
+            <h2>Distribuzione chiusure per fascia di tentativi</h2>
+            {bucketBreakdown.length === 0 ? (
+              <div className="chart-empty">Nessun dato con numero di giri registrato.</div>
+            ) : (
+              <ResponsiveContainer width="100%" height={Math.max(200, bucketBreakdown.length * 30)}>
+                <BarChart
+                  data={bucketBreakdown.map(e => ({ count: e.count, label: ATTEMPT_BUCKET_LABELS[e.bucket] }))}
+                  layout="vertical" margin={{ top: 4, right: 24, left: 96, bottom: 0 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0e8" horizontal={false} />
+                  <XAxis type="number" allowDecimals={false} tick={{ fontSize: 10 }} />
+                  <YAxis type="category" dataKey="label" tick={{ fontSize: 10 }} width={96} />
+                  <Tooltip contentStyle={{ fontSize: 11, borderRadius: 8 }} formatter={(v) => [v, 'Salite']} />
+                  <Bar dataKey="count" radius={[0, 3, 3, 0]}>
+                    {bucketBreakdown.map((e, i) => (
+                      <Cell key={e.bucket} fill={i === 0 ? '#1a6e2c' : i <= 2 ? '#4a8a42' : i <= 4 ? '#e07b00' : '#c0392b'} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            )}
+          </div>
+
+          <div className="chart-section">
+            <h2>Chiusure al 1° giro per grado</h2>
+            <p className="chart-description">Quante vie del tiro sono state chiuse a OS o Flash.</p>
+            {gradeDist.length === 0 ? (
+              <div className="chart-empty">Nessun dato.</div>
+            ) : (() => {
+              const data = gradeDist.map(g => {
+                const pyEntry = pyramidData.find(p => p.grade === g.grade)
+                const firstGo = (pyEntry?.onsight ?? 0) + (pyEntry?.flash ?? 0)
+                return { grade: g.grade, firstGo, other: g.count - firstGo }
+              }).filter(d => d.grade)
+              return (
+                <ResponsiveContainer width="100%" height={Math.max(180, Math.min(data.length, 14) * 22)}>
+                  <BarChart data={data} layout="vertical" margin={{ top: 4, right: 8, left: 36, bottom: 4 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#f0f0e8" horizontal={false} />
+                    <XAxis type="number" allowDecimals={false} tick={{ fontSize: 10 }} />
+                    <YAxis type="category" dataKey="grade" tick={{ fontSize: 10 }} width={36} />
+                    <Tooltip contentStyle={{ fontSize: 11, borderRadius: 8 }} />
+                    <Legend wrapperStyle={{ fontSize: 11 }} />
+                    <Bar dataKey="firstGo" name="OS / Flash" stackId="a" fill="#1a6e2c" />
+                    <Bar dataKey="other" name="Altro" stackId="a" fill="#e0e0d8" radius={[0, 3, 3, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              )
+            })()}
+          </div>
+
+          <div className="chart-section chart-placeholder">
+            <h2>Tentativi medi per grado</h2>
+            <div className="chart-empty chart-coming-soon">Disponibile con dati attempt_count sufficienti.</div>
+          </div>
+
+          <div className="chart-section chart-placeholder">
+            <h2>Funnel: provate → progetti → chiuse</h2>
+            <div className="chart-empty chart-coming-soon">Disponibile nella prossima fase.</div>
+          </div>
+
+        </div>
+      )}
+
+      {/* ────────────────────────────────────────────────────────────────────────
+          Tab: Qualità dati
+      ──────────────────────────────────────────────────────────────────────── */}
       {activeTab === 'qualita' && (
         <div className="analytics-tab-content" role="tabpanel">
           <div className="chart-section">
@@ -661,6 +1054,11 @@ export default function AnalyticsPage() {
               )}
             </div>
           )}
+
+          <div className="chart-section chart-placeholder">
+            <h2>Completezza nel tempo</h2>
+            <div className="chart-empty chart-coming-soon">Disponibile nella prossima fase.</div>
+          </div>
         </div>
       )}
     </div>

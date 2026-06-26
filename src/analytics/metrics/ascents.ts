@@ -2,6 +2,7 @@ import { numToGrade } from '../normalizers/grades'
 import type {
   AnalyticsFilters, KpiData, DataQualityStats,
   GradeProgressionPoint, GradePyramidEntry, MonthlyActivity, CragStat,
+  MaxByStylePeriodEntry, CumulativeMaxPoint, UniqueVsRepeatEntry, DayOfWeekEntry, GradeDistEntry, CragStatExtended,
 } from '../types'
 import type { AscentWithRoute } from '../../features/logbook/hooks'
 import { normalizeAscentStyle, ASCENT_STYLE_ORDER, type AscentStyle } from '../calculations/ascent-style'
@@ -89,6 +90,7 @@ export function computeKpis(
   const uniqueRoutes = new Set(filtered.map(a => a.route_id)).size
   const uniqueCrags = new Set(filtered.map(a => a.route?.sector?.crag?.id).filter(Boolean)).size
   const activeDays = new Set(filtered.map(a => a.date)).size
+  const repeatCount = filtered.filter(a => getStyle(a) === 'repeat').length
 
   const within = (n: number) =>
     filtered.filter(a => {
@@ -104,12 +106,22 @@ export function computeKpis(
     ? sessions
     : sessions.filter(s => s.date.startsWith(String(filters.yearFilter)))
 
+  const sortedSessionDates = [...filteredSessions].map(s => s.date).sort()
+  const lastSessionDate = sortedSessionDates[sortedSessionDates.length - 1]
+  const lastSessionDaysAgo = lastSessionDate
+    ? Math.floor((Date.now() - new Date(lastSessionDate).getTime()) / 86_400_000)
+    : null
+
+  const w1 = within(1)
+  const w10 = within(10)
+
   return {
     totalAscents: total,
     totalSessions: filteredSessions.length,
     totalCrags: uniqueCrags,
     uniqueRoutes,
     activeDays,
+    repeatCount,
     bestOnsightLabel: maxGradeLabel(filtered, 'onsight'),
     bestFlashLabel: maxGradeLabel(filtered, 'flash'),
     bestRedpointLabel: maxGradeLabel(filtered, 'redpoint'),
@@ -119,10 +131,14 @@ export function computeKpis(
     osPct: total > 0 ? Math.round((osCount / total) * 100) : 0,
     flashPct: total > 0 ? Math.round((flCount / total) * 100) : 0,
     rpPct: total > 0 ? Math.round((rpCount / total) * 100) : 0,
+    repeatPct: total > 0 ? Math.round((repeatCount / total) * 100) : 0,
+    within1: w1,
     within3: within(3),
     within5: within(5),
-    within10: within(10),
+    within10: w10,
+    beyond10: total - w10,
     activeProjects: projects.filter(p => p.status === 'active').length,
+    lastSessionDaysAgo,
   }
 }
 
@@ -329,4 +345,253 @@ export function computeModeByAttempt(ascents: AscentWithRoute[]): ModeByAttemptE
   return ATTEMPT_BUCKET_ORDER
     .map(b => map.get(b))
     .filter((e): e is ModeByAttemptEntry => e != null)
+}
+
+// ── Max OS/Flash/Redpoint per periodo ─────────────────────────────────────────
+
+export function computeMaxByStylePerPeriod(
+  ascents: AscentWithRoute[],
+  yearFilter: number | 'all'
+): MaxByStylePeriodEntry[] {
+  const map = new Map<string, { onsight: number; flash: number; redpoint: number }>()
+  ;(ascents as AscentExt[]).forEach(a => {
+    const n = a.grade_numeric_at_ascent ?? 0
+    if (!n) return
+    const style = getStyle(a)
+    if (style !== 'onsight' && style !== 'flash' && style !== 'redpoint') return
+    const key = yearFilter === 'all' ? a.date.slice(0, 4) : a.date.slice(0, 7)
+    const entry = map.get(key) ?? { onsight: 0, flash: 0, redpoint: 0 }
+    if (style === 'onsight' && n > entry.onsight) entry.onsight = n
+    if (style === 'flash' && n > entry.flash) entry.flash = n
+    if (style === 'redpoint' && n > entry.redpoint) entry.redpoint = n
+    map.set(key, entry)
+  })
+  return Array.from(map.entries())
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([key, { onsight, flash, redpoint }]) => {
+      const [, m] = key.split('-')
+      const monthIdx = m ? parseInt(m) - 1 : -1
+      const label = yearFilter === 'all' ? key : (MONTHS_IT[monthIdx] ?? key)
+      return {
+        label,
+        onsight: onsight || null,
+        flash: flash || null,
+        redpoint: redpoint || null,
+        onsightLabel: onsight ? numToGrade(onsight) : '—',
+        flashLabel: flash ? numToGrade(flash) : '—',
+        redpointLabel: redpoint ? numToGrade(redpoint) : '—',
+      }
+    })
+}
+
+// ── Massimo storico progressivo ───────────────────────────────────────────────
+
+export function computeCumulativeMax(ascents: AscentWithRoute[]): CumulativeMaxPoint[] {
+  const sorted = (ascents as AscentExt[])
+    .filter(a => (a.grade_numeric_at_ascent ?? 0) > 0)
+    .sort((a, b) => a.date.localeCompare(b.date))
+  const result: CumulativeMaxPoint[] = []
+  let max = 0
+  sorted.forEach(a => {
+    const n = a.grade_numeric_at_ascent ?? 0
+    if (n > max) {
+      max = n
+      result.push({
+        date: a.date,
+        dateTs: new Date(a.date).getTime(),
+        gradeValue: max,
+        gradeLabel: a.grade_at_ascent ?? numToGrade(max),
+      })
+    }
+  })
+  return result
+}
+
+// ── Vie uniche vs ripetizioni per mese ───────────────────────────────────────
+
+export function computeUniqueVsRepeatPerMonth(
+  ascents: AscentWithRoute[],
+  yearFilter: number | 'all'
+): UniqueVsRepeatEntry[] {
+  const map = new Map<string, UniqueVsRepeatEntry>()
+  if (yearFilter !== 'all') {
+    for (let m = 0; m < 12; m++) {
+      const key = `${yearFilter}-${String(m + 1).padStart(2, '0')}`
+      map.set(key, { label: MONTHS_IT[m], unique: 0, repeat: 0 })
+    }
+  }
+  const seenRoutes = new Set<string>()
+  const sorted = [...ascents].sort((a, b) => a.date.localeCompare(b.date))
+  sorted.forEach(a => {
+    const key = a.date.slice(0, 7)
+    const [, m] = key.split('-')
+    const monthIdx = parseInt(m) - 1
+    const label = yearFilter === 'all' ? key : (MONTHS_IT[monthIdx] ?? key)
+    if (!map.has(key)) map.set(key, { label, unique: 0, repeat: 0 })
+    const entry = map.get(key)!
+    if (!seenRoutes.has(a.route_id)) {
+      seenRoutes.add(a.route_id)
+      entry.unique++
+    } else {
+      entry.repeat++
+    }
+  })
+  return Array.from(map.entries())
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([, entry]) => entry)
+}
+
+// ── Distribuzione per giorno della settimana ──────────────────────────────────
+
+const DAYS_IT = ['Dom', 'Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab']
+
+export function computeDayOfWeekDistribution(ascents: AscentWithRoute[]): DayOfWeekEntry[] {
+  const counts = [0, 0, 0, 0, 0, 0, 0]
+  ascents.forEach(a => {
+    const d = new Date(a.date + 'T12:00:00')
+    counts[d.getDay()]++
+  })
+  return DAYS_IT.map((day, i) => ({ day, count: counts[i] }))
+}
+
+// ── Distribuzione stagionale (per mese, tutti gli anni aggregati) ─────────────
+
+export function computeSeasonalDistribution(ascents: AscentWithRoute[]): { month: string; count: number }[] {
+  const counts = new Array<number>(12).fill(0)
+  ascents.forEach(a => {
+    const m = parseInt(a.date.slice(5, 7)) - 1
+    if (m >= 0 && m < 12) counts[m]++
+  })
+  return MONTHS_IT.map((month, i) => ({ month, count: counts[i] }))
+}
+
+// ── Distribuzione vie per grado ───────────────────────────────────────────────
+
+export function computeGradeDistribution(ascents: AscentWithRoute[]): GradeDistEntry[] {
+  const map = new Map<string, GradeDistEntry>()
+  ascents.forEach(a => {
+    const grade = a.grade_at_ascent ?? a.route?.official_grade ?? null
+    if (!grade) return
+    const entry = map.get(grade) ?? { grade, numeric: a.grade_numeric_at_ascent ?? 0, count: 0 }
+    entry.count++
+    map.set(grade, entry)
+  })
+  return Array.from(map.values()).sort((a, b) => a.numeric - b.numeric)
+}
+
+// ── Piramide vie uniche (prima volta per via) ─────────────────────────────────
+
+export function computeUniquePyramid(ascents: AscentWithRoute[]): GradePyramidEntry[] {
+  const firstAscent = new Map<string, AscentWithRoute>()
+  ;[...ascents].sort((a, b) => a.date.localeCompare(b.date)).forEach(a => {
+    if (!firstAscent.has(a.route_id)) firstAscent.set(a.route_id, a)
+  })
+  return computeGradePyramid(Array.from(firstAscent.values()))
+}
+
+// ── Max OS/Flash/RP per anno ──────────────────────────────────────────────────
+
+export interface MaxByStyleYear {
+  year: string
+  onsight: number | null
+  flash: number | null
+  redpoint: number | null
+  onsightLabel: string
+  flashLabel: string
+  redpointLabel: string
+}
+
+export function computeMaxByStyleByYear(ascents: AscentWithRoute[]): MaxByStyleYear[] {
+  const map = new Map<string, { onsight: number; flash: number; redpoint: number }>()
+  ;(ascents as AscentExt[]).forEach(a => {
+    const n = a.grade_numeric_at_ascent ?? 0
+    if (!n) return
+    const style = getStyle(a)
+    if (style !== 'onsight' && style !== 'flash' && style !== 'redpoint') return
+    const year = a.date.slice(0, 4)
+    const entry = map.get(year) ?? { onsight: 0, flash: 0, redpoint: 0 }
+    if (style === 'onsight' && n > entry.onsight) entry.onsight = n
+    if (style === 'flash' && n > entry.flash) entry.flash = n
+    if (style === 'redpoint' && n > entry.redpoint) entry.redpoint = n
+    map.set(year, entry)
+  })
+  return Array.from(map.entries())
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([year, { onsight, flash, redpoint }]) => ({
+      year,
+      onsight: onsight || null,
+      flash: flash || null,
+      redpoint: redpoint || null,
+      onsightLabel: onsight ? numToGrade(onsight) : '—',
+      flashLabel: flash ? numToGrade(flash) : '—',
+      redpointLabel: redpoint ? numToGrade(redpoint) : '—',
+    }))
+}
+
+// ── Top falesie per vie uniche ────────────────────────────────────────────────
+
+export function computeTopCragsByUniqueRoutes(ascents: AscentWithRoute[], limit = 10): CragStat[] {
+  const map = new Map<string, { name: string; routes: Set<string> }>()
+  ascents.forEach(a => {
+    const id = a.route?.sector?.crag?.id
+    const name = a.route?.sector?.crag?.name
+    if (!id || !name) return
+    const entry = map.get(id) ?? { name, routes: new Set<string>() }
+    entry.routes.add(a.route_id)
+    map.set(id, entry)
+  })
+  return Array.from(map.entries())
+    .map(([id, { name, routes }]) => ({ id, name, count: routes.size }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, limit)
+}
+
+// ── Top falesie per grado medio ───────────────────────────────────────────────
+
+export function computeTopCragsByAvgGrade(ascents: AscentWithRoute[], limit = 8): CragStatExtended[] {
+  const map = new Map<string, { name: string; total: number; count: number }>()
+  ascents.forEach(a => {
+    const id = a.route?.sector?.crag?.id
+    const name = a.route?.sector?.crag?.name
+    const n = a.grade_numeric_at_ascent ?? 0
+    if (!id || !name || !n) return
+    const entry = map.get(id) ?? { name, total: 0, count: 0 }
+    entry.total += n
+    entry.count++
+    map.set(id, entry)
+  })
+  return Array.from(map.entries())
+    .filter(([, { count }]) => count >= 2)
+    .map(([id, { name, total, count }]) => {
+      const avg = Math.round(total / count)
+      return { id, name, count: avg, avgGradeLabel: numToGrade(avg) }
+    })
+    .sort((a, b) => b.count - a.count)
+    .slice(0, limit)
+}
+
+// ── Sessioni per mese ─────────────────────────────────────────────────────────
+
+export function computeSessionsPerMonth(
+  sessions: Array<{ id: string; date: string }>,
+  yearFilter: number | 'all'
+): MonthlyActivity[] {
+  const map = new Map<string, number>()
+  if (yearFilter !== 'all') {
+    for (let m = 0; m < 12; m++) {
+      map.set(`${yearFilter}-${String(m + 1).padStart(2, '0')}`, 0)
+    }
+  }
+  sessions.forEach(s => {
+    if (yearFilter !== 'all' && !s.date.startsWith(String(yearFilter))) return
+    const key = s.date.slice(0, 7)
+    map.set(key, (map.get(key) ?? 0) + 1)
+  })
+  return Array.from(map.entries())
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([key, count]) => {
+      const [y, m] = key.split('-')
+      const monthIdx = parseInt(m) - 1
+      return { label: yearFilter === 'all' ? key : (MONTHS_IT[monthIdx] ?? key), count, year: y }
+    })
 }

@@ -73,6 +73,12 @@
   letter-spacing: 0.05em;
 }
 
+.kpi-sub {
+  font-size: 11px;
+  color: #aaa;
+  margin-top: 2px;
+}
+
 /* Chart sections */
 .chart-section {
   background: #fff;

@@ -23,6 +23,7 @@ export interface KpiData {
   totalCrags: number
   uniqueRoutes: number
   activeDays: number
+  repeatCount: number
   bestOnsightLabel: string
   bestFlashLabel: string
   bestRedpointLabel: string
@@ -32,10 +33,14 @@ export interface KpiData {
   osPct: number
   flashPct: number
   rpPct: number
+  repeatPct: number
+  within1: number
   within3: number
   within5: number
   within10: number
+  beyond10: number
   activeProjects: number
+  lastSessionDaysAgo: number | null
 }
 
 export interface DataQualityStats {
@@ -80,4 +85,42 @@ export interface CragStat {
   id: string
   name: string
   count: number
+}
+
+export interface MaxByStylePeriodEntry {
+  label: string
+  onsight: number | null
+  flash: number | null
+  redpoint: number | null
+  onsightLabel: string
+  flashLabel: string
+  redpointLabel: string
+}
+
+export interface CumulativeMaxPoint {
+  date: string
+  dateTs: number
+  gradeValue: number
+  gradeLabel: string
+}
+
+export interface UniqueVsRepeatEntry {
+  label: string
+  unique: number
+  repeat: number
+}
+
+export interface DayOfWeekEntry {
+  day: string
+  count: number
+}
+
+export interface GradeDistEntry {
+  grade: string
+  numeric: number
+  count: number
+}
+
+export interface CragStatExtended extends CragStat {
+  avgGradeLabel?: string
 }
