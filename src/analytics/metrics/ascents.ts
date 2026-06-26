@@ -266,7 +266,7 @@ export function computeAvailableYears(ascents: AscentWithRoute[]): number[] {
 // ── Attempt mode / bucket breakdowns ──────────────────────────────────────────
 
 export interface AscentModeEntry {
-  style: AscentStyle
+  ascentStyle: AscentStyle
   label: string
   count: number
 }
@@ -279,7 +279,7 @@ export function computeAscentModeBreakdown(ascents: AscentWithRoute[]): AscentMo
     map.set(style, (map.get(style) ?? 0) + 1)
   })
   return ASCENT_STYLE_ORDER
-    .map(style => ({ style, label: style, count: map.get(style) ?? 0 }))
+    .map(style => ({ ascentStyle: style, label: style, count: map.get(style) ?? 0 }))
     .filter(e => e.count > 0)
 }
 

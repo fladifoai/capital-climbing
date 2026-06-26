@@ -148,6 +148,9 @@ export default function AnalyticsPage() {
   if (!user) return null
   if (loadingAscents) return <div className="loading-state">Caricamento analisi…</div>
 
+  // DEBUG TEMPORANEO — rimuovere dopo diagnosi
+  const debugInfo = `user=${user.id.slice(0,8)}… | ascents=${ascents?.length ?? 'undefined'} | error=${ascentsError ? String(ascentsQueryError) : 'nessuno'}`
+
   const activeStyleFilter = filters.ascentStyles === 'all' ? null : filters.ascentStyles
 
   function toggleStyle(style: AscentStyle) {
@@ -173,6 +176,10 @@ export default function AnalyticsPage() {
 
   return (
     <div className="analytics-page">
+      {/* DEBUG TEMPORANEO */}
+      <div style={{ background: '#fffff0', border: '1px solid #cc0', borderRadius: 6, padding: '6px 12px', marginBottom: 12, fontSize: 11, fontFamily: 'monospace', color: '#555' }}>
+        🔍 {debugInfo}
+      </div>
       {ascentsError && (
         <div className="chart-section" style={{ borderColor: '#f5c6cb', background: '#fff5f5', marginBottom: 16 }}>
           <h2 style={{ color: '#c0392b' }}>Errore caricamento dati</h2>
@@ -321,7 +328,7 @@ export default function AnalyticsPage() {
               ) : (
                 <ResponsiveContainer width="100%" height={200}>
                   <BarChart
-                    data={modeBreakdown.map(e => ({ ...e, label: ASCENT_STYLE_LABELS[e.style] }))}
+                    data={modeBreakdown.map(e => ({ count: e.count, label: ASCENT_STYLE_LABELS[e.ascentStyle] }))}
                     layout="vertical" margin={{ top: 4, right: 16, left: 80, bottom: 0 }}
                   >
                     <CartesianGrid strokeDasharray="3 3" stroke="#f0f0e8" horizontal={false} />
@@ -330,7 +337,7 @@ export default function AnalyticsPage() {
                     <Tooltip contentStyle={{ fontSize: 11, borderRadius: 8 }} formatter={(v) => [v, 'Salite']} />
                     <Bar dataKey="count" radius={[0, 3, 3, 0]}>
                       {modeBreakdown.map(entry => (
-                        <Cell key={entry.style} fill={ASCENT_STYLE_COLORS[entry.style]} />
+                        <Cell key={entry.ascentStyle} fill={ASCENT_STYLE_COLORS[entry.ascentStyle]} />
                       ))}
                     </Bar>
                   </BarChart>
@@ -519,7 +526,7 @@ export default function AnalyticsPage() {
             ) : (
               <ResponsiveContainer width="100%" height={Math.max(140, modeBreakdown.length * 36)}>
                 <BarChart
-                  data={modeBreakdown.map(e => ({ ...e, label: ASCENT_STYLE_LABELS[e.style] }))}
+                  data={modeBreakdown.map(e => ({ count: e.count, label: ASCENT_STYLE_LABELS[e.ascentStyle] }))}
                   layout="vertical" margin={{ top: 4, right: 24, left: 80, bottom: 0 }}
                 >
                   <CartesianGrid strokeDasharray="3 3" stroke="#f0f0e8" horizontal={false} />
@@ -528,7 +535,7 @@ export default function AnalyticsPage() {
                   <Tooltip contentStyle={{ fontSize: 11, borderRadius: 8 }} formatter={(v) => [v, 'Salite']} />
                   <Bar dataKey="count" radius={[0, 3, 3, 0]}>
                     {modeBreakdown.map(entry => (
-                      <Cell key={entry.style} fill={ASCENT_STYLE_COLORS[entry.style]} />
+                      <Cell key={entry.ascentStyle} fill={ASCENT_STYLE_COLORS[entry.ascentStyle]} />
                     ))}
                   </Bar>
                 </BarChart>
