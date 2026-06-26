@@ -1,0 +1,241 @@
+.projects-page {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 28px 20px;
+}
+
+.projects-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.projects-header h1 {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0;
+}
+
+.status-tabs {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 18px;
+}
+
+.status-tab {
+  padding: 5px 14px;
+  border-radius: 20px;
+  border: 1px solid #d0d8cc;
+  background: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  color: #6a7a68;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.status-tab:hover {
+  border-color: #2d5a27;
+  color: #2d5a27;
+}
+
+.status-tab.active {
+  background: #2d5a27;
+  border-color: #2d5a27;
+  color: #fff;
+}
+
+/* Project card */
+.project-card {
+  background: #fff;
+  border: 1px solid #e0e0d8;
+  border-radius: 10px;
+  margin-bottom: 10px;
+  overflow: hidden;
+}
+
+.project-card-main {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  cursor: pointer;
+}
+
+.project-card-main:hover {
+  background: #fafaf8;
+}
+
+.project-route-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.project-route-name {
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.project-route-sub {
+  font-size: 11px;
+  color: #8a9a87;
+  margin-top: 2px;
+}
+
+.project-badges {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.status-badge.active   { background: #e8f5e4; color: #2d5a27; }
+.status-badge.paused   { background: #fff3cd; color: #856404; }
+.status-badge.completed { background: #d1ecf1; color: #0c5460; }
+.status-badge.abandoned { background: #f8d7da; color: #721c24; }
+
+.priority-badge {
+  display: inline-block;
+  padding: 2px 7px;
+  border-radius: 10px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.priority-badge.high   { background: #f8d7da; color: #721c24; }
+.priority-badge.medium { background: #fff3cd; color: #856404; }
+.priority-badge.low    { background: #e2e3e5; color: #495057; }
+
+.project-stats {
+  display: flex;
+  gap: 16px;
+  font-size: 11px;
+  color: #6a7a68;
+  flex-shrink: 0;
+}
+
+.project-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+}
+
+.project-stat strong {
+  font-size: 14px;
+  color: var(--text);
+}
+
+/* Progress bar */
+.progress-bar-wrap {
+  width: 60px;
+  height: 5px;
+  background: #e8ece7;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background: #2d5a27;
+  border-radius: 3px;
+}
+
+/* Expand chevron */
+.expand-chevron {
+  font-size: 12px;
+  color: #aaa;
+  flex-shrink: 0;
+  transition: transform 0.15s;
+}
+
+.expand-chevron.open {
+  transform: rotate(180deg);
+}
+
+/* Card body (expanded) */
+.project-card-body {
+  border-top: 1px solid #f0f0e8;
+  padding: 16px;
+}
+
+.project-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+
+.project-notes-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.project-notes-full {
+  margin-bottom: 10px;
+}
+
+.project-save-row {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  margin-top: 12px;
+}
+
+/* New project form */
+.new-project-form {
+  background: #f5f7f4;
+  border: 1px solid #d8e2d5;
+  border-radius: 10px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.new-project-form h3 {
+  margin: 0 0 14px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+/* Convert ascent panel */
+.convert-panel {
+  background: #f0f7ee;
+  border: 2px solid #2d5a27;
+  border-radius: 10px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.convert-panel h3 {
+  margin: 0 0 14px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #2d5a27;
+}
+
+@media (max-width: 600px) {
+  .project-stats { display: none; }
+  .project-notes-grid { grid-template-columns: 1fr; }
+}

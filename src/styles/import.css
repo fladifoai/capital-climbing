@@ -1,0 +1,323 @@
+/* ── Import wizard ──────────────────────────────────────────────────── */
+.import-page {
+  max-width: 900px;
+}
+
+.import-steps {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  margin-bottom: 32px;
+}
+
+.import-step-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: #8a9a87;
+}
+
+.import-step-item.active {
+  color: #2d5a27;
+  font-weight: 600;
+}
+
+.import-step-item.done {
+  color: #4a7a45;
+}
+
+.import-step-num {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 2px solid #d0d0c8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.import-step-item.active .import-step-num {
+  background: #2d5a27;
+  border-color: #2d5a27;
+  color: #fff;
+}
+
+.import-step-item.done .import-step-num {
+  background: #4a7a45;
+  border-color: #4a7a45;
+  color: #fff;
+}
+
+.import-step-sep {
+  flex: 1;
+  height: 1px;
+  background: #e0e0d8;
+  margin: 0 8px;
+  min-width: 16px;
+}
+
+/* ── Upload zone ─────────────────────────────────────────────────────── */
+.upload-zone {
+  border: 2px dashed #c0c8bc;
+  border-radius: 12px;
+  padding: 48px 32px;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+  background: #fafaf8;
+}
+
+.upload-zone:hover,
+.upload-zone.dragging {
+  border-color: #2d5a27;
+  background: #f0f7ee;
+}
+
+.upload-zone-icon {
+  font-size: 36px;
+  margin-bottom: 12px;
+  color: #8a9a87;
+}
+
+.upload-zone-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 6px;
+}
+
+.upload-zone-sub {
+  font-size: 13px;
+  color: #8a9a87;
+}
+
+.upload-zone input[type="file"] {
+  display: none;
+}
+
+.upload-file-info {
+  background: #e8f5e4;
+  border: 1px solid #b0d8aa;
+  border-radius: 8px;
+  padding: 14px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 16px;
+  font-size: 13px;
+}
+
+.upload-file-name {
+  font-weight: 600;
+  color: #2d5a27;
+}
+
+.upload-file-count {
+  color: #6b7a67;
+}
+
+/* ── Mapping table ───────────────────────────────────────────────────── */
+.mapping-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  background: #fff;
+  border: 1px solid #e0e0d8;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.mapping-table th {
+  text-align: left;
+  padding: 10px 16px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #8a9a87;
+  background: #fafaf8;
+  border-bottom: 1px solid #e0e0d8;
+}
+
+.mapping-table td {
+  padding: 10px 16px;
+  border-bottom: 1px solid #f0f0e8;
+  vertical-align: middle;
+}
+
+.mapping-table tr:last-child td { border-bottom: none; }
+
+.mapping-required-badge {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 700;
+  background: #fdecea;
+  color: #c0392b;
+  border-radius: 3px;
+  padding: 1px 5px;
+  margin-left: 6px;
+}
+
+.mapping-select {
+  border: 1px solid #e0e0d8;
+  border-radius: 6px;
+  padding: 5px 8px;
+  font-size: 12px;
+  font-family: inherit;
+  background: #fff;
+  color: var(--text);
+  min-width: 180px;
+}
+
+.mapping-select.mapped {
+  border-color: #2d5a27;
+  background: #f0f7ee;
+}
+
+/* ── Validation summary ──────────────────────────────────────────────── */
+.validation-summary {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.validation-stat {
+  background: #fff;
+  border: 1px solid #e0e0d8;
+  border-radius: 8px;
+  padding: 14px 20px;
+  flex: 1;
+  text-align: center;
+}
+
+.validation-stat-num {
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1;
+  margin-bottom: 4px;
+}
+
+.validation-stat-num.ok { color: #2d5a27; }
+.validation-stat-num.err { color: #c0392b; }
+.validation-stat-num.dup { color: #8a6a00; }
+
+.validation-stat-label {
+  font-size: 12px;
+  color: #8a9a87;
+}
+
+/* ── Import table (shared for validation + confirm) ──────────────────── */
+.import-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+  background: #fff;
+  border: 1px solid #e0e0d8;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.import-table th {
+  text-align: left;
+  padding: 8px 12px;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #8a9a87;
+  background: #fafaf8;
+  border-bottom: 1px solid #e0e0d8;
+}
+
+.import-table td {
+  padding: 8px 12px;
+  border-bottom: 1px solid #f5f5f0;
+  vertical-align: middle;
+}
+
+.import-table tr:last-child td { border-bottom: none; }
+
+.import-table tr.row-error { background: #fffafa; }
+.import-table tr.row-dup { background: #fffdf0; }
+
+.row-errors-cell {
+  color: #c0392b;
+  font-size: 11px;
+}
+
+.action-select {
+  border: 1px solid #e0e0d8;
+  border-radius: 4px;
+  padding: 3px 6px;
+  font-size: 11px;
+  font-family: inherit;
+  background: #fff;
+}
+
+/* ── Report ──────────────────────────────────────────────────────────── */
+.import-report {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 32px 0;
+  gap: 24px;
+}
+
+.import-report-icon {
+  font-size: 48px;
+}
+
+.import-report-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.import-report-stats {
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.report-stat {
+  text-align: center;
+  min-width: 80px;
+}
+
+.report-stat-num {
+  font-size: 32px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.report-stat-num.ok { color: #2d5a27; }
+.report-stat-num.upd { color: #2980b9; }
+.report-stat-num.skip { color: #8a9a87; }
+.report-stat-num.err { color: #c0392b; }
+
+.report-stat-label {
+  font-size: 12px;
+  color: #8a9a87;
+  margin-top: 4px;
+}
+
+/* ── Step actions ────────────────────────────────────────────────────── */
+.import-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid #e8e8e0;
+}
+
+.import-actions-right {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}

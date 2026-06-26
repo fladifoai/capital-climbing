@@ -1,5 +1,6 @@
-import { NavLink, Outlet, Link, useNavigate } from 'react-router-dom'
+import { NavLink, Outlet, Link, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../features/auth/AuthContext'
+import ErrorBoundary from './ErrorBoundary'
 import './Layout.css'
 
 const publicNavItems = [
@@ -14,12 +15,16 @@ const privateNavItems = [
   { to: '/projects', label: 'Progetti' },
   { to: '/analytics', label: 'Analisi' },
   { to: '/settings', label: 'Impostazioni' },
+]
+
+const adminNavItems = [
   { to: '/admin', label: 'Admin' },
 ]
 
 export default function Layout() {
-  const { user, signOut } = useAuth()
+  const { user, isAdmin, signOut } = useAuth()
   const navigate = useNavigate()
+  const { pathname } = useLocation()
 
   async function handleSignOut() {
     await signOut()
@@ -29,7 +34,9 @@ export default function Layout() {
   const displayName = user?.user_metadata?.display_name as string | undefined
   const label = displayName ?? user?.email ?? ''
 
-  const navItems = user ? [...publicNavItems, ...privateNavItems] : publicNavItems
+  const navItems = user
+    ? [...publicNavItems, ...privateNavItems, ...(isAdmin ? adminNavItems : [])]
+    : publicNavItems
 
   return (
     <div className="layout">
@@ -63,7 +70,9 @@ export default function Layout() {
         </div>
       </aside>
       <main className="main">
-        <Outlet />
+        <ErrorBoundary key={pathname}>
+          <Outlet />
+        </ErrorBoundary>
       </main>
     </div>
   )

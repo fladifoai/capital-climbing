@@ -2,6 +2,7 @@ import { HashRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { AuthProvider } from '../features/auth/AuthContext'
 import AuthGuard from '../components/AuthGuard'
+import AdminGuard from '../components/AdminGuard'
 import Layout from '../components/Layout'
 import LoginPage from '../routes/LoginPage'
 import RegisterPage from '../routes/RegisterPage'
@@ -20,6 +21,7 @@ import ProjectsPage from '../routes/ProjectsPage'
 import AnalyticsPage from '../routes/AnalyticsPage'
 import SettingsPage from '../routes/SettingsPage'
 import AdminPage from '../routes/AdminPage'
+import AdminCragPage from '../routes/AdminCragPage'
 import AdminImportPage from '../routes/AdminImportPage'
 
 const queryClient = new QueryClient()
@@ -54,7 +56,12 @@ export default function App() {
                 <Route path="/projects" element={<ProjectsPage />} />
                 <Route path="/analytics" element={<AnalyticsPage />} />
                 <Route path="/settings" element={<SettingsPage />} />
+              </Route>
+
+              {/* Admin — richiedono ruolo admin */}
+              <Route element={<AdminGuard />}>
                 <Route path="/admin" element={<AdminPage />} />
+                <Route path="/admin/crags/:cragId" element={<AdminCragPage />} />
                 <Route path="/admin/import" element={<AdminImportPage />} />
               </Route>
             </Route>

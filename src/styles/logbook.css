@@ -1,0 +1,243 @@
+/* ── Logbook / My routes ──────────────────────────────────────────────────── */
+.logbook-page { max-width: 1000px; }
+
+.logbook-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+}
+
+.logbook-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -0.02em;
+}
+
+/* ── Filter bar ──────────────────────────────────────────────────────────── */
+.logbook-filters {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+
+.logbook-search {
+  flex: 1;
+  min-width: 160px;
+  padding: 8px 13px;
+  border: 1.5px solid var(--neutral-200);
+  border-radius: var(--r-sm);
+  font-size: 13px;
+  font-family: inherit;
+  background: var(--surface);
+  color: var(--text);
+  outline: none;
+  transition: border-color var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease);
+}
+.logbook-search:focus {
+  border-color: var(--green-500);
+  box-shadow: 0 0 0 3px rgba(45,138,66,0.10);
+}
+
+.logbook-select {
+  padding: 8px 10px;
+  border: 1.5px solid var(--neutral-200);
+  border-radius: var(--r-sm);
+  font-size: 12px;
+  font-family: inherit;
+  background: var(--surface);
+  color: var(--text);
+  cursor: pointer;
+  outline: none;
+  transition: border-color var(--t-fast) var(--ease);
+}
+.logbook-select:focus { border-color: var(--green-500); }
+
+.logbook-sort-bar {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+
+/* ── Ascent table (legacy view) ──────────────────────────────────────────── */
+.ascent-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--surface);
+  border-radius: var(--r-md);
+  overflow: hidden;
+  font-size: 13px;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid rgba(0,0,0,0.04);
+}
+
+.ascent-table th {
+  text-align: left;
+  padding: 10px 16px;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  background: var(--neutral-50);
+  border-bottom: 1px solid var(--neutral-100);
+}
+
+.ascent-table td {
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--neutral-100);
+  color: var(--text);
+  vertical-align: middle;
+}
+
+.ascent-table tr:last-child td { border-bottom: none; }
+.ascent-table tr:hover td { background: var(--neutral-50); }
+
+/* ── Badges ──────────────────────────────────────────────────────────────── */
+.attempt-badge {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: var(--r-pill);
+  background: var(--green-100);
+  color: var(--green-700);
+}
+
+.attempt-badge.attempted {
+  background: #fff4e0;
+  color: #8a5a00;
+}
+
+.visibility-badge {
+  display: inline-block;
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: var(--r-pill);
+  background: var(--neutral-100);
+  color: var(--text-muted);
+}
+
+.visibility-badge.private {
+  background: rgba(192,57,43,0.08);
+  color: #b0291e;
+}
+
+/* ── Ascent card rows ────────────────────────────────────────────────────── */
+.ascent-card-row {
+  background: var(--surface);
+  border-radius: var(--r-md);
+  margin-bottom: 6px;
+  font-size: 13px;
+  box-shadow: var(--shadow-xs);
+  border: 1px solid rgba(0,0,0,0.05);
+  overflow: hidden;
+  transition: box-shadow var(--t-fast) var(--ease);
+}
+
+.ascent-card-row:hover { box-shadow: var(--shadow-sm); }
+
+.ascent-card-row.expanded {
+  box-shadow: var(--shadow-sm);
+  border-color: rgba(45,138,66,0.20);
+}
+
+.ascent-row-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 14px;
+}
+
+.ascent-row-main { flex: 1; min-width: 0; }
+
+.ascent-row-name {
+  display: block;
+  font-weight: 600;
+  color: var(--text);
+  text-decoration: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ascent-row-name:hover { text-decoration: underline; color: var(--green-600); }
+
+.ascent-row-sub {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 1px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ascent-row-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.ascent-row-date {
+  font-size: 11px;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+/* ── Grade groups ────────────────────────────────────────────────────────── */
+.grade-group { margin-bottom: 16px; }
+
+.grade-group-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 4px;
+  margin-bottom: 6px;
+  border-bottom: 2px solid var(--neutral-200);
+}
+
+.grade-group .ascent-card-row {
+  border-left: 3px solid var(--green-500);
+}
+
+/* ── Detail panel ────────────────────────────────────────────────────────── */
+.ascent-detail-panel {
+  border-top: 1px solid var(--neutral-100);
+  background: var(--neutral-50);
+  padding: 12px 14px;
+}
+
+.ascent-detail-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 10px 16px;
+  margin-bottom: 10px;
+}
+
+.ascent-detail-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 13px;
+}
+
+.ascent-detail-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+}
+
+.ascent-detail-notes {
+  font-size: 13px;
+  color: var(--text-2);
+  line-height: 1.5;
+}
+
+.ascent-detail-notes p { margin: 4px 0 0; }

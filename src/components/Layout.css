@@ -1,11 +1,11 @@
-* { box-sizing: border-box; margin: 0; padding: 0; }
-
+/* ── Layout shell ── */
 .layout {
   display: grid;
-  grid-template-columns: 220px 1fr;
+  grid-template-columns: 228px 1fr;
   min-height: 100vh;
 }
 
+/* ── Sidebar ── */
 .sidebar {
   background: rgba(255, 252, 247, 0.95);
   border-right: 1px solid var(--cc-border);
@@ -24,6 +24,8 @@
   gap: 10px;
   margin-bottom: 28px;
   padding: 0 6px;
+  text-decoration: none;
+  flex-shrink: 0;
 }
 
 .brandmark {
@@ -40,7 +42,11 @@
   letter-spacing: 0.01em;
 }
 
-nav { display: flex; flex-direction: column; gap: 2px; }
+nav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
 
 .nav-link {
   display: block;
@@ -50,7 +56,8 @@ nav { display: flex; flex-direction: column; gap: 2px; }
   text-decoration: none;
   font-size: 13px;
   font-weight: 500;
-  transition: all .15s;
+  transition: background var(--t-fast) var(--ease), color var(--t-fast) var(--ease);
+  white-space: nowrap;
 }
 
 .nav-link:hover {
@@ -66,8 +73,13 @@ nav { display: flex; flex-direction: column; gap: 2px; }
   padding-left: 9px;
 }
 
-.main { padding: 32px 36px; }
+/* ── Main content ── */
+.main {
+  padding: 32px 36px;
+  min-width: 0;
+}
 
+/* ── Sidebar footer ── */
 .sidebar-footer {
   margin-top: auto;
   padding: 14px 6px 0;
@@ -83,6 +95,7 @@ nav { display: flex; flex-direction: column; gap: 2px; }
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  padding: 0 2px;
 }
 
 .btn-signout {
@@ -92,11 +105,12 @@ nav { display: flex; flex-direction: column; gap: 2px; }
   color: var(--cc-muted);
   font-size: 12px;
   font-weight: 500;
+  font-family: inherit;
   padding: 6px 10px;
   cursor: pointer;
   text-align: left;
   text-decoration: none;
-  transition: all .15s;
+  transition: background var(--t-fast) var(--ease), color var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease);
 }
 
 .btn-signout:hover {
@@ -105,6 +119,7 @@ nav { display: flex; flex-direction: column; gap: 2px; }
   color: var(--cc-primary-dark);
 }
 
+/* ── Page placeholder ── */
 .page-placeholder {
   padding: 40px;
   background: var(--cc-surface);
@@ -118,4 +133,87 @@ nav { display: flex; flex-direction: column; gap: 2px; }
   font-size: 28px;
   color: var(--cc-ink);
   font-weight: 700;
+}
+
+/* ── Mobile: sidebar → top nav ── */
+@media (max-width: 768px) {
+  .layout {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr;
+    min-height: 100vh;
+  }
+
+  .sidebar {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    height: auto;
+    flex-direction: row;
+    align-items: center;
+    padding: 0 10px;
+    gap: 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    border-right: none;
+    border-bottom: 1px solid var(--cc-border);
+    box-shadow: 0 2px 12px rgba(48, 48, 48, 0.06);
+  }
+  .sidebar::-webkit-scrollbar { display: none; }
+
+  .brand {
+    margin-bottom: 0;
+    padding: 12px 10px 12px 4px;
+    border-right: 1px solid var(--cc-border);
+    margin-right: 4px;
+    flex-shrink: 0;
+  }
+
+  .brand-name { display: none; }
+
+  nav {
+    flex-direction: row;
+    gap: 0;
+    flex: 1;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  nav::-webkit-scrollbar { display: none; }
+
+  .nav-link {
+    font-size: 12px;
+    padding: 14px 10px;
+    border-radius: 0;
+    white-space: nowrap;
+  }
+
+  .nav-link.active {
+    background: transparent;
+    color: var(--cc-primary-dark);
+    border-left: none;
+    padding-left: 10px;
+    box-shadow: inset 0 -2px 0 var(--cc-primary);
+    border-radius: 0;
+  }
+
+  .sidebar-footer {
+    margin-top: 0;
+    padding: 10px 4px 10px 10px;
+    border-top: none;
+    border-left: 1px solid var(--cc-border);
+    flex-direction: row;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+  }
+
+  .sidebar-user { display: none; }
+  .btn-signout { font-size: 11px; padding: 5px 8px; white-space: nowrap; }
+  .main { padding: 14px 12px 32px; }
+}
+
+@media (max-width: 420px) {
+  .nav-link { font-size: 11px; padding: 13px 8px; }
 }
