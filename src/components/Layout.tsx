@@ -14,11 +14,14 @@ const privateNavItems = [
   { to: '/projects', label: 'Progetti' },
   { to: '/analytics', label: 'Analisi' },
   { to: '/settings', label: 'Impostazioni' },
+]
+
+const adminNavItems = [
   { to: '/admin', label: 'Admin' },
 ]
 
 export default function Layout() {
-  const { user, signOut } = useAuth()
+  const { user, isAdmin, signOut } = useAuth()
   const navigate = useNavigate()
 
   async function handleSignOut() {
@@ -29,7 +32,9 @@ export default function Layout() {
   const displayName = user?.user_metadata?.display_name as string | undefined
   const label = displayName ?? user?.email ?? ''
 
-  const navItems = user ? [...publicNavItems, ...privateNavItems] : publicNavItems
+  const navItems = user
+    ? [...publicNavItems, ...privateNavItems, ...(isAdmin ? adminNavItems : [])]
+    : publicNavItems
 
   return (
     <div className="layout">
