@@ -1,14 +1,14 @@
 .analytics-page {
   max-width: 900px;
   margin: 0 auto;
-  padding: 28px 20px;
+  padding: 24px 16px;
 }
 
 .analytics-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 24px;
+  margin-bottom: 20px;
   gap: 12px;
   flex-wrap: wrap;
 }
@@ -41,32 +41,32 @@
 .year-btn:hover { border-color: #2d5a27; color: #2d5a27; }
 .year-btn.active { background: #2d5a27; border-color: #2d5a27; color: #fff; }
 
-/* KPI cards */
+/* ── KPI cards ─────────────────────────────────────────────────────────────── */
 .kpi-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-  gap: 12px;
-  margin-bottom: 28px;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 10px;
+  margin-bottom: 24px;
 }
 
 .kpi-card {
   background: #fff;
   border: 1px solid #e0e0d8;
   border-radius: 10px;
-  padding: 16px;
+  padding: 14px 12px;
   text-align: center;
 }
 
 .kpi-value {
-  font-size: 26px;
+  font-size: 24px;
   font-weight: 800;
   color: #2d5a27;
   line-height: 1;
-  margin-bottom: 6px;
+  margin-bottom: 5px;
 }
 
 .kpi-label {
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 600;
   color: #8a9a87;
   text-transform: uppercase;
@@ -79,40 +79,40 @@
   margin-top: 2px;
 }
 
-/* Chart sections */
+/* ── Chart sections ──────────────────────────────────────────────────────── */
 .chart-section {
   background: #fff;
   border: 1px solid #e0e0d8;
   border-radius: 10px;
-  padding: 20px;
-  margin-bottom: 16px;
+  padding: 16px;
+  margin-bottom: 14px;
 }
 
 .chart-section h2 {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 700;
   color: var(--text);
-  margin: 0 0 16px;
+  margin: 0 0 14px;
 }
 
 .chart-empty {
   text-align: center;
-  padding: 40px 20px;
+  padding: 32px 20px;
   color: #8a9a87;
   font-size: 13px;
 }
 
-/* KPI section labels */
+/* ── KPI section labels ──────────────────────────────────────────────────── */
 .kpi-section-label {
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 700;
   color: #8a9a87;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  margin: 0 0 8px;
+  margin: 0 0 6px;
 }
 
-/* Filter bar */
+/* ── Filter bar ──────────────────────────────────────────────────────────── */
 .analytics-filter-bar {
   display: flex;
   align-items: center;
@@ -133,10 +133,11 @@
 }
 .filter-reset-btn:hover { background: #c0392b; color: #fff; }
 
-/* Style (modalità) filter buttons */
+/* ── Style filter buttons ────────────────────────────────────────────────── */
 .style-filter {
   display: flex;
   gap: 4px;
+  flex-wrap: wrap;
 }
 
 .style-btn {
@@ -154,17 +155,20 @@
 .style-btn:hover { border-color: #2d5a27; color: #2d5a27; }
 .style-btn.active { color: #fff; }
 
-/* Tabs */
+/* ── Tabs ────────────────────────────────────────────────────────────────── */
 .analytics-tabs {
   display: flex;
-  gap: 4px;
-  margin-bottom: 20px;
+  gap: 0;
+  margin-bottom: 16px;
   border-bottom: 2px solid #e0e0d8;
-  flex-wrap: wrap;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
+.analytics-tabs::-webkit-scrollbar { display: none; }
 
 .analytics-tab {
-  padding: 8px 18px;
+  padding: 8px 16px;
   border: none;
   background: none;
   font-size: 13px;
@@ -175,6 +179,7 @@
   margin-bottom: -2px;
   transition: all 0.15s;
   white-space: nowrap;
+  flex-shrink: 0;
 }
 .analytics-tab:hover { color: #2d5a27; }
 .analytics-tab.active { color: #2d5a27; border-bottom-color: #2d5a27; }
@@ -188,18 +193,18 @@
   to   { opacity: 1; transform: translateY(0); }
 }
 
-/* Chart description */
+/* ── Chart description ───────────────────────────────────────────────────── */
 .chart-description {
   font-size: 12px;
   color: #8a9a87;
-  margin: -8px 0 14px;
+  margin: -8px 0 12px;
 }
 
-/* Placeholder / coming soon */
+/* ── Placeholder / coming soon ───────────────────────────────────────────── */
 .chart-placeholder { opacity: 0.6; }
 .chart-coming-soon { font-style: italic; }
 
-/* Scatter tooltip */
+/* ── Scatter tooltip ─────────────────────────────────────────────────────── */
 .chart-tooltip {
   background: #fff;
   border: 1px solid #e0e0d8;
@@ -214,7 +219,7 @@
 .chart-tooltip-row { display: flex; gap: 10px; align-items: baseline; }
 .chart-tooltip-date { color: #8a9a87; margin-top: 4px; font-size: 11px; }
 
-/* Data quality panel */
+/* ── Data quality / within panel ─────────────────────────────────────────── */
 .quality-panel {
   display: flex;
   flex-direction: column;
@@ -251,10 +256,89 @@
 }
 .quality-row-value span { font-weight: 400; color: #8a9a87; }
 
-@media (max-width: 600px) {
-  .kpi-grid { grid-template-columns: repeat(3, 1fr); }
-  .analytics-tab { padding: 8px 12px; font-size: 12px; }
-  .quality-row { grid-template-columns: 1fr 60px; }
+/* ── Responsive 2-col chart grid ─────────────────────────────────────────── */
+.chart-grid-2col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.chart-grid-2col-mt {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-top: 14px;
+}
+
+/* chart-section inside a grid: gap handles spacing, remove own margin */
+.chart-grid-2col > .chart-section,
+.chart-grid-2col-mt > .chart-section {
+  margin-bottom: 0;
+}
+
+.chart-section-mt { margin-top: 14px; }
+
+/* ── Tabella max per anno ─────────────────────────────────────────────────── */
+.max-by-year-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.max-by-year-table th {
+  padding: 6px 10px;
+  text-align: left;
+  font-weight: 600;
+  background: #f5f5f0;
+}
+
+.max-by-year-table td {
+  padding: 6px 10px;
+  border-top: 1px solid #eee;
+}
+
+/* ── Mobile ──────────────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .analytics-page { padding: 16px 10px 32px; }
+
+  .analytics-header { margin-bottom: 14px; }
+  .analytics-header h1 { font-size: 18px; }
+
+  .kpi-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+
+  .kpi-card { padding: 10px 8px; }
+  .kpi-value { font-size: 20px; }
+  .kpi-label { font-size: 9px; }
+
+  .chart-section { padding: 12px; margin-bottom: 10px; }
+  .chart-section h2 { font-size: 12px; margin-bottom: 10px; }
+
+  .analytics-tab { padding: 8px 10px; font-size: 11px; }
+
+  .chart-grid-2col,
+  .chart-grid-2col-mt {
+    grid-template-columns: 1fr;
+  }
+
+  .quality-row {
+    grid-template-columns: 1fr 60px;
+  }
   .quality-bar-wrap { display: none; }
-  .style-filter { flex-wrap: wrap; }
+
+  .chart-empty { padding: 24px 12px; }
+}
+
+@media (max-width: 480px) {
+  .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+  .kpi-value { font-size: 18px; }
+
+  .analytics-tab { padding: 7px 9px; font-size: 11px; }
+
+  .max-by-year-table { font-size: 12px; }
+  .max-by-year-table th,
+  .max-by-year-table td { padding: 5px 7px; }
 }

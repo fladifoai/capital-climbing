@@ -357,9 +357,9 @@ export default function AnalyticsPage() {
             )}
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+          <div className="chart-grid-2col">
 
-            <div className="chart-section" style={{ marginBottom: 0 }}>
+            <div className="chart-section">
               <h2>Volume{filters.yearFilter !== 'all' ? ` — ${filters.yearFilter}` : ' per periodo'}</h2>
               {monthlyData.every(d => d.count === 0) ? (
                 <div className="chart-empty">Nessuna salita nel periodo.</div>
@@ -376,7 +376,7 @@ export default function AnalyticsPage() {
               )}
             </div>
 
-            <div className="chart-section" style={{ marginBottom: 0 }}>
+            <div className="chart-section">
               <h2>Modalità di salita</h2>
               {modeBreakdown.length === 0 ? (
                 <div className="chart-empty">Nessun dato.</div>
@@ -402,9 +402,9 @@ export default function AnalyticsPage() {
 
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginTop: 16 }}>
+          <div className="chart-grid-2col-mt">
 
-            <div className="chart-section" style={{ marginBottom: 0 }}>
+            <div className="chart-section">
               <h2>Piramide dei gradi</h2>
               {pyramidData.length === 0 ? (
                 <div className="chart-empty">Nessun dato.</div>
@@ -425,7 +425,7 @@ export default function AnalyticsPage() {
               )}
             </div>
 
-            <div className="chart-section" style={{ marginBottom: 0 }}>
+            <div className="chart-section">
               <h2>Top falesie</h2>
               {topCrags.length === 0 ? (
                 <div className="chart-empty">Nessun dato.</div>
@@ -575,22 +575,22 @@ export default function AnalyticsPage() {
               <div className="chart-empty">Nessun dato.</div>
             ) : (
               <div style={{ overflowX: 'auto' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+                <table className="max-by-year-table">
                   <thead>
-                    <tr style={{ background: '#f5f5f0' }}>
-                      <th style={{ padding: '6px 10px', textAlign: 'left', fontWeight: 600 }}>Anno</th>
-                      <th style={{ padding: '6px 10px', textAlign: 'center', color: '#1a6e2c' }}>On-sight</th>
-                      <th style={{ padding: '6px 10px', textAlign: 'center', color: '#e07b00' }}>Flash</th>
-                      <th style={{ padding: '6px 10px', textAlign: 'center', color: '#c0392b' }}>Redpoint</th>
+                    <tr>
+                      <th>Anno</th>
+                      <th style={{ textAlign: 'center', color: '#1a6e2c' }}>On-sight</th>
+                      <th style={{ textAlign: 'center', color: '#e07b00' }}>Flash</th>
+                      <th style={{ textAlign: 'center', color: '#c0392b' }}>Redpoint</th>
                     </tr>
                   </thead>
                   <tbody>
                     {maxByStyleByYear.map(row => (
-                      <tr key={row.year} style={{ borderTop: '1px solid #eee' }}>
-                        <td style={{ padding: '6px 10px', fontWeight: 600 }}>{row.year}</td>
-                        <td style={{ padding: '6px 10px', textAlign: 'center', color: '#1a6e2c' }}>{row.onsightLabel}</td>
-                        <td style={{ padding: '6px 10px', textAlign: 'center', color: '#e07b00' }}>{row.flashLabel}</td>
-                        <td style={{ padding: '6px 10px', textAlign: 'center', color: '#c0392b' }}>{row.redpointLabel}</td>
+                      <tr key={row.year}>
+                        <td style={{ fontWeight: 600 }}>{row.year}</td>
+                        <td style={{ textAlign: 'center', color: '#1a6e2c' }}>{row.onsightLabel}</td>
+                        <td style={{ textAlign: 'center', color: '#e07b00' }}>{row.flashLabel}</td>
+                        <td style={{ textAlign: 'center', color: '#c0392b' }}>{row.redpointLabel}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -608,9 +608,9 @@ export default function AnalyticsPage() {
       {activeTab === 'volume' && (
         <div className="analytics-tab-content" role="tabpanel">
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+          <div className="chart-grid-2col">
 
-            <div className="chart-section" style={{ marginBottom: 0 }}>
+            <div className="chart-section">
               <h2>Salite per mese{filters.yearFilter !== 'all' ? ` — ${filters.yearFilter}` : ''}</h2>
               {monthlyData.every(d => d.count === 0) ? (
                 <div className="chart-empty">Nessuna salita nel periodo.</div>
@@ -627,7 +627,7 @@ export default function AnalyticsPage() {
               )}
             </div>
 
-            <div className="chart-section" style={{ marginBottom: 0 }}>
+            <div className="chart-section">
               <h2>Sessioni per mese</h2>
               {sessionsPerMonth.every(d => d.count === 0) ? (
                 <div className="chart-empty">Nessuna sessione nel periodo.</div>
@@ -646,7 +646,7 @@ export default function AnalyticsPage() {
 
           </div>
 
-          <div className="chart-section" style={{ marginTop: 16 }}>
+          <div className="chart-section chart-section-mt">
             <h2>Vie uniche vs ripetizioni per mese</h2>
             <p className="chart-description">Prima volta su una via = unica; visite successive = ripetizione.</p>
             {uniqueVsRepeat.every(d => d.unique === 0 && d.repeat === 0) ? (
@@ -666,9 +666,9 @@ export default function AnalyticsPage() {
             )}
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginTop: 16 }}>
+          <div className="chart-grid-2col-mt">
 
-            <div className="chart-section" style={{ marginBottom: 0 }}>
+            <div className="chart-section">
               <h2>Distribuzione per giorno della settimana</h2>
               {dayOfWeek.every(d => d.count === 0) ? (
                 <div className="chart-empty">Nessun dato.</div>
@@ -689,7 +689,7 @@ export default function AnalyticsPage() {
               )}
             </div>
 
-            <div className="chart-section" style={{ marginBottom: 0 }}>
+            <div className="chart-section">
               <h2>Distribuzione stagionale</h2>
               <p className="chart-description">Salite per mese su tutti gli anni — mostra la stagione preferita.</p>
               {seasonal.every(d => d.count === 0) ? (
@@ -717,9 +717,9 @@ export default function AnalyticsPage() {
       {activeTab === 'profilo' && (
         <div className="analytics-tab-content" role="tabpanel">
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+          <div className="chart-grid-2col">
 
-            <div className="chart-section" style={{ marginBottom: 0 }}>
+            <div className="chart-section">
               <h2>Distribuzione salite per grado</h2>
               {gradeDist.length === 0 ? (
                 <div className="chart-empty">Nessun dato.</div>
@@ -736,7 +736,7 @@ export default function AnalyticsPage() {
               )}
             </div>
 
-            <div className="chart-section" style={{ marginBottom: 0 }}>
+            <div className="chart-section">
               <h2>Piramide dei gradi</h2>
               <p className="chart-description">{pyramidData.length} gradi nel periodo.</p>
               {pyramidData.length === 0 ? (
@@ -761,7 +761,7 @@ export default function AnalyticsPage() {
 
           </div>
 
-          <div className="chart-section" style={{ marginTop: 16 }}>
+          <div className="chart-section chart-section-mt">
             <h2>Piramide vie uniche</h2>
             <p className="chart-description">Solo la prima ascensione per ogni via. Mostra quanto è largo il repertorio.</p>
             {uniquePyramid.length === 0 ? (
@@ -864,9 +864,9 @@ export default function AnalyticsPage() {
       {activeTab === 'falesie' && (
         <div className="analytics-tab-content" role="tabpanel">
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+          <div className="chart-grid-2col">
 
-            <div className="chart-section" style={{ marginBottom: 0 }}>
+            <div className="chart-section">
               <h2>Top falesie per salite totali</h2>
               {topCrags.length === 0 ? (
                 <div className="chart-empty">Nessun dato.</div>
@@ -883,7 +883,7 @@ export default function AnalyticsPage() {
               )}
             </div>
 
-            <div className="chart-section" style={{ marginBottom: 0 }}>
+            <div className="chart-section">
               <h2>Top falesie per vie uniche</h2>
               {topCragsByUnique.length === 0 ? (
                 <div className="chart-empty">Nessun dato.</div>
@@ -902,7 +902,7 @@ export default function AnalyticsPage() {
 
           </div>
 
-          <div className="chart-section" style={{ marginTop: 16 }}>
+          <div className="chart-section chart-section-mt">
             <h2>Top falesie per grado medio</h2>
             <p className="chart-description">Solo falesie con almeno 2 ascensioni con grado registrato.</p>
             {topCragsByGrade.length === 0 ? (
