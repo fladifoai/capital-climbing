@@ -1,6 +1,105 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+:root {
+  /* Brand */
+  --green-900: #0a2818;
+  --green-800: #0f3323;
+  --green-700: #1a5c2a;
+  --green-600: #206e32;
+  --green-500: #2d8a42;
+  --green-400: #3db870;
+  --green-200: #a8dbb8;
+  --green-100: #e2f5e8;
+  --green-50:  #f2faf4;
+
+  /* Neutrals */
+  --neutral-950: #0e130d;
+  --neutral-900: #1a2018;
+  --neutral-700: #3a4438;
+  --neutral-500: #637060;
+  --neutral-400: #8a9a87;
+  --neutral-300: #b8c5b5;
+  --neutral-200: #dde8da;
+  --neutral-100: #edf3eb;
+  --neutral-50:  #f4f7f2;
+
+  /* Semantic */
+  --bg:          #f1f4ef;
+  --surface:     #ffffff;
+  --text:        #171e15;
+  --text-2:      #4a5648;
+  --text-muted:  #8a9a87;
+  --border:      rgba(0, 0, 0, 0.07);
+  --border-mid:  rgba(0, 0, 0, 0.10);
+  --accent:      var(--green-600);
+  --accent-alt:  var(--green-400);
+
+  /* Shadows */
+  --shadow-xs: 0 1px 2px rgba(0,0,0,0.05);
+  --shadow-sm: 0 1px 4px rgba(0,0,0,0.06), 0 2px 8px rgba(0,0,0,0.04);
+  --shadow-md: 0 2px 8px rgba(0,0,0,0.07), 0 6px 20px rgba(0,0,0,0.06);
+  --shadow-lg: 0 4px 16px rgba(0,0,0,0.09), 0 12px 32px rgba(0,0,0,0.07);
+  --shadow-green: 0 4px 14px rgba(32, 110, 50, 0.20);
+
+  /* Radius */
+  --r-sm:  8px;
+  --r-md:  12px;
+  --r-lg:  16px;
+  --r-xl:  20px;
+  --r-pill: 999px;
+
+  /* Timing */
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --t-fast: 150ms;
+  --t-mid:  220ms;
+}
+
 body {
   font-family: 'Outfit', ui-sans-serif, system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* Shared utilities */
+.loading-state,
+.error-state,
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+.error-state { color: #c0392b; }
+
+.section-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text);
+  margin: 0 0 14px;
+}
+
+/* Badge system */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: var(--r-pill);
+  letter-spacing: 0.01em;
+}
+
+.badge-green  { background: var(--green-100); color: var(--green-700); }
+.badge-amber  { background: #fff4e0; color: #8a5a00; }
+.badge-red    { background: #fdecea; color: #b0291e; }
+.badge-gray   { background: var(--neutral-100); color: var(--neutral-500); }
+
+/* Shared input/select */
+input, select, textarea {
+  font-family: inherit;
 }
