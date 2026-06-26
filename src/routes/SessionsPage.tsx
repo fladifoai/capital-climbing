@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -6,10 +7,16 @@ import type { Resolver } from 'react-hook-form'
 import { useAuth } from '../features/auth/AuthContext'
 import {
   useMySessions, useCreateSession, useDeleteSession,
-  useCragSearch, type CragSearchResult,
+  useCragSearch,
+  type CragSearchResult, type SessionWithCrag,
 } from '../features/sessions/hooks'
 import '../styles/sessions.css'
 import '../styles/admin.css'
+import '../styles/logbook.css'
+
+const ATTEMPT_LABELS: Record<string, string> = {
+  onsight: 'OS', flash: 'FL', second: '2G', third: '3G', four_plus: '4+', redpoint: 'RP',
+}
 
 const optStr = z
   .union([z.string(), z.null(), z.undefined()])
@@ -18,7 +25,7 @@ const optStr = z
 const optNum = z
   .union([z.number(), z.nan(), z.null(), z.undefined()])
   .transform((v): number | null =>
-    (v == null || (typeof v === 'number' && isNaN(v))) ? null : v
+    v == null || (typeof v === 'number' && isNaN(v)) ? null : v
   )
 
 const sessionSchema = z.object({
@@ -41,6 +48,93 @@ function rpeBadgeClass(rpe: number | null): string {
   return 'rpe-badge'
 }
 
+interface SessionCardProps {
+  session: SessionWithCrag
+  confirmDelete: string | null
+  setConfirmDelete: (id: string | null) => void
+  onDelete: (id: string) => void
+}
+
+function SessionCard({ session, confirmDelete, setConfirmDelete, onDelete }: SessionCardProps) {
+  const [expanded, setExpanded] = useState(false)
+  const routeCount = session.ascents?.length ?? 0
+
+  return (
+    <div className="session-card">
+      <div
+        className="session-card-header"
+        onClick={() => routeCount > 0 && setExpanded(e => !e)}
+        style={{ cursor: routeCount > 0 ? 'pointer' : 'default' }}
+      >
+        <div className="session-card-left">
+          <span className="session-date">{session.date}</span>
+          {session.crag && <span className="session-crag-name">{session.crag.name}</span>}
+        </div>
+
+        <div className="session-card-meta">
+          {session.partner && (
+            <span className="session-meta-item">👤 {session.partner}</span>
+          )}
+          {session.session_rpe != null && (
+            <span className={rpeBadgeClass(session.session_rpe)}>{session.session_rpe}/10</span>
+          )}
+          {routeCount > 0 && (
+            <span className="session-route-count">
+              {routeCount} {routeCount === 1 ? 'via' : 'vie'} {expanded ? '▲' : '▼'}
+            </span>
+          )}
+          {confirmDelete === session.id ? (
+            <span style={{ display: 'flex', gap: 4 }}>
+              <button
+                className="btn-danger"
+                style={{ padding: '3px 8px', fontSize: 11 }}
+                onClick={e => { e.stopPropagation(); onDelete(session.id) }}
+              >Sì</button>
+              <button
+                className="btn-secondary"
+                style={{ padding: '3px 8px', fontSize: 11 }}
+                onClick={e => { e.stopPropagation(); setConfirmDelete(null) }}
+              >No</button>
+            </span>
+          ) : (
+            <button
+              className="btn-secondary"
+              style={{ padding: '3px 8px', fontSize: 11, color: '#c0392b' }}
+              onClick={e => { e.stopPropagation(); setConfirmDelete(session.id) }}
+            >✕</button>
+          )}
+        </div>
+      </div>
+
+      {session.notes && (
+        <div className="session-notes">{session.notes}</div>
+      )}
+
+      {expanded && routeCount > 0 && (
+        <div className="session-routes-list">
+          {session.ascents.map(a => (
+            <div key={a.id} className="session-route-row">
+              <Link to={`/routes/${a.route?.id}`} className="session-route-name">
+                {a.route?.name ?? '—'}
+              </Link>
+              <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexShrink: 0 }}>
+                {a.grade_at_ascent && (
+                  <span className="grade-badge">{a.grade_at_ascent}</span>
+                )}
+                {a.attempt_type && (
+                  <span style={{ fontSize: 11, fontWeight: 700, color: '#2d5a27' }}>
+                    {ATTEMPT_LABELS[a.attempt_type] ?? a.attempt_type}
+                  </span>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
 export default function SessionsPage() {
   const { user } = useAuth()
   const { data: sessions, isLoading } = useMySessions(user?.id ?? '')
@@ -51,7 +145,6 @@ export default function SessionsPage() {
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null)
   const [saveError, setSaveError] = useState('')
 
-  // Crag search state
   const [cragQuery, setCragQuery] = useState('')
   const [selectedCrag, setSelectedCrag] = useState<CragSearchResult | null>(null)
   const [showCragDropdown, setShowCragDropdown] = useState(false)
@@ -59,10 +152,7 @@ export default function SessionsPage() {
 
   const { register, handleSubmit, reset, formState: { errors } } = useForm<SessionSchema>({
     resolver: zodResolver(sessionSchema) as Resolver<SessionSchema>,
-    defaultValues: {
-      date: new Date().toISOString().slice(0, 10),
-      visibility: 'private',
-    },
+    defaultValues: { date: new Date().toISOString().slice(0, 10), visibility: 'private' },
   })
 
   if (!user) return null
@@ -120,7 +210,6 @@ export default function SessionsPage() {
                 {errors.date && <span className="form-error">{errors.date.message}</span>}
               </div>
 
-              {/* Crag search */}
               <div className="form-group" style={{ position: 'relative' }}>
                 <label>Falesia</label>
                 <input
@@ -193,12 +282,10 @@ export default function SessionsPage() {
                 </select>
               </div>
             </div>
-
             <div className="form-full form-group">
               <label>Note</label>
               <textarea {...register('notes')} rows={2} placeholder="Come è andata…" />
             </div>
-
             <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
               <button type="button" className="btn-secondary" onClick={() => { setAdding(false); setSaveError('') }}>Annulla</button>
               <button type="submit" className="btn-primary" disabled={createSession.isPending}>
@@ -215,57 +302,15 @@ export default function SessionsPage() {
         <div className="empty-state">Nessuna sessione registrata.</div>
       )}
 
-      {(sessions?.length ?? 0) > 0 && (
-        <table className="session-table">
-          <thead>
-            <tr>
-              <th>Data</th>
-              <th>Falesia</th>
-              <th>Partner</th>
-              <th>Condizioni</th>
-              <th>RPE</th>
-              <th>Note</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody>
-            {sessions!.map(s => (
-              <tr key={s.id}>
-                <td style={{ fontWeight: 600, whiteSpace: 'nowrap' }}>{s.date}</td>
-                <td>{s.crag?.name ?? <span style={{ color: '#ccc' }}>—</span>}</td>
-                <td>{s.partner ?? <span style={{ color: '#ccc' }}>—</span>}</td>
-                <td>
-                  {[s.conditions, s.rock_condition].filter(Boolean).join(' · ') || <span style={{ color: '#ccc' }}>—</span>}
-                </td>
-                <td>
-                  {s.session_rpe
-                    ? <span className={rpeBadgeClass(s.session_rpe)}>{s.session_rpe}/10</span>
-                    : <span style={{ color: '#ccc' }}>—</span>}
-                </td>
-                <td style={{ maxWidth: 160, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                  {s.notes ?? <span style={{ color: '#ccc' }}>—</span>}
-                </td>
-                <td>
-                  {confirmDelete === s.id ? (
-                    <span style={{ display: 'flex', gap: 4 }}>
-                      <button className="btn-danger" style={{ padding: '3px 8px', fontSize: 11 }} onClick={() => handleDelete(s.id)}>Sì</button>
-                      <button className="btn-secondary" style={{ padding: '3px 8px', fontSize: 11 }} onClick={() => setConfirmDelete(null)}>No</button>
-                    </span>
-                  ) : (
-                    <button
-                      className="btn-secondary"
-                      style={{ padding: '3px 8px', fontSize: 11, color: '#c0392b' }}
-                      onClick={() => setConfirmDelete(s.id)}
-                    >
-                      Elimina
-                    </button>
-                  )}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      )}
+      {sessions?.map(s => (
+        <SessionCard
+          key={s.id}
+          session={s}
+          confirmDelete={confirmDelete}
+          setConfirmDelete={setConfirmDelete}
+          onDelete={handleDelete}
+        />
+      ))}
     </div>
   )
 }

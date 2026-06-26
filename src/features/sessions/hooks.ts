@@ -2,8 +2,16 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '../../lib/supabase'
 import type { Session, Crag } from '../../types/database'
 
+export interface SessionAscent {
+  id: string
+  grade_at_ascent: string | null
+  attempt_type: string | null
+  route: { id: string; name: string } | null
+}
+
 export interface SessionWithCrag extends Session {
   crag: Pick<Crag, 'id' | 'name'> | null
+  ascents: SessionAscent[]
 }
 
 export function useMySessions(userId: string) {
@@ -12,7 +20,7 @@ export function useMySessions(userId: string) {
     queryFn: async (): Promise<SessionWithCrag[]> => {
       const { data, error } = await supabase
         .from('sessions')
-        .select('*, crag:crags(id, name)')
+        .select('*, crag:crags(id, name), ascents(id, grade_at_ascent, attempt_type, route:routes(id, name))')
         .eq('user_id', userId)
         .order('date', { ascending: false })
       if (error) throw error

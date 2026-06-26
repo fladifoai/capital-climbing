@@ -8,6 +8,7 @@ import '../../styles/admin.css'
 const ATTEMPT_OPTIONS: { value: string; label: string }[] = [
   { value: 'onsight', label: 'On-sight' },
   { value: 'flash', label: 'Flash' },
+  { value: 'redpoint', label: 'Redpoint' },
   { value: 'second', label: '2° giro' },
   { value: 'third', label: '3° giro' },
   { value: 'four_plus', label: '4+' },
@@ -30,6 +31,7 @@ const ascentSchema = z.object({
   attempt_type: optStr,
   grade_at_ascent: optStr,
   personal_grade: optStr,
+  quality: optNum,
   kneepad_used: z.boolean().nullable().optional().transform(v => v ?? null),
   effort: optNum,
   notes: optStr,
@@ -49,6 +51,8 @@ export default function AscentForm({ preselectedRoute, onSubmit, onCancel, isLoa
   const [query, setQuery] = useState(preselectedRoute?.name ?? '')
   const [selectedRoute, setSelectedRoute] = useState<RouteSearchResult | null>(preselectedRoute ?? null)
   const [showDropdown, setShowDropdown] = useState(false)
+  const [quality, setQuality] = useState<number | null>(null)
+  const [hoverStar, setHoverStar] = useState<number | null>(null)
 
   const { data: results, isFetching } = useRouteSearch(preselectedRoute ? '' : query)
 
@@ -82,6 +86,7 @@ export default function AscentForm({ preselectedRoute, onSubmit, onCancel, isLoa
       grade_at_ascent: data.grade_at_ascent ?? selectedRoute.official_grade,
       grade_numeric_at_ascent: selectedRoute.grade_numeric,
       personal_grade: data.personal_grade ?? null,
+      quality,
       kneepad_used: data.kneepad_used ?? null,
       effort: data.effort ?? null,
       notes: data.notes ?? null,
@@ -193,6 +198,34 @@ export default function AscentForm({ preselectedRoute, onSubmit, onCancel, isLoa
             <option value="public">Pubblica</option>
             <option value="private">Privata</option>
           </select>
+        </div>
+
+        <div className="form-group">
+          <label>Bellezza (stelle)</label>
+          <div style={{ display: 'flex', gap: 4, paddingTop: 4 }}>
+            {[1, 2, 3, 4, 5].map(n => (
+              <button
+                key={n}
+                type="button"
+                onClick={() => setQuality(quality === n ? null : n)}
+                onMouseEnter={() => setHoverStar(n)}
+                onMouseLeave={() => setHoverStar(null)}
+                style={{
+                  background: 'none', border: 'none', cursor: 'pointer', padding: 0,
+                  fontSize: 22, lineHeight: 1,
+                  color: n <= (hoverStar ?? quality ?? 0) ? '#f5a623' : '#d0d0c8',
+                  transition: 'color 0.1s',
+                }}
+              >
+                ★
+              </button>
+            ))}
+            {quality && (
+              <span style={{ fontSize: 11, color: '#8a9a87', alignSelf: 'center', marginLeft: 4 }}>
+                {quality}/5
+              </span>
+            )}
+          </div>
         </div>
 
         <div className="form-group" style={{ flexDirection: 'row', alignItems: 'center', gap: 8, paddingTop: 16 }}>

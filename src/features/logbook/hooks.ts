@@ -44,6 +44,7 @@ export interface AscentFormValues {
   grade_at_ascent: string | null
   grade_numeric_at_ascent: number | null
   personal_grade: string | null
+  quality: number | null
   kneepad_used: boolean | null
   effort: number | null
   notes: string | null

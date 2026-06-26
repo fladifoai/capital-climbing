@@ -1,6 +1,9 @@
 import { Link, useParams } from 'react-router-dom'
 import { useAuth } from '../features/auth/AuthContext'
-import { useProfile, usePublicAscents, usePublicProjects } from '../features/users/hooks'
+import {
+  useProfile, usePublicAscents, usePublicProjects,
+  useIsFollowing, useFollowCounts, useFollowUser, useUnfollowUser,
+} from '../features/users/hooks'
 import type { Profile } from '../types/database'
 import '../styles/users.css'
 import '../styles/catalog.css'
@@ -20,6 +23,10 @@ export default function UserProfilePage() {
   const { data: profile, isLoading, error } = useProfile(username)
   const { data: ascents } = usePublicAscents(profile?.id ?? '')
   const { data: projects } = usePublicProjects(profile?.id ?? '')
+  const { data: counts } = useFollowCounts(profile?.id ?? '')
+  const { data: isFollowing } = useIsFollowing(user?.id ?? '', profile?.id ?? '')
+  const followUser = useFollowUser()
+  const unfollowUser = useUnfollowUser()
 
   if (isLoading) return <div className="loading-state">Caricamento profilo…</div>
   if (error || !profile) return <div className="error-state">Utente non trovato.</div>
@@ -30,6 +37,15 @@ export default function UserProfilePage() {
     const n = a.grade_numeric_at_ascent ?? 0
     return n > best ? n : best
   }, 0)
+
+  function handleFollow() {
+    if (!user) return
+    if (isFollowing) {
+      unfollowUser.mutate({ followerId: user.id, followingId: profile!.id })
+    } else {
+      followUser.mutate({ followerId: user.id, followingId: profile!.id })
+    }
+  }
 
   return (
     <div className="profile-page">
@@ -44,11 +60,25 @@ export default function UserProfilePage() {
           <div className="profile-names">
             <h1 className="profile-display-name">{profile.display_name || profile.username}</h1>
             <div className="profile-username">@{profile.username}</div>
+            {counts && (
+              <div className="follow-counts">
+                <span><strong>{counts.followers}</strong> follower</span>
+                <span><strong>{counts.following}</strong> seguiti</span>
+              </div>
+            )}
           </div>
-          {isOwnProfile && (
+          {isOwnProfile ? (
             <Link to="/settings" className="btn-secondary" style={{ flexShrink: 0, textDecoration: 'none', display: 'inline-block', padding: '6px 14px', fontSize: 12 }}>
               Modifica profilo
             </Link>
+          ) : user && (
+            <button
+              className={isFollowing ? 'follow-btn following' : 'follow-btn'}
+              onClick={handleFollow}
+              disabled={followUser.isPending || unfollowUser.isPending}
+            >
+              {isFollowing ? 'Stai seguendo' : '+ Segui'}
+            </button>
           )}
         </div>
 

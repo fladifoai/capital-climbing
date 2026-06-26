@@ -3,11 +3,18 @@ import { useAuth } from '../features/auth/AuthContext'
 import { useMyAscents } from '../features/logbook/hooks'
 import { useMyProjects } from '../features/projects/hooks'
 import { useMySessions } from '../features/sessions/hooks'
+import { useFeedAscents, type FeedAscent } from '../features/users/hooks'
 import '../styles/analytics.css'
 import '../styles/logbook.css'
+import '../styles/users.css'
 
 const ATTEMPT_LABELS: Record<string, string> = {
   onsight: 'OS', flash: 'FL', second: '2G', third: '3G', four_plus: '4+', redpoint: 'RP',
+}
+
+function feedInitials(a: FeedAscent): string {
+  const name = a.profile?.display_name || a.profile?.username || '?'
+  return name.slice(0, 2).toUpperCase()
 }
 
 export default function DashboardPage() {
@@ -15,6 +22,7 @@ export default function DashboardPage() {
   const { data: ascents, isLoading: loadingAscents } = useMyAscents(user?.id ?? '')
   const { data: projects } = useMyProjects(user?.id ?? '')
   const { data: sessions } = useMySessions(user?.id ?? '')
+  const { data: feedAscents } = useFeedAscents(user?.id ?? '')
 
   if (!user) return null
 
@@ -144,6 +152,55 @@ export default function DashboardPage() {
             </div>
           ))}
         </div>
+      </div>
+
+      {/* Friend activity feed */}
+      <div className="chart-section" style={{ marginTop: 16 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+          <h2 style={{ margin: 0 }}>Attività amici</h2>
+          <Link to="/users" style={{ fontSize: 12, color: '#2d5a27', textDecoration: 'none', fontWeight: 600 }}>
+            Cerca utenti →
+          </Link>
+        </div>
+        {(feedAscents?.length ?? 0) === 0 && (
+          <div style={{ fontSize: 13, color: '#8a9a87', textAlign: 'center', padding: '20px 0' }}>
+            Nessuna attività. Segui altri arrampicatori per vedere le loro salite.
+          </div>
+        )}
+        {feedAscents?.map(a => (
+          <div key={a.id} className="feed-item">
+            <div className="feed-avatar">
+              {a.profile?.avatar_url
+                ? <img src={a.profile.avatar_url} alt="" />
+                : feedInitials(a)
+              }
+            </div>
+            <div className="feed-body">
+              <div className="feed-top">
+                <Link to={`/users/${a.profile?.username}`} className="feed-username">
+                  {a.profile?.display_name || a.profile?.username}
+                </Link>
+                <span className="feed-date">{a.date}</span>
+              </div>
+              <div className="feed-route">
+                <Link to={`/routes/${a.route?.id}`} style={{ color: 'inherit', textDecoration: 'none', fontWeight: 600 }}>
+                  {a.route?.name}
+                </Link>
+                {a.route?.sector?.crag?.name && (
+                  <span className="feed-crag">@ {a.route.sector.crag.name}</span>
+                )}
+              </div>
+              <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginTop: 2 }}>
+                {a.grade_at_ascent && <span className="grade-badge">{a.grade_at_ascent}</span>}
+                {a.attempt_type && (
+                  <span style={{ fontSize: 11, fontWeight: 700, color: '#2d5a27' }}>
+                    {ATTEMPT_LABELS[a.attempt_type] ?? a.attempt_type}
+                  </span>
+                )}
+              </div>
+            </div>
+          </div>
+        ))}
       </div>
 
       <div style={{ marginTop: 20, display: 'flex', gap: 10, flexWrap: 'wrap' }}>

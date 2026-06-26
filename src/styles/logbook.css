@@ -77,3 +77,117 @@
   background: #fdecea;
   color: #c0392b;
 }
+
+/* ── Filter / sort bar ───────────────────────────────────────────────── */
+.logbook-filters {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+
+.logbook-search {
+  flex: 1;
+  min-width: 160px;
+  padding: 7px 12px;
+  border: 1px solid #d0d8cc;
+  border-radius: 8px;
+  font-size: 13px;
+  font-family: inherit;
+  background: #fff;
+  color: var(--text);
+  outline: none;
+}
+.logbook-search:focus { border-color: #2d5a27; }
+
+.logbook-select {
+  padding: 7px 10px;
+  border: 1px solid #d0d8cc;
+  border-radius: 8px;
+  font-size: 12px;
+  font-family: inherit;
+  background: #fff;
+  color: var(--text);
+  cursor: pointer;
+  outline: none;
+}
+.logbook-select:focus { border-color: #2d5a27; }
+
+.logbook-sort-bar {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+
+/* ── Ascent card rows ────────────────────────────────────────────────── */
+.ascent-card-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 14px;
+  background: #fff;
+  border: 1px solid #e0e0d8;
+  border-radius: 8px;
+  margin-bottom: 6px;
+  font-size: 13px;
+}
+
+.ascent-row-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.ascent-row-name {
+  display: block;
+  font-weight: 600;
+  color: var(--text);
+  text-decoration: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ascent-row-name:hover { text-decoration: underline; color: #2d5a27; }
+
+.ascent-row-sub {
+  font-size: 11px;
+  color: #8a9a87;
+  margin-top: 1px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ascent-row-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.ascent-row-date {
+  font-size: 11px;
+  color: #8a9a87;
+  white-space: nowrap;
+}
+
+/* ── Grade groups ────────────────────────────────────────────────────── */
+.grade-group {
+  margin-bottom: 16px;
+}
+
+.grade-group-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 4px;
+  margin-bottom: 6px;
+  border-bottom: 2px solid #e0e0d8;
+}
+
+.grade-group .ascent-card-row {
+  border-left: 3px solid #2d5a27;
+  border-radius: 0 8px 8px 0;
+}

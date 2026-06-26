@@ -146,6 +146,7 @@ export interface Ascent {
   grade_at_ascent: string | null
   grade_numeric_at_ascent: number | null
   score: number | null
+  quality: number | null
   personal_grade: string | null
   kneepad_used: boolean | null
   effort: number | null
