@@ -1,7 +1,7 @@
 # Struttura del progetto — Capital Climbing
 
 > Aggiornato automaticamente. Esegui `npm run structure` per rigenerare.
-> Ultimo aggiornamento: 26/06/2026, 10:18:47
+> Ultimo aggiornamento: 26/06/2026, 10:45:36
 
 ## Come leggere questo file
 
@@ -85,9 +85,13 @@ Capital Climbing/
 │   │   ├── app.test.tsx  — Test base dell'app
 │   │   └── setup.ts  — Configurazione ambiente di test
 │   ├── **types/**  — Definizioni TypeScript condivise
+│   │   └── database.ts
 │   └── main.tsx
 ├── **supabase/**  — Configurazione database Supabase
 │   └── **migrations/**  — Migrazioni SQL versionate (una per ogni modifica al DB)
+│       ├── 001_schema.sql
+│       ├── 002_rls.sql
+│       └── 003_seed_demo.sql
 ├── .gitignore  — File e cartelle esclusi da GitHub
 ├── .oxlintrc.json  — Configurazione linter (Oxlint)
 ├── index.html  — Pagina HTML base dell'app React
