@@ -1,7 +1,7 @@
 # Struttura del progetto — Capital Climbing
 
 > Aggiornato automaticamente. Esegui `npm run structure` per rigenerare.
-> Ultimo aggiornamento: 26/06/2026, 10:12:50
+> Ultimo aggiornamento: 26/06/2026, 10:18:47
 
 ## Come leggere questo file
 
@@ -12,6 +12,9 @@ Le cartelle in **grassetto** contengono altri file.
 
 ```
 Capital Climbing/
+├── **.github/**
+│   └── **workflows/**
+│       └── deploy.yml
 ├── **istruzioni/**  — Tutta la documentazione e le specifiche del progetto
 │   ├── 00_AUDIT_BLOCCO0.md  — Stato del progetto dopo il Blocco 0
 │   ├── 00_START_HERE.md  — Punto di partenza e ordine di lettura
@@ -90,6 +93,7 @@ Capital Climbing/
 ├── index.html  — Pagina HTML base dell'app React
 ├── package.json  — Dipendenze npm e script di sviluppo
 ├── README.md  — Panoramica del progetto per i collaboratori
+├── STRUTTURA.md  — Questo file — mappa aggiornata del progetto
 ├── tsconfig.app.json  — Configurazione TypeScript per il codice app
 ├── tsconfig.json  — Configurazione TypeScript (root)
 ├── tsconfig.node.json  — Configurazione TypeScript per Vite/Node
