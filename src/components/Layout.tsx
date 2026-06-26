@@ -1,4 +1,5 @@
-import { NavLink, Outlet } from 'react-router-dom'
+import { NavLink, Outlet, useNavigate } from 'react-router-dom'
+import { useAuth } from '../features/auth/AuthContext'
 import './Layout.css'
 
 const navItems = [
@@ -14,6 +15,17 @@ const navItems = [
 ]
 
 export default function Layout() {
+  const { user, signOut } = useAuth()
+  const navigate = useNavigate()
+
+  async function handleSignOut() {
+    await signOut()
+    navigate('/login')
+  }
+
+  const displayName = user?.user_metadata?.display_name as string | undefined
+  const label = displayName ?? user?.email ?? ''
+
   return (
     <div className="layout">
       <aside className="sidebar">
@@ -32,6 +44,10 @@ export default function Layout() {
             </NavLink>
           ))}
         </nav>
+        <div className="sidebar-footer">
+          <span className="sidebar-user">{label}</span>
+          <button className="btn-signout" onClick={handleSignOut}>Esci</button>
+        </div>
       </aside>
       <main className="main">
         <Outlet />
