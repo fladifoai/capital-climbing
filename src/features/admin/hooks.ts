@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '../../lib/supabase'
 import { ITALY_ID } from '../catalog/hooks'
-import type { Crag, Region, Sector, Route } from '../../types/database'
+import type { Area, Crag, Region, Sector, Route } from '../../types/database'
 
 export function slugify(name: string) {
   return name
@@ -55,6 +55,22 @@ export interface RouteFormValues {
 }
 
 // ── Queries ────────────────────────────────────────────────────────────
+
+export function useAllAreas(regionId: string) {
+  return useQuery({
+    queryKey: ['all-areas', regionId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('areas')
+        .select('id, name')
+        .eq('region_id', regionId)
+        .order('name')
+      if (error) throw error
+      return data as Pick<Area, 'id' | 'name'>[]
+    },
+    enabled: !!regionId,
+  })
+}
 
 export function useAllRegions() {
   return useQuery({
@@ -124,6 +140,12 @@ export function useCreateCrag() {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: async (values: CragFormValues) => {
+      const { data: regionRow } = await supabase
+        .from('regions')
+        .select('name')
+        .eq('id', values.region_id)
+        .single()
+
       const { data, error } = await supabase
         .from('crags')
         .insert({
@@ -131,6 +153,7 @@ export function useCreateCrag() {
           normalized_name: slugify(values.name),
           country_id: ITALY_ID,
           country: 'Italia',
+          region: regionRow?.name ?? null,
           services: {},
         })
         .select()
@@ -149,9 +172,19 @@ export function useUpdateCrag() {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: async ({ id, values }: { id: string; values: CragFormValues }) => {
+      const { data: regionRow } = await supabase
+        .from('regions')
+        .select('name')
+        .eq('id', values.region_id)
+        .single()
+
       const { data, error } = await supabase
         .from('crags')
-        .update({ ...values, normalized_name: slugify(values.name) })
+        .update({
+          ...values,
+          normalized_name: slugify(values.name),
+          region: regionRow?.name ?? null,
+        })
         .eq('id', id)
         .select()
         .single()

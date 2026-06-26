@@ -1,8 +1,8 @@
-import { type Resolver, useForm } from 'react-hook-form'
+import { type Resolver, useForm, useWatch } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import type { CragFormValues } from './hooks'
-import { useAllRegions } from './hooks'
+import { useAllAreas, useAllRegions } from './hooks'
 
 const optNum = z
   .union([z.number(), z.nan(), z.null(), z.undefined()])
@@ -43,7 +43,7 @@ interface Props {
 export default function CragForm({ defaultValues, onSubmit, onCancel, isLoading }: Props) {
   const { data: regions } = useAllRegions()
 
-  const { register, handleSubmit, formState: { errors } } = useForm<CragFormValues>({
+  const { register, handleSubmit, control, formState: { errors } } = useForm<CragFormValues>({
     resolver: zodResolver(cragSchema) as Resolver<CragFormValues>,
     defaultValues: {
       name: defaultValues?.name ?? '',
@@ -63,6 +63,9 @@ export default function CragForm({ defaultValues, onSubmit, onCancel, isLoading 
     },
   })
 
+  const selectedRegionId = useWatch({ control, name: 'region_id' })
+  const { data: areas } = useAllAreas(selectedRegionId ?? '')
+
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="inline-form">
       <div className="form-grid">
@@ -80,6 +83,15 @@ export default function CragForm({ defaultValues, onSubmit, onCancel, isLoading 
             ))}
           </select>
           {errors.region_id && <span className="form-error">{errors.region_id.message}</span>}
+        </div>
+        <div className="form-group">
+          <label>Area territoriale</label>
+          <select {...register('area_id')} disabled={!selectedRegionId || !areas?.length}>
+            <option value="">— Nessuna area —</option>
+            {areas?.map((a) => (
+              <option key={a.id} value={a.id}>{a.name}</option>
+            ))}
+          </select>
         </div>
         <div className="form-group">
           <label>Comune</label>
