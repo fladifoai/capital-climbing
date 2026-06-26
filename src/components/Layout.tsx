@@ -1,5 +1,6 @@
 import { NavLink, Outlet, Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../features/auth/AuthContext'
+import ErrorBoundary from './ErrorBoundary'
 import './Layout.css'
 
 const publicNavItems = [
@@ -68,7 +69,9 @@ export default function Layout() {
         </div>
       </aside>
       <main className="main">
-        <Outlet />
+        <ErrorBoundary>
+          <Outlet />
+        </ErrorBoundary>
       </main>
     </div>
   )

@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { Fragment, useRef, useState } from 'react'
 import Papa from 'papaparse'
 import { ALL_APP_FIELDS, REQUIRED_FIELDS, type ColumnMap, type ImportReport, type ValidatedRow, type WizardStep } from '../features/import/types'
 import { FIELD_LABELS, autoDetectColumns, validateRow } from '../features/import/utils'
@@ -23,13 +23,13 @@ function StepBar({ current }: { current: WizardStep }) {
       {STEPS.map((step, i) => {
         const state = i < currentIdx ? 'done' : i === currentIdx ? 'active' : ''
         return (
-          <>
-            <div key={step.key} className={`import-step-item ${state}`}>
+          <Fragment key={step.key}>
+            <div className={`import-step-item ${state}`}>
               <span className="import-step-num">{i < currentIdx ? '✓' : i + 1}</span>
               <span>{step.label}</span>
             </div>
-            {i < STEPS.length - 1 && <span key={`sep-${i}`} className="import-step-sep" />}
-          </>
+            {i < STEPS.length - 1 && <span className="import-step-sep" />}
+          </Fragment>
         )
       })}
     </div>
