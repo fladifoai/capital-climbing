@@ -1,6 +1,47 @@
+:root {
+  /* Background */
+  --cc-bg: #F7F1EA;
+  --cc-bg-soft: #F3EDE7;
+  --cc-surface: #FFFCF7;
+  --cc-surface-elevated: #FFFFFF;
+
+  /* Brand */
+  --cc-primary: #C76B43;
+  --cc-primary-dark: #A8502F;
+  --cc-primary-soft: #E6B49B;
+
+  --cc-secondary: #BD9C79;
+  --cc-secondary-dark: #9F7E5E;
+  --cc-secondary-soft: #E4D4C2;
+
+  /* Text */
+  --cc-ink: #303030;
+  --cc-ink-soft: #4B4744;
+  --cc-muted: #776D66;
+
+  /* Borders */
+  --cc-border: #E5D6C8;
+  --cc-border-strong: #D4BFA9;
+
+  /* Functional */
+  --cc-success: #2F8F6B;
+  --cc-info: #3B82C4;
+  --cc-warning: #BA7517;
+  --cc-danger: #C45142;
+
+  /* Shadows */
+  --cc-shadow-soft: 0 10px 30px rgba(48, 48, 48, 0.08);
+  --cc-shadow-card: 0 6px 18px rgba(48, 48, 48, 0.07);
+}
+
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
-  font-family: 'Outfit', ui-sans-serif, system-ui, sans-serif;
+  background:
+    radial-gradient(circle at top left, rgba(199, 107, 67, 0.10), transparent 32%),
+    linear-gradient(180deg, #F7F1EA 0%, #FFFCF7 100%);
+  color: var(--cc-ink);
+  font-family: "Inter", system-ui, sans-serif;
+  font-size: 14px;
   -webkit-font-smoothing: antialiased;
 }
