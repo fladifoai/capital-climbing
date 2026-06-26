@@ -1,4 +1,4 @@
-import { NavLink, Outlet, Link, useNavigate } from 'react-router-dom'
+import { NavLink, Outlet, Link, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../features/auth/AuthContext'
 import ErrorBoundary from './ErrorBoundary'
 import './Layout.css'
@@ -24,6 +24,7 @@ const adminNavItems = [
 export default function Layout() {
   const { user, isAdmin, signOut } = useAuth()
   const navigate = useNavigate()
+  const { pathname } = useLocation()
 
   async function handleSignOut() {
     await signOut()
@@ -69,7 +70,7 @@ export default function Layout() {
         </div>
       </aside>
       <main className="main">
-        <ErrorBoundary>
+        <ErrorBoundary key={pathname}>
           <Outlet />
         </ErrorBoundary>
       </main>
