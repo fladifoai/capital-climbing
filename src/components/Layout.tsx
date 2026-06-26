@@ -19,7 +19,7 @@ export default function Layout() {
       <aside className="sidebar">
         <div className="brand">
           <span className="brandmark">▲</span>
-          <span className="brand-name">ClimbTrack</span>
+          <span className="brand-name">Capital Climbing</span>
         </div>
         <nav>
           {navItems.map(({ to, label }) => (

@@ -1,32 +1,42 @@
-# React + TypeScript + Vite
+# Capital Climbing
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+Piattaforma web per registrare e analizzare l'arrampicata sportiva su falesia.
 
-Currently, two official plugins are available:
+## Stack
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- React 19 + TypeScript strict + Vite 8
+- React Router (HashRouter) + TanStack Query
+- React Hook Form + Zod
+- Recharts + Papa Parse
+- Supabase (Auth + PostgreSQL + RLS)
+- GitHub Pages + GitHub Actions
 
-## React Compiler
+## Avvio in locale
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the Oxlint configuration
-
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
-
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+```bash
+npm install
+npm run dev
 ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+Aprire `http://localhost:5173`
+
+## Comandi disponibili
+
+```bash
+npm run dev          # avvia in sviluppo
+npm run build        # compila per produzione
+npm run typecheck    # controlla i tipi TypeScript
+npm run lint         # controlla la qualità del codice
+npm run test         # esegue i test
+npm run structure    # aggiorna STRUTTURA.md
+```
+
+## Documentazione
+
+Tutto il materiale di progetto è in `istruzioni/`.
+Il file `STRUTTURA.md` descrive l'intera organizzazione del codice.
+
+## Repository
+
+GitHub: https://github.com/fladifoai/capital-climbing
+Supabase: https://apfyktdacsklnptcgjko.supabase.co
