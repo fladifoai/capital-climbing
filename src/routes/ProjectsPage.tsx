@@ -94,14 +94,14 @@ function NewProjectForm({ userId, onDone, onCancel }: NewProjectFormProps) {
         {showDropdown && results && results.length > 0 && (
           <div style={{
             position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 200,
-            background: '#FFF9EF', border: '1px solid rgba(29,22,17,0.14)', borderRadius: 10,
-            boxShadow: '0 8px 24px rgba(23,18,14,0.22)', maxHeight: 220, overflowY: 'auto',
+            background: '#2A3240', border: '1px solid rgba(247,243,234,0.14)', borderRadius: 10,
+            boxShadow: '0 8px 24px rgba(0,0,0,0.40)', maxHeight: 220, overflowY: 'auto',
           }}>
             {results.map(r => (
               <div
                 key={r.id}
                 onClick={() => { setSelectedRoute(r); setQuery(r.name); setShowDropdown(false) }}
-                style={{ padding: '9px 12px', cursor: 'pointer', borderBottom: '1px solid rgba(29,22,17,0.08)', fontSize: 13 }}
+                style={{ padding: '9px 12px', cursor: 'pointer', borderBottom: '1px solid rgba(247,243,234,0.08)', fontSize: 13 }}
                 onMouseEnter={e => (e.currentTarget.style.background = 'rgba(232,93,53,0.08)')}
                 onMouseLeave={e => (e.currentTarget.style.background = '')}
               >
@@ -385,25 +385,25 @@ function ProjectCard({ project, userId, onConvert }: ProjectCardProps) {
             )}
             {isEditable && confirming === 'abandon' ? (
               <Fragment>
-                <span style={{ fontSize: 12, color: '#c0392b', alignSelf: 'center' }}>Abbandonare?</span>
+                <span style={{ fontSize: 12, color: '#FFB0A5', alignSelf: 'center' }}>Abbandonare?</span>
                 <button className="btn-danger" onClick={() => setStatus('abandoned')} disabled={updateProject.isPending}>Sì, abbandona</button>
                 <button className="btn-secondary" onClick={() => setConfirming(null)}>No</button>
               </Fragment>
             ) : isEditable ? (
-              <button className="btn-secondary" style={{ color: '#c0392b' }} onClick={() => setConfirming('abandon')}>
+              <button className="btn-secondary" style={{ color: '#FFB0A5' }} onClick={() => setConfirming('abandon')}>
                 Abbandona
               </button>
             ) : null}
             {confirming === 'delete' ? (
               <Fragment>
-                <span style={{ fontSize: 12, color: '#c0392b', alignSelf: 'center' }}>Eliminare?</span>
+                <span style={{ fontSize: 12, color: '#FFB0A5', alignSelf: 'center' }}>Eliminare?</span>
                 <button className="btn-danger" onClick={handleDelete} disabled={deleteProject.isPending}>Sì, elimina</button>
                 <button className="btn-secondary" onClick={() => setConfirming(null)}>No</button>
               </Fragment>
             ) : (
               <button
                 className="btn-secondary"
-                style={{ marginLeft: 'auto', color: '#c0392b' }}
+                style={{ marginLeft: 'auto', color: '#FFB0A5' }}
                 onClick={() => setConfirming('delete')}
               >
                 Elimina
@@ -499,10 +499,10 @@ export default function ProjectsPage() {
       </div>
 
       {convertDone && (
-        <div style={{ background: '#DDF5E8', border: '1px solid #A8D5BE', borderRadius: 10, padding: '12px 16px', marginBottom: 16, fontSize: 13, color: '#176C42', fontWeight: 600 }}>
+        <div style={{ background: 'rgba(53,197,141,0.12)', border: '1px solid rgba(53,197,141,0.28)', borderRadius: 10, padding: '12px 16px', marginBottom: 16, fontSize: 13, color: '#7EE0BE', fontWeight: 600 }}>
           ✓ Ascensione registrata e progetto completato!{' '}
           <button
-            style={{ background: 'none', border: 'none', color: '#176C42', cursor: 'pointer', fontWeight: 600, textDecoration: 'underline', fontSize: 13 }}
+            style={{ background: 'none', border: 'none', color: '#7EE0BE', cursor: 'pointer', fontWeight: 600, textDecoration: 'underline', fontSize: 13 }}
             onClick={() => setConvertDone(false)}
           >
             Chiudi

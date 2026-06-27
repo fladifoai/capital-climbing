@@ -1,57 +1,57 @@
 :root {
-  /* ── Dark warm backgrounds ── */
-  --bg-main: #17120E;
-  --bg-soft: #211914;
-  --bg-warm: #2B1B13;
+  /* ── Dark backgrounds ── */
+  --bg-main: #0E1117;
+  --bg-soft: #131821;
+  --bg-warm: #181E27;
 
-  /* ── Warm card surfaces ── */
-  --surface:        #FFF9EF;
-  --surface-warm:   #F6E8D2;
-  --surface-muted:  #EBD8BD;
+  /* ── Dark card surfaces ── */
+  --surface:        #181E27;
+  --surface-warm:   #202733;
+  --surface-muted:  #2A3240;
 
-  /* ── Text ── */
-  --text:              #1D1611;
-  --text-2:            #5D4A3C;
-  --text-muted:        #7C6654;
-  --text-on-dark:      #FFF7EA;
-  --text-on-dark-muted: rgba(255, 247, 234, 0.74);
+  /* ── Text — all light on dark ── */
+  --text:              #F7F3EA;
+  --text-2:            #D9D1C4;
+  --text-muted:        #A99F91;
+  --text-on-dark:      #F7F3EA;
+  --text-on-dark-muted: rgba(247, 243, 234, 0.74);
 
-  /* ── Accent (replaces --green-* for all existing CSS) ── */
-  --green-50:  #FFFDF7;
-  --green-100: rgba(232, 93, 53, 0.14);
-  --green-200: rgba(232, 93, 53, 0.22);
-  --green-400: #E85D35;
-  --green-500: #E85D35;
-  --green-600: #C76B43;
+  /* ── Accent: terracotta / sand / ochre ── */
+  --green-50:  #181E27;
+  --green-100: rgba(200, 95, 58, 0.14);
+  --green-200: rgba(200, 95, 58, 0.22);
+  --green-400: #E27A4F;
+  --green-500: #C85F3A;
+  --green-600: #C85F3A;
   --green-700: #A8502F;
   --green-800: #8A3B1F;
   --green-900: #5C2210;
 
-  /* ── Warm neutrals (replaces --neutral-*) ── */
-  --neutral-50:  #F6E8D2;
-  --neutral-100: #EBD8BD;
-  --neutral-200: rgba(29, 22, 17, 0.14);
-  --neutral-300: rgba(29, 22, 17, 0.22);
-  --neutral-400: #9A8573;
-  --neutral-500: #7C6654;
-  --neutral-700: #5D4A3C;
-  --neutral-900: #1D1611;
-  --neutral-950: #17120E;
+  /* ── Neutrals ── */
+  --neutral-50:  #2A3240;
+  --neutral-100: rgba(247, 243, 234, 0.10);
+  --neutral-200: rgba(247, 243, 234, 0.12);
+  --neutral-300: rgba(247, 243, 234, 0.18);
+  --neutral-400: #A99F91;
+  --neutral-500: #746D64;
+  --neutral-700: #D9D1C4;
+  --neutral-900: #F7F3EA;
+  --neutral-950: #0E1117;
 
-  /* ── Semantic (used by existing CSS) ── */
-  --bg:         #17120E;
-  --border:     rgba(29, 22, 17, 0.14);
-  --border-mid: rgba(29, 22, 17, 0.22);
-  --accent:     #E85D35;
-  --accent-dark: #B83B20;
-  --accent-alt: #D8B47A;
+  /* ── Semantic ── */
+  --bg:         #0E1117;
+  --border:     rgba(247, 243, 234, 0.10);
+  --border-mid: rgba(247, 243, 234, 0.18);
+  --accent:     #C85F3A;
+  --accent-dark: #A8502F;
+  --accent-alt: #D89A3D;
 
   /* ── Shadows ── */
-  --shadow-xs: 0 1px 3px rgba(23, 18, 14, 0.14);
-  --shadow-sm: 0 2px 8px rgba(23, 18, 14, 0.18), 0 1px 3px rgba(23, 18, 14, 0.10);
-  --shadow-md: 0 8px 24px rgba(23, 18, 14, 0.22), 0 2px 8px rgba(23, 18, 14, 0.14);
-  --shadow-lg: 0 14px 40px rgba(23, 18, 14, 0.30);
-  --shadow-green: 0 4px 14px rgba(232, 93, 53, 0.30);
+  --shadow-xs: 0 1px 3px rgba(0, 0, 0, 0.30);
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.35), 0 1px 3px rgba(0, 0, 0, 0.20);
+  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.40), 0 2px 8px rgba(0, 0, 0, 0.25);
+  --shadow-lg: 0 14px 40px rgba(0, 0, 0, 0.50);
+  --shadow-green: 0 4px 14px rgba(200, 95, 58, 0.30);
 
   /* ── Radius & Timing ── */
   --r-sm:  8px;
@@ -63,38 +63,46 @@
   --t-fast: 150ms;
   --t-mid:  220ms;
 
-  /* ── CC aliases (catalog/auth CSS) ── */
-  --cc-primary:      #E85D35;
-  --cc-primary-dark: #B83B20;
-  --cc-primary-soft: rgba(232, 93, 53, 0.18);
-  --cc-secondary:    #D8B47A;
-  --cc-secondary-dark: #A8853F;
-  --cc-ink:          #1D1611;
-  --cc-ink-soft:     #5D4A3C;
-  --cc-muted:        #7C6654;
-  --cc-border:       rgba(29, 22, 17, 0.14);
-  --cc-border-strong: rgba(29, 22, 17, 0.26);
-  --cc-bg:           #17120E;
-  --cc-bg-soft:      #211914;
-  --cc-surface:      #FFF9EF;
-  --cc-surface-elevated: #FFFFFF;
-  --cc-shadow-card:  0 8px 24px rgba(23, 18, 14, 0.18);
-  --cc-shadow-soft:  0 14px 40px rgba(23, 18, 14, 0.26);
-  --cc-success: #2F8F5B;
-  --cc-warning: #C47A1E;
-  --cc-danger:  #C9432E;
-  --cc-info:    #3577B8;
+  /* ── CC aliases ── */
+  --cc-primary:      #C85F3A;
+  --cc-primary-dark: #E27A4F;
+  --cc-primary-soft: rgba(200, 95, 58, 0.18);
+  --cc-secondary:    #D89A3D;
+  --cc-secondary-dark: #A87A25;
+  --cc-ink:          #F7F3EA;
+  --cc-ink-soft:     #D9D1C4;
+  --cc-muted:        #A99F91;
+  --cc-border:       rgba(247, 243, 234, 0.10);
+  --cc-border-strong: rgba(247, 243, 234, 0.18);
+  --cc-bg:           #0E1117;
+  --cc-bg-soft:      #131821;
+  --cc-surface:      #181E27;
+  --cc-surface-elevated: #202733;
+  --cc-shadow-card:  0 8px 24px rgba(0, 0, 0, 0.35);
+  --cc-shadow-soft:  0 14px 40px rgba(0, 0, 0, 0.45);
+  --cc-success: #35C58D;
+  --cc-warning: #E0B24F;
+  --cc-danger:  #E06455;
+  --cc-info:    #4C9BE8;
+
+  /* ── Climbing functional colors ── */
+  --cc-onsight:  #28B487;
+  --cc-flash:    #4C9BE8;
+  --cc-redpoint: #D9902F;
+  --cc-project:  #A78BFA;
+  --cc-sand:     #F1C77A;
+  --cc-rock:     #8B735B;
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
   background:
-    radial-gradient(circle at top left, rgba(232, 93, 53, 0.20), transparent 32%),
-    radial-gradient(circle at top right, rgba(216, 180, 122, 0.16), transparent 28%),
-    linear-gradient(135deg, #17120E 0%, #211914 45%, #2B1B13 100%);
+    radial-gradient(circle at 15% 0%, rgba(200, 95, 58, 0.22), transparent 34%),
+    radial-gradient(circle at 85% 12%, rgba(216, 154, 61, 0.12), transparent 30%),
+    linear-gradient(180deg, #0E1117 0%, #131821 48%, #0E1117 100%);
   background-attachment: fixed;
-  color: var(--text-on-dark);
+  color: var(--text);
   font-family: "Inter", system-ui, sans-serif;
   font-size: 14px;
   line-height: 1.5;
@@ -102,7 +110,7 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* ── Page-level headings — override dark-on-dark to light ── */
+/* ── Page-level headings ── */
 .analytics-header h1,
 .analytics-page > div > h1,
 .logbook-header .logbook-title,
@@ -113,12 +121,11 @@ body {
 .catalog-title,
 .catalog-subtitle,
 .stat-label {
-  color: var(--text-on-dark);
+  color: var(--text);
 }
 
-/* Body-level stat bar on dark bg */
-.catalog-page > .stat-bar .stat-number { color: var(--text-on-dark); }
-.catalog-page > .stat-bar .stat-label  { color: var(--text-on-dark-muted); }
+.catalog-page > .stat-bar .stat-number { color: var(--text); }
+.catalog-page > .stat-bar .stat-label  { color: var(--text-muted); }
 
 /* ── Shared utility ── */
 .loading-state,
@@ -126,7 +133,7 @@ body {
 .empty-state {
   text-align: center;
   padding: 60px 20px;
-  color: var(--text-on-dark-muted);
+  color: var(--text-muted);
   font-size: 14px;
 }
 .error-state { color: var(--cc-danger); }
@@ -135,7 +142,7 @@ body {
   font-family: "Sora", "Inter", system-ui, sans-serif;
   font-size: 16px;
   font-weight: 700;
-  color: var(--text-on-dark);
+  color: var(--text);
   margin: 0 0 14px;
 }
 
@@ -150,27 +157,27 @@ body {
   letter-spacing: 0.01em;
 }
 
-/* Attempt badges */
-.badge-onsight { background: #DDF5E8; color: #176C42; }
-.badge-flash   { background: #DDEBFF; color: #245E9E; }
-.badge-second  { background: #FFF0CC; color: #8A5414; }
-.badge-redpoint { background: #F3DED2; color: #934021; }
-.badge-project { background: #E8E0FF; color: #5A3BA6; }
-.badge-private { background: rgba(29,22,17,0.18); color: var(--text-on-dark-muted); }
-.badge-public  { background: #DDF5E8; color: #176C42; }
+/* Attempt badges — dark-safe */
+.badge-onsight  { background: rgba(40, 180, 135, 0.16); color: #7EE0BE; border: 1px solid rgba(40, 180, 135, 0.35); }
+.badge-flash    { background: rgba(76, 155, 232, 0.16); color: #9DCCFF; border: 1px solid rgba(76, 155, 232, 0.35); }
+.badge-second   { background: rgba(217, 144, 47, 0.17); color: #FFD08A; border: 1px solid rgba(217, 144, 47, 0.35); }
+.badge-redpoint { background: rgba(217, 144, 47, 0.17); color: #FFD08A; border: 1px solid rgba(217, 144, 47, 0.35); }
+.badge-project  { background: rgba(167, 139, 250, 0.16); color: #CAB8FF; border: 1px solid rgba(167, 139, 250, 0.35); }
+.badge-private  { background: rgba(247, 243, 234, 0.08); color: rgba(247, 243, 234, 0.60); border: 1px solid rgba(247, 243, 234, 0.14); }
+.badge-public   { background: rgba(40, 180, 135, 0.16); color: #7EE0BE; border: 1px solid rgba(40, 180, 135, 0.35); }
 
-/* General badges */
-.badge-accent  { background: rgba(232,93,53,0.16); color: #E85D35; border: 1px solid rgba(232,93,53,0.28); }
-.badge-sand    { background: rgba(216,180,122,0.18); color: #8A6030; border: 1px solid rgba(216,180,122,0.30); }
-.badge-success { background: rgba(47,143,91,0.14); color: #176C42; border: 1px solid rgba(47,143,91,0.28); }
-.badge-amber   { background: rgba(196,122,30,0.14); color: #8A5414; border: 1px solid rgba(196,122,30,0.28); }
-.badge-danger  { background: rgba(201,67,46,0.14); color: #8A2210; border: 1px solid rgba(201,67,46,0.28); }
-.badge-gray    { background: rgba(255,247,234,0.12); color: var(--text-on-dark-muted); border: 1px solid rgba(255,247,234,0.18); }
+/* General badges — dark-safe */
+.badge-accent  { background: rgba(200, 95, 58, 0.18);  color: #FFB18F; border: 1px solid rgba(200, 95, 58, 0.35); }
+.badge-sand    { background: rgba(216, 154, 61, 0.16); color: #FFD4A0; border: 1px solid rgba(216, 154, 61, 0.30); }
+.badge-success { background: rgba(53, 197, 141, 0.14); color: #7EE0BE; border: 1px solid rgba(53, 197, 141, 0.28); }
+.badge-amber   { background: rgba(224, 178, 79, 0.14); color: #FFD08A; border: 1px solid rgba(224, 178, 79, 0.28); }
+.badge-danger  { background: rgba(224, 100, 85, 0.14); color: #FFB0A5; border: 1px solid rgba(224, 100, 85, 0.28); }
+.badge-gray    { background: rgba(247, 243, 234, 0.08); color: rgba(247, 243, 234, 0.60); border: 1px solid rgba(247, 243, 234, 0.14); }
 
 /* Shared input */
 input, select, textarea { font-family: inherit; }
 
-/* ── Motion keyframes ────────────────────────────────────────────────────── */
+/* ── Motion keyframes ── */
 @keyframes cc-fade-up {
   from { opacity: 0; transform: translateY(14px); }
   to   { opacity: 1; transform: translateY(0); }
@@ -187,8 +194,8 @@ input, select, textarea { font-family: inherit; }
 }
 
 @keyframes cc-glow-pulse {
-  0%, 100% { filter: drop-shadow(0 0 6px rgba(232, 93, 53, 0.45)); }
-  50%       { filter: drop-shadow(0 0 16px rgba(232, 93, 53, 0.85)); }
+  0%, 100% { filter: drop-shadow(0 0 6px rgba(200, 95, 58, 0.45)); }
+  50%       { filter: drop-shadow(0 0 16px rgba(200, 95, 58, 0.85)); }
 }
 
 @media (prefers-reduced-motion: reduce) {

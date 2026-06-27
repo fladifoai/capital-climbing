@@ -16,15 +16,15 @@
   font-family: "Sora", "Inter", system-ui, sans-serif;
   font-size: 28px;
   font-weight: 800;
-  color: var(--text-on-dark);
+  color: var(--text);
   margin: 0;
   letter-spacing: -0.03em;
 }
 
 /* ── Session card ── */
 .session-card {
-  background: linear-gradient(180deg, #FFF9EF 0%, #F4E4CA 100%);
-  border: 1px solid rgba(255,255,255,0.40);
+  background: linear-gradient(180deg, rgba(255,255,255,0.045), rgba(255,255,255,0.015)), #181E27;
+  border: 1px solid rgba(247, 243, 234, 0.10);
   border-radius: 18px;
   overflow: hidden;
   box-shadow: var(--cc-shadow-card);
@@ -34,6 +34,7 @@
 .session-card:hover {
   transform: translateY(-1px);
   box-shadow: var(--cc-shadow-soft);
+  border-color: rgba(226, 122, 79, 0.25);
 }
 
 .session-card-header {
@@ -47,9 +48,9 @@
 .session-route-count {
   font-size: 11px;
   font-weight: 800;
-  color: var(--cc-primary-dark);
-  background: rgba(232,93,53,0.12);
-  border: 1px solid rgba(232,93,53,0.22);
+  color: #FFB18F;
+  background: rgba(200, 95, 58, 0.14);
+  border: 1px solid rgba(200, 95, 58, 0.28);
   padding: 2px 9px;
   border-radius: 999px;
   white-space: nowrap;
@@ -57,8 +58,8 @@
 
 /* ── Routes inside session ── */
 .session-routes-list {
-  border-top: 1px solid rgba(29,22,17,0.08);
-  background: rgba(29,22,17,0.03);
+  border-top: 1px solid rgba(247, 243, 234, 0.08);
+  background: rgba(0, 0, 0, 0.15);
 }
 
 .session-route-row {
@@ -67,7 +68,7 @@
   justify-content: space-between;
   gap: 8px;
   padding: 9px 18px;
-  border-bottom: 1px solid rgba(29,22,17,0.07);
+  border-bottom: 1px solid rgba(247, 243, 234, 0.07);
   font-size: 13px;
 }
 
@@ -93,15 +94,16 @@
   font-weight: 800;
   padding: 2px 8px;
   border-radius: 999px;
-  background: rgba(29,22,17,0.08);
-  color: var(--text);
+  background: rgba(241, 199, 122, 0.16);
+  color: #FFE1A3;
+  border: 1px solid rgba(241, 199, 122, 0.30);
   white-space: nowrap;
 }
 
 /* ── New session form ── */
 .new-session-form {
-  background: linear-gradient(180deg, #FFF9EF 0%, #F4E4CA 100%);
-  border: 1px solid rgba(255,255,255,0.45);
+  background: linear-gradient(180deg, rgba(255,255,255,0.045), rgba(255,255,255,0.015)), #181E27;
+  border: 1px solid rgba(247, 243, 234, 0.10);
   border-radius: 20px;
   padding: 22px 20px 20px;
   margin-bottom: 20px;

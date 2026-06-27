@@ -17,7 +17,7 @@
   font-family: "Sora", "Inter", system-ui, sans-serif;
   font-size: 28px;
   font-weight: 800;
-  color: var(--text-on-dark);
+  color: var(--text);
   margin: 0;
   letter-spacing: -0.03em;
 }
@@ -28,8 +28,8 @@
   gap: 5px;
   flex-wrap: wrap;
   margin-bottom: 20px;
-  background: rgba(255,247,234,0.08);
-  border: 1px solid rgba(255,247,234,0.12);
+  background: rgba(247, 243, 234, 0.06);
+  border: 1px solid rgba(247, 243, 234, 0.12);
   border-radius: 999px;
   padding: 5px;
   width: fit-content;
@@ -42,27 +42,28 @@
   background: transparent;
   font-size: 12px;
   font-weight: 700;
-  color: var(--text-on-dark-muted);
+  color: var(--text-muted);
   cursor: pointer;
   transition: all var(--t-fast) var(--ease);
   font-family: inherit;
 }
 
 .status-tab:hover {
-  background: rgba(255,247,234,0.10);
-  color: var(--text-on-dark);
+  background: rgba(247, 243, 234, 0.08);
+  color: var(--text);
 }
 
 .status-tab.active {
-  background: linear-gradient(135deg, #FFF9EF, #F4E4CA);
-  color: var(--text);
-  box-shadow: 0 4px 14px rgba(23,18,14,0.20);
+  background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+  color: #FFF7EA;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.30);
+  font-weight: 800;
 }
 
 /* ── Project card ── */
 .project-card {
-  background: linear-gradient(180deg, #FFF9EF 0%, #F4E4CA 100%);
-  border: 1px solid rgba(255,255,255,0.40);
+  background: linear-gradient(180deg, rgba(255,255,255,0.045), rgba(255,255,255,0.015)), #181E27;
+  border: 1px solid rgba(247, 243, 234, 0.10);
   border-radius: 18px;
   margin-bottom: 10px;
   overflow: hidden;
@@ -80,7 +81,7 @@
   cursor: pointer;
 }
 
-.project-card-main:hover { background: rgba(29,22,17,0.04); }
+.project-card-main:hover { background: rgba(255,255,255,0.03); }
 
 .project-route-info { flex: 1; min-width: 0; }
 
@@ -114,10 +115,10 @@
   font-weight: 700;
 }
 
-.status-badge.active    { background: #DDF5E8; color: #176C42; }
-.status-badge.paused    { background: #FFF0CC; color: #8A5414; }
-.status-badge.completed { background: rgba(232,93,53,0.14); color: var(--cc-primary-dark); }
-.status-badge.abandoned { background: rgba(29,22,17,0.10); color: var(--text-muted); }
+.status-badge.active    { background: rgba(40, 180, 135, 0.16); color: #7EE0BE; border: 1px solid rgba(40, 180, 135, 0.30); }
+.status-badge.paused    { background: rgba(224, 178, 79, 0.16); color: #FFD08A; border: 1px solid rgba(224, 178, 79, 0.30); }
+.status-badge.completed { background: rgba(200, 95, 58, 0.16); color: #FFB18F; border: 1px solid rgba(200, 95, 58, 0.30); }
+.status-badge.abandoned { background: rgba(247, 243, 234, 0.08); color: var(--text-muted); border: 1px solid rgba(247, 243, 234, 0.14); }
 
 .priority-badge {
   display: inline-block;
@@ -129,9 +130,9 @@
   letter-spacing: 0.04em;
 }
 
-.priority-badge.high   { background: #F3DED2; color: #934021; }
-.priority-badge.medium { background: #FFF0CC; color: #8A5414; }
-.priority-badge.low    { background: rgba(29,22,17,0.08); color: var(--text-muted); }
+.priority-badge.high   { background: rgba(224, 100, 85, 0.16); color: #FFB0A5; border: 1px solid rgba(224, 100, 85, 0.30); }
+.priority-badge.medium { background: rgba(224, 178, 79, 0.14); color: #FFD08A; border: 1px solid rgba(224, 178, 79, 0.28); }
+.priority-badge.low    { background: rgba(247, 243, 234, 0.08); color: var(--text-muted); border: 1px solid rgba(247, 243, 234, 0.12); }
 
 .project-stats {
   display: flex;
@@ -148,13 +149,13 @@
   gap: 1px;
 }
 
-.project-stat strong { font-size: 14px; color: var(--text); }
+.project-stat strong { font-size: 14px; color: #FFFFFF; font-weight: 800; }
 
 /* Progress bar */
 .progress-bar-wrap {
   width: 60px;
   height: 5px;
-  background: rgba(29,22,17,0.12);
+  background: rgba(247, 243, 234, 0.12);
   border-radius: 3px;
   overflow: hidden;
 }
@@ -176,7 +177,7 @@
 
 /* Card body expanded */
 .project-card-body {
-  border-top: 1px solid rgba(29,22,17,0.10);
+  border-top: 1px solid rgba(247, 243, 234, 0.08);
   padding: 16px 18px;
   background: var(--surface-muted);
 }
@@ -206,8 +207,8 @@
 
 /* New project form */
 .new-project-form {
-  background: linear-gradient(180deg, #FFF9EF 0%, #F4E4CA 100%);
-  border: 1px solid rgba(255,255,255,0.45);
+  background: linear-gradient(180deg, rgba(255,255,255,0.045), rgba(255,255,255,0.015)), #181E27;
+  border: 1px solid rgba(247, 243, 234, 0.10);
   border-radius: 20px;
   padding: 18px;
   margin-bottom: 16px;
@@ -224,8 +225,8 @@
 
 /* Convert ascent panel */
 .convert-panel {
-  background: rgba(232,93,53,0.08);
-  border: 2px solid rgba(232,93,53,0.35);
+  background: rgba(200, 95, 58, 0.08);
+  border: 2px solid rgba(200, 95, 58, 0.30);
   border-radius: 16px;
   padding: 16px;
   margin-bottom: 16px;
@@ -235,7 +236,7 @@
   margin: 0 0 14px;
   font-size: 14px;
   font-weight: 700;
-  color: var(--accent-dark);
+  color: #FFB18F;
 }
 
 @media (max-width: 600px) {

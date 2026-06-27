@@ -274,8 +274,8 @@ function RoutesAdmin({ sectorId }: { sectorId: string }) {
                       ? <span className="grade-badge">{route.official_grade}</span>
                       : '—'}
                   </td>
-                  <td style={{ color: '#6b7a67' }}>{route.route_type}</td>
-                  <td style={{ color: '#6b7a67' }}>{route.length_m ? `${route.length_m}m` : '—'}</td>
+                  <td style={{ color: 'var(--text-muted)' }}>{route.route_type}</td>
+                  <td style={{ color: 'var(--text-muted)' }}>{route.length_m ? `${route.length_m}m` : '—'}</td>
                   <td>
                     <div className="actions">
                       <button className="btn-edit" onClick={() => setEditingId(route.id)}>Modifica</button>

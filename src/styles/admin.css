@@ -1,4 +1,4 @@
-/* ── Admin page ─────────────────────────────────────────────────────── */
+/* ── Admin page ── */
 .admin-page {
   max-width: 1100px;
 }
@@ -14,7 +14,7 @@
   font-family: "Sora", "Inter", system-ui, sans-serif;
   font-size: 26px;
   font-weight: 800;
-  color: var(--text-on-dark);
+  color: var(--text);
   letter-spacing: -0.03em;
 }
 
@@ -32,12 +32,12 @@
 .admin-section-title {
   font-size: 16px;
   font-weight: 700;
-  color: var(--text-on-dark);
+  color: var(--text);
 }
 
-/* ── Buttons ─────────────────────────────────────────────────────────── */
+/* ── Buttons ── */
 .btn-primary {
-  background: linear-gradient(135deg, #E85D35, #B83B20);
+  background: linear-gradient(135deg, #C85F3A, #A8502F);
   color: #FFF7EA;
   border: none;
   border-radius: 999px;
@@ -46,19 +46,19 @@
   font-weight: 700;
   font-family: inherit;
   cursor: pointer;
-  box-shadow: 0 4px 12px rgba(232,93,53,0.28);
+  box-shadow: 0 4px 12px rgba(200, 95, 58, 0.28);
   transition: transform var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease);
 }
 .btn-primary:hover:not(:disabled) {
   transform: translateY(-1px);
-  box-shadow: 0 6px 18px rgba(232,93,53,0.36);
+  box-shadow: 0 6px 18px rgba(200, 95, 58, 0.36);
 }
 .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
 
 .btn-secondary {
   background: var(--surface);
   color: var(--text);
-  border: 1px solid rgba(29,22,17,0.16);
+  border: 1px solid rgba(247, 243, 234, 0.16);
   border-radius: 999px;
   padding: 6px 14px;
   font-size: 13px;
@@ -66,12 +66,12 @@
   cursor: pointer;
   transition: background var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease);
 }
-.btn-secondary:hover { background: var(--surface-warm); border-color: rgba(232,93,53,0.30); }
+.btn-secondary:hover { background: var(--surface-warm); border-color: rgba(200, 95, 58, 0.35); color: var(--text); }
 
 .btn-danger {
   background: none;
-  color: #c0392b;
-  border: 1px solid #c0392b;
+  color: #FFB0A5;
+  border: 1px solid rgba(224, 100, 85, 0.40);
   border-radius: 6px;
   padding: 4px 10px;
   font-size: 12px;
@@ -79,12 +79,12 @@
   cursor: pointer;
   transition: background 0.15s;
 }
-.btn-danger:hover { background: #fdecea; }
+.btn-danger:hover { background: rgba(224, 100, 85, 0.14); }
 
 .btn-edit {
   background: none;
   color: var(--accent);
-  border: 1px solid var(--accent);
+  border: 1px solid rgba(200, 95, 58, 0.40);
   border-radius: 6px;
   padding: 4px 10px;
   font-size: 12px;
@@ -92,14 +92,14 @@
   cursor: pointer;
   transition: background 0.15s;
 }
-.btn-edit:hover { background: rgba(232,93,53,0.10); }
+.btn-edit:hover { background: rgba(200, 95, 58, 0.12); }
 
-/* ── Admin table ─────────────────────────────────────────────────────── */
+/* ── Admin table ── */
 .admin-table {
   width: 100%;
   border-collapse: collapse;
-  background: linear-gradient(180deg, #FFF9EF 0%, #F4E4CA 100%);
-  border: 1px solid rgba(255,255,255,0.45);
+  background: linear-gradient(180deg, rgba(255,255,255,0.045), rgba(255,255,255,0.015)), #181E27;
+  border: 1px solid rgba(247, 243, 234, 0.10);
   border-radius: 14px;
   overflow: hidden;
   font-size: 13px;
@@ -115,18 +115,18 @@
   letter-spacing: 0.04em;
   color: var(--text-muted);
   background: var(--surface-muted);
-  border-bottom: 1px solid rgba(29,22,17,0.10);
+  border-bottom: 1px solid rgba(247, 243, 234, 0.10);
 }
 
 .admin-table td {
   padding: 10px 16px;
-  border-bottom: 1px solid rgba(29,22,17,0.08);
+  border-bottom: 1px solid rgba(247, 243, 234, 0.07);
   color: var(--text);
   vertical-align: middle;
 }
 
 .admin-table tr:last-child td { border-bottom: none; }
-.admin-table tr:hover td { background: rgba(232,93,53,0.06); }
+.admin-table tr:hover td { background: rgba(255,255,255,0.04); }
 
 .admin-table .actions {
   display: flex;
@@ -134,10 +134,10 @@
   align-items: center;
 }
 
-/* ── Inline form ─────────────────────────────────────────────────────── */
+/* ── Inline form ── */
 .inline-form {
-  background: linear-gradient(180deg, #FFF9EF 0%, #F4E4CA 100%);
-  border: 1px solid rgba(255,255,255,0.45);
+  background: linear-gradient(180deg, rgba(255,255,255,0.045), rgba(255,255,255,0.015)), #181E27;
+  border: 1px solid rgba(247, 243, 234, 0.10);
   border-radius: 14px;
   padding: 16px;
   margin-bottom: 16px;
@@ -179,22 +179,25 @@
 .form-group input,
 .form-group select,
 .form-group textarea {
-  border: 1px solid rgba(29,22,17,0.18);
+  border: 1px solid rgba(247, 243, 234, 0.14);
   border-radius: 8px;
   padding: 7px 10px;
   font-size: 13px;
   font-family: inherit;
-  background: #FFFDF7;
+  background: var(--surface-muted);
   color: var(--text);
   outline: none;
   transition: border-color var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease);
 }
 
+.form-group input::placeholder,
+.form-group textarea::placeholder { color: var(--text-muted); }
+
 .form-group input:focus,
 .form-group select:focus,
 .form-group textarea:focus {
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(232,93,53,0.14);
+  box-shadow: 0 0 0 3px rgba(200, 95, 58, 0.14);
 }
 
 .form-group textarea {
@@ -204,12 +207,12 @@
 
 .form-group.error input,
 .form-group.error select {
-  border-color: #c0392b;
+  border-color: var(--cc-danger);
 }
 
 .form-error {
   font-size: 11px;
-  color: #c0392b;
+  color: #FFB0A5;
 }
 
 .form-actions {
@@ -219,10 +222,10 @@
   margin-top: 4px;
 }
 
-/* ── Sector blocks ───────────────────────────────────────────────────── */
+/* ── Sector blocks ── */
 .admin-sector-block {
-  background: linear-gradient(180deg, #FFF9EF 0%, #F4E4CA 100%);
-  border: 1px solid rgba(255,255,255,0.45);
+  background: linear-gradient(180deg, rgba(255,255,255,0.045), rgba(255,255,255,0.015)), #181E27;
+  border: 1px solid rgba(247, 243, 234, 0.10);
   border-radius: 14px;
   margin-bottom: 10px;
   overflow: hidden;
@@ -239,7 +242,7 @@
 }
 
 .admin-sector-block:has(.admin-sector-body) .admin-sector-header {
-  border-bottom-color: rgba(29,22,17,0.10);
+  border-bottom-color: rgba(247, 243, 234, 0.10);
 }
 
 .admin-sector-toggle {
@@ -268,11 +271,12 @@
   padding: 8px 0;
 }
 
-/* ── Error / feedback ────────────────────────────────────────────────── */
+/* ── Error / feedback ── */
 .admin-error {
   padding: 10px 14px;
-  background: #fdecea;
-  color: #c0392b;
+  background: rgba(224, 100, 85, 0.12);
+  color: #FFB0A5;
+  border: 1px solid rgba(224, 100, 85, 0.28);
   border-radius: 6px;
   font-size: 13px;
   margin-top: 12px;

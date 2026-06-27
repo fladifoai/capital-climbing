@@ -17,7 +17,7 @@ export default class ErrorBoundary extends Component<Props, State> {
   render() {
     if (this.state.error) {
       return (
-        <div style={{ padding: 32, color: '#c0392b', fontFamily: 'monospace', fontSize: 13 }}>
+        <div style={{ padding: 32, color: '#FFB0A5', fontFamily: 'monospace', fontSize: 13 }}>
           <strong>Errore di rendering:</strong>
           <pre style={{ marginTop: 8, whiteSpace: 'pre-wrap' }}>{this.state.error.message}</pre>
           {this.state.componentStack && (

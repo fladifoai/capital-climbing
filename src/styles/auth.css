@@ -3,20 +3,20 @@
   display: grid;
   place-items: center;
   background:
-    radial-gradient(circle at top left, rgba(232, 93, 53, 0.22), transparent 40%),
-    radial-gradient(circle at bottom right, rgba(216, 180, 122, 0.18), transparent 35%),
-    linear-gradient(135deg, #17120E 0%, #211914 50%, #2B1B13 100%);
+    radial-gradient(circle at top left, rgba(200, 95, 58, 0.22), transparent 40%),
+    radial-gradient(circle at bottom right, rgba(216, 154, 61, 0.14), transparent 35%),
+    linear-gradient(135deg, #0E1117 0%, #131821 50%, #0E1117 100%);
   padding: 24px;
 }
 
 .auth-box {
-  background: linear-gradient(180deg, #FFF9EF 0%, #F4E4CA 100%);
-  border: 1px solid rgba(255, 255, 255, 0.50);
+  background: linear-gradient(180deg, rgba(255,255,255,0.055), rgba(255,255,255,0.02)), #181E27;
+  border: 1px solid rgba(247, 243, 234, 0.14);
   border-radius: 28px;
   padding: 44px 40px;
   width: 100%;
   max-width: 400px;
-  box-shadow: 0 22px 60px rgba(23, 18, 14, 0.38);
+  box-shadow: 0 22px 60px rgba(0, 0, 0, 0.50);
 }
 
 .auth-brand {
@@ -24,7 +24,7 @@
   color: var(--accent);
   margin-bottom: 10px;
   line-height: 1;
-  filter: drop-shadow(0 0 10px rgba(232, 93, 53, 0.40));
+  filter: drop-shadow(0 0 10px rgba(200, 95, 58, 0.40));
 }
 
 .auth-title {
@@ -66,36 +66,35 @@
 .field input {
   height: 48px;
   padding: 0 14px;
-  border: 1px solid rgba(29, 22, 17, 0.18);
+  border: 1px solid rgba(247, 243, 234, 0.14);
   border-radius: 16px;
   font-size: 14px;
   font-weight: 500;
   font-family: inherit;
   color: var(--text);
-  background: #FFFDF7;
+  background: var(--surface-muted);
   outline: none;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,0.80);
   transition: border-color var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease);
 }
 
 .field input::placeholder { color: var(--text-muted); }
 
-.field input:hover { border-color: rgba(232, 93, 53, 0.45); }
+.field input:hover { border-color: rgba(200, 95, 58, 0.40); }
 
 .field input:focus {
   border-color: var(--accent);
-  box-shadow: 0 0 0 4px rgba(232, 93, 53, 0.18);
+  box-shadow: 0 0 0 4px rgba(200, 95, 58, 0.18);
 }
 
 .field-error {
   font-size: 12px;
-  color: var(--cc-danger);
+  color: #FFB0A5;
   font-weight: 600;
 }
 
 .btn-auth {
   height: 48px;
-  background: linear-gradient(135deg, #E85D35 0%, #B83B20 100%);
+  background: linear-gradient(135deg, #C85F3A 0%, #A8502F 100%);
   color: #FFF7EA;
   border: none;
   border-radius: 999px;
@@ -104,12 +103,12 @@
   font-family: inherit;
   cursor: pointer;
   transition: transform var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease);
-  box-shadow: 0 10px 22px rgba(232, 93, 53, 0.35);
+  box-shadow: 0 10px 22px rgba(200, 95, 58, 0.35);
 }
 
 .btn-auth:hover:not(:disabled) {
   transform: translateY(-1px);
-  box-shadow: 0 14px 30px rgba(232, 93, 53, 0.45);
+  box-shadow: 0 14px 30px rgba(200, 95, 58, 0.45);
 }
 
 .btn-auth:active:not(:disabled) { transform: translateY(0); }
@@ -122,9 +121,9 @@
 
 .auth-error {
   font-size: 13px;
-  color: #934021;
-  background: rgba(201, 67, 46, 0.10);
-  border: 1px solid rgba(201, 67, 46, 0.26);
+  color: #FFB0A5;
+  background: rgba(224, 100, 85, 0.12);
+  border: 1px solid rgba(224, 100, 85, 0.28);
   border-radius: 12px;
   padding: 10px 14px;
   font-weight: 500;
@@ -138,14 +137,14 @@
   flex-wrap: wrap;
 }
 
-.auth-links a { color: var(--accent-dark); text-decoration: none; font-weight: 700; }
+.auth-links a { color: var(--accent); text-decoration: none; font-weight: 700; }
 .auth-links a:hover { text-decoration: underline; }
 
 /* Tabs Accedi / Registrati */
 .auth-tabs {
   display: flex;
   gap: 4px;
-  background: rgba(29, 22, 17, 0.08);
+  background: rgba(247, 243, 234, 0.06);
   border-radius: 14px;
   padding: 4px;
   margin-bottom: 24px;
@@ -170,9 +169,9 @@
 }
 
 .auth-tab.active {
-  background: #FFFDF7;
+  background: var(--surface-muted);
   color: var(--text);
-  box-shadow: 0 2px 8px rgba(23, 18, 14, 0.12);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
 }
 
 .auth-tab:hover:not(.active) { color: var(--text); }
@@ -209,7 +208,7 @@
   font-size: 13px;
   font-weight: 700;
   font-family: inherit;
-  color: var(--accent-dark);
+  color: var(--accent);
   cursor: pointer;
   text-decoration: none;
 }
@@ -218,12 +217,12 @@
 
 .auth-link-btn--center { display: block; text-align: center; width: 100%; }
 
-/* Banner successo (es. email recupero inviata) */
+/* Banner successo */
 .auth-success {
   font-size: 13px;
-  color: #2d6b35;
-  background: rgba(45, 107, 53, 0.10);
-  border: 1px solid rgba(45, 107, 53, 0.25);
+  color: #7EE0BE;
+  background: rgba(53, 197, 141, 0.12);
+  border: 1px solid rgba(53, 197, 141, 0.28);
   border-radius: 12px;
   padding: 12px 14px;
   font-weight: 500;

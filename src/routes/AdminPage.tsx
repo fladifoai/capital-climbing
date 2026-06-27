@@ -84,8 +84,8 @@ export default function AdminPage() {
               {crags.map((crag) => (
                 <tr key={crag.id}>
                   <td style={{ fontWeight: 600 }}>{crag.name}</td>
-                  <td style={{ color: '#6b7a67' }}>{crag.region?.name ?? '—'}</td>
-                  <td style={{ color: '#6b7a67' }}>{crag.municipality ?? '—'}</td>
+                  <td style={{ color: 'var(--text-muted)' }}>{crag.region?.name ?? '—'}</td>
+                  <td style={{ color: 'var(--text-muted)' }}>{crag.municipality ?? '—'}</td>
                   <td>
                     <span className={`access-badge ${crag.access_status}`}>
                       {crag.access_status === 'open' ? 'Aperta'

@@ -19,9 +19,9 @@ const ATTEMPT_LABELS: Record<string, string> = {
 }
 
 const STYLE_COLORS: Record<string, string> = {
-  onsight: '#1a6e2c', flash: '#c47800', redpoint: '#c0392b',
-  second: '#c0392b', third: '#c0392b', four_plus: '#c0392b',
-  repeat: '#5a7ab8',
+  onsight: '#28B487', flash: '#4C9BE8', redpoint: '#D9902F',
+  second: '#D9902F', third: '#D9902F', four_plus: '#D9902F',
+  repeat: '#A78BFA',
 }
 
 const optStr = z
@@ -48,9 +48,9 @@ const sessionSchema = z.object({
 type SessionSchema = z.infer<typeof sessionSchema>
 
 function rpeColor(rpe: number): string {
-  if (rpe >= 9) return '#c0392b'
-  if (rpe >= 7) return '#e07b00'
-  return '#2d7a45'
+  if (rpe >= 9) return '#E06455'
+  if (rpe >= 7) return '#D9902F'
+  return '#28B487'
 }
 
 function formatDate(dateStr: string): string {
@@ -133,7 +133,7 @@ function SessionCard({ session, confirmDelete, setConfirmDelete, onDelete }: Ses
           ) : (
             <button
               className="btn-secondary"
-              style={{ padding: '3px 8px', fontSize: 11, color: '#c0392b' }}
+              style={{ padding: '3px 8px', fontSize: 11, color: '#FFB0A5' }}
               onClick={e => { e.stopPropagation(); setConfirmDelete(session.id) }}
             >✕</button>
           )}
@@ -144,7 +144,7 @@ function SessionCard({ session, confirmDelete, setConfirmDelete, onDelete }: Ses
       {hasInfo && (
         <div style={{
           display: 'flex', gap: 8, flexWrap: 'wrap',
-          padding: '8px 18px', borderTop: '1px solid rgba(29,22,17,0.08)',
+          padding: '8px 18px', borderTop: '1px solid rgba(247,243,234,0.08)',
         }}>
           {session.partner && (
             <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>👤 {session.partner}</span>
@@ -166,14 +166,14 @@ function SessionCard({ session, confirmDelete, setConfirmDelete, onDelete }: Ses
 
       {/* Private notes */}
       {hasNotes && (
-        <div style={{ padding: '10px 18px', borderTop: '1px solid rgba(29,22,17,0.08)' }}>
+        <div style={{ padding: '10px 18px', borderTop: '1px solid rgba(247,243,234,0.08)' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
             <span style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--text-muted)' }}>
               Note private
             </span>
             <span style={{
               fontSize: 10, fontWeight: 700, padding: '2px 7px', borderRadius: 999,
-              background: 'rgba(29,22,17,0.10)', color: 'var(--text-muted)',
+              background: 'rgba(247,243,234,0.10)', color: 'var(--text-muted)',
               textTransform: 'uppercase', letterSpacing: '0.05em',
             }}>
               🔒 Privato
@@ -313,7 +313,7 @@ export default function SessionsPage() {
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
             <h3>Nuova sessione</h3>
             {/* Section tabs */}
-            <div style={{ display: 'flex', gap: 4, background: 'rgba(29,22,17,0.08)', borderRadius: 999, padding: 4 }}>
+            <div style={{ display: 'flex', gap: 4, background: 'rgba(247,243,234,0.08)', borderRadius: 999, padding: 4 }}>
               {formSections.map(s => (
                 <button
                   key={s.key}
@@ -357,14 +357,14 @@ export default function SessionsPage() {
                   {showCragDropdown && (cragResults?.length ?? 0) > 0 && (
                     <div style={{
                       position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 200,
-                      background: '#FFF9EF', border: '1px solid rgba(29,22,17,0.14)', borderRadius: 10,
-                      boxShadow: '0 8px 24px rgba(23,18,14,0.22)', maxHeight: 180, overflowY: 'auto',
+                      background: '#2A3240', border: '1px solid rgba(247,243,234,0.14)', borderRadius: 10,
+                      boxShadow: '0 8px 24px rgba(0,0,0,0.40)', maxHeight: 180, overflowY: 'auto',
                     }}>
                       {cragResults!.map(c => (
                         <div
                           key={c.id}
                           onClick={() => { setSelectedCrag(c); setCragQuery(c.name); setShowCragDropdown(false) }}
-                          style={{ padding: '9px 12px', cursor: 'pointer', fontSize: 13, borderBottom: '1px solid rgba(29,22,17,0.08)', color: 'var(--text)' }}
+                          style={{ padding: '9px 12px', cursor: 'pointer', fontSize: 13, borderBottom: '1px solid rgba(247,243,234,0.08)', color: 'var(--text)' }}
                           onMouseEnter={e => (e.currentTarget.style.background = 'rgba(232,93,53,0.08)')}
                           onMouseLeave={e => (e.currentTarget.style.background = '')}
                         >

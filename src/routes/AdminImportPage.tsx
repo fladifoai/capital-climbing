@@ -106,7 +106,7 @@ function StepUpload({
         </div>
       )}
 
-      <div style={{ marginTop: 20, fontSize: 13, color: '#6b7a67' }}>
+      <div style={{ marginTop: 20, fontSize: 13, color: 'var(--text-muted)' }}>
         <strong>Colonne richieste:</strong>{' '}
         {REQUIRED_FIELDS.map(f => FIELD_LABELS[f]).join(', ')}
       </div>
@@ -133,8 +133,8 @@ function StepMapping({
 
   return (
     <div>
-      <p style={{ fontSize: 13, color: '#6b7a67', marginBottom: 16 }}>
-        Associa le colonne del tuo file ai campi dell'applicazione. I campi <span style={{ color: '#c0392b', fontWeight: 600 }}>*</span> sono obbligatori.
+      <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 16 }}>
+        Associa le colonne del tuo file ai campi dell'applicazione. I campi <span style={{ color: '#FFB0A5', fontWeight: 600 }}>*</span> sono obbligatori.
       </p>
       <table className="mapping-table">
         <thead>
@@ -309,7 +309,7 @@ function StepConfirm({
               <td>{row.sector_name}</td>
               <td>{row.route_name}</td>
               <td><span className="grade-badge">{row.official_grade}</span></td>
-              <td style={{ fontSize: 11, color: '#6b7a67' }}>
+              <td style={{ fontSize: 11, color: 'var(--text-muted)' }}>
                 {row.existingRouteId ? '⚠ duplicato' : row.existingCragId ? '≈ falesia esiste' : '✦ nuovo'}
               </td>
               <td>

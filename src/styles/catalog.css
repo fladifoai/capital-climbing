@@ -7,20 +7,20 @@
   font-family: "Sora", "Inter", system-ui, sans-serif;
   font-size: 32px;
   font-weight: 800;
-  color: var(--text-on-dark);
+  color: var(--text);
   margin: 0 0 6px;
   letter-spacing: -0.03em;
 }
 
-.catalog-subtitle { font-size: 14px; color: var(--text-on-dark-muted); }
+.catalog-subtitle { font-size: 14px; color: var(--text-muted); }
 
 /* ── Stat bar ── */
 .stat-bar {
   display: flex;
   gap: 36px;
   padding: 18px 0;
-  border-top: 1px solid rgba(255, 247, 234, 0.12);
-  border-bottom: 1px solid rgba(255, 247, 234, 0.12);
+  border-top: 1px solid rgba(247, 243, 234, 0.12);
+  border-bottom: 1px solid rgba(247, 243, 234, 0.12);
   margin-bottom: 32px;
 }
 
@@ -30,14 +30,15 @@
   font-family: "Sora", "Inter", system-ui, sans-serif;
   font-size: 26px;
   font-weight: 800;
-  color: var(--text-on-dark);
+  color: #FFFFFF;
   line-height: 1;
   letter-spacing: -0.03em;
+  text-shadow: 0 1px 10px rgba(0,0,0,0.35);
 }
 
 .stat-label {
   font-size: 11px;
-  color: var(--text-on-dark-muted);
+  color: var(--text-2);
   text-transform: uppercase;
   letter-spacing: 0.08em;
   font-weight: 600;
@@ -51,12 +52,12 @@
 }
 
 .region-card {
-  background: linear-gradient(180deg, #FFF9EF 0%, #F4E4CA 100%);
-  border: 1px solid rgba(255, 255, 255, 0.45);
+  background: linear-gradient(180deg, rgba(255,255,255,0.045), rgba(255,255,255,0.015)), #181E27;
+  border: 1px solid rgba(247, 243, 234, 0.10);
   border-radius: 22px;
   padding: 20px 22px;
   cursor: pointer;
-  transition: transform var(--t-mid) var(--ease), box-shadow var(--t-mid) var(--ease);
+  transition: transform var(--t-mid) var(--ease), box-shadow var(--t-mid) var(--ease), border-color var(--t-mid) var(--ease);
   text-decoration: none;
   color: var(--text);
   display: block;
@@ -66,6 +67,8 @@
 .region-card:hover {
   transform: translateY(-3px);
   box-shadow: var(--cc-shadow-soft);
+  border-color: rgba(226, 122, 79, 0.35);
+  background: #202733;
 }
 
 .region-card-name {
@@ -84,7 +87,7 @@
   gap: 2px;
 }
 
-.region-card-counts span { color: var(--cc-primary-dark); font-weight: 700; }
+.region-card-counts span { color: #FFB18F; font-weight: 700; }
 
 /* ── Breadcrumb ── */
 .breadcrumb {
@@ -92,21 +95,21 @@
   align-items: center;
   gap: 6px;
   font-size: 13px;
-  color: var(--text-on-dark-muted);
+  color: var(--text-muted);
   margin-bottom: 22px;
   flex-wrap: wrap;
 }
 
 .breadcrumb a { color: var(--accent); text-decoration: none; font-weight: 600; }
 .breadcrumb a:hover { text-decoration: underline; }
-.breadcrumb-sep { color: rgba(255,247,234,0.30); font-size: 11px; }
+.breadcrumb-sep { color: rgba(247,243,234,0.30); font-size: 11px; }
 
 /* ── Crag list ── */
 .crag-list { display: flex; flex-direction: column; gap: 10px; }
 
 .crag-card {
-  background: linear-gradient(180deg, #FFF9EF 0%, #F4E4CA 100%);
-  border: 1px solid rgba(255, 255, 255, 0.40);
+  background: linear-gradient(180deg, rgba(255,255,255,0.045), rgba(255,255,255,0.015)), #181E27;
+  border: 1px solid rgba(247, 243, 234, 0.10);
   border-radius: 18px;
   padding: 16px 22px;
   display: flex;
@@ -114,7 +117,7 @@
   justify-content: space-between;
   text-decoration: none;
   color: var(--text);
-  transition: transform var(--t-mid) var(--ease), box-shadow var(--t-mid) var(--ease);
+  transition: transform var(--t-mid) var(--ease), box-shadow var(--t-mid) var(--ease), border-color var(--t-mid) var(--ease);
   gap: 16px;
   box-shadow: var(--cc-shadow-card);
 }
@@ -122,6 +125,8 @@
 .crag-card:hover {
   transform: translateY(-1px);
   box-shadow: var(--cc-shadow-soft);
+  border-color: rgba(226, 122, 79, 0.35);
+  background: #202733;
 }
 
 .crag-card-left { flex: 1; min-width: 0; }
@@ -138,14 +143,14 @@
   margin-top: 4px;
 }
 
-.access-badge.open    { background: #DDF5E8; color: #176C42; }
-.access-badge.limited { background: #FFF0CC; color: #8A5414; }
-.access-badge.closed  { background: #F3DED2; color: #934021; }
+.access-badge.open    { background: rgba(40, 180, 135, 0.16); color: #7EE0BE; border: 1px solid rgba(40, 180, 135, 0.30); }
+.access-badge.limited { background: rgba(224, 178, 79, 0.16); color: #FFD08A; border: 1px solid rgba(224, 178, 79, 0.30); }
+.access-badge.closed  { background: rgba(224, 100, 85, 0.16); color: #FFB0A5; border: 1px solid rgba(224, 100, 85, 0.30); }
 
 /* ── Crag detail ── */
 .crag-header-card {
-  background: linear-gradient(180deg, #FFF9EF 0%, #F4E4CA 100%);
-  border: 1px solid rgba(255, 255, 255, 0.45);
+  background: linear-gradient(180deg, rgba(255,255,255,0.045), rgba(255,255,255,0.015)), #181E27;
+  border: 1px solid rgba(247, 243, 234, 0.10);
   border-radius: 24px;
   padding: 28px;
   margin-bottom: 24px;
@@ -174,8 +179,8 @@
 
 /* ── Sectors ── */
 .sector-block {
-  background: linear-gradient(180deg, #FFF9EF 0%, #F4E4CA 100%);
-  border: 1px solid rgba(255, 255, 255, 0.40);
+  background: linear-gradient(180deg, rgba(255,255,255,0.045), rgba(255,255,255,0.015)), #181E27;
+  border: 1px solid rgba(247, 243, 234, 0.10);
   border-radius: 18px;
   margin-bottom: 14px;
   overflow: hidden;
@@ -184,7 +189,7 @@
 
 .sector-header {
   padding: 14px 22px;
-  border-bottom: 1px solid rgba(29, 22, 17, 0.10);
+  border-bottom: 1px solid rgba(247, 243, 234, 0.08);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -196,8 +201,8 @@
 .sector-badge {
   font-size: 11px;
   color: var(--text-muted);
-  background: rgba(29, 22, 17, 0.08);
-  border: 1px solid rgba(29, 22, 17, 0.14);
+  background: rgba(247, 243, 234, 0.08);
+  border: 1px solid rgba(247, 243, 234, 0.14);
   border-radius: 999px;
   padding: 2px 10px;
   font-weight: 700;
@@ -213,29 +218,29 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: var(--text-2);
+  color: var(--text-muted);
   background: var(--surface-muted);
-  border-bottom: 1px solid rgba(29, 22, 17, 0.12);
+  border-bottom: 1px solid rgba(247, 243, 234, 0.10);
 }
 
 .route-table td {
   padding: 11px 22px;
-  border-bottom: 1px solid rgba(29, 22, 17, 0.08);
+  border-bottom: 1px solid rgba(247, 243, 234, 0.07);
   color: var(--text);
 }
 
 .route-table tr:last-child td { border-bottom: none; }
-.route-table tr:hover td { background: rgba(232, 93, 53, 0.06); cursor: pointer; }
+.route-table tr:hover td { background: rgba(255,255,255,0.04); cursor: pointer; }
 
 .grade-badge {
   display: inline-block;
-  background: rgba(232, 93, 53, 0.14);
-  color: var(--cc-primary-dark);
-  border: 1px solid rgba(232, 93, 53, 0.28);
+  background: rgba(241, 199, 122, 0.16);
+  color: #FFE1A3;
+  border: 1px solid rgba(241, 199, 122, 0.35);
   border-radius: 999px;
   padding: 2px 10px;
   font-size: 12px;
-  font-weight: 700;
+  font-weight: 800;
 }
 
 /* ── States ── */
@@ -244,7 +249,7 @@
 .empty-state {
   text-align: center;
   padding: 60px 20px;
-  color: var(--text-on-dark-muted);
+  color: var(--text-muted);
   font-size: 14px;
 }
 .error-state { color: var(--cc-danger); }
@@ -253,6 +258,6 @@
   font-family: "Sora", "Inter", system-ui, sans-serif;
   font-size: 16px;
   font-weight: 700;
-  color: var(--text-on-dark);
+  color: var(--text);
   margin: 0 0 14px;
 }

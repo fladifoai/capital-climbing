@@ -21,9 +21,9 @@ const ATTEMPT_LABELS: Record<string, string> = {
 }
 
 const STYLE_COLORS: Record<string, string> = {
-  onsight: '#1a6e2c', flash: '#c47800', redpoint: '#c0392b',
-  second: '#c0392b', third: '#c0392b', four_plus: '#c0392b',
-  repeat: '#5a7ab8',
+  onsight: '#28B487', flash: '#4C9BE8', redpoint: '#D9902F',
+  second: '#D9902F', third: '#D9902F', four_plus: '#D9902F',
+  repeat: '#A78BFA',
 }
 
 function styleLabel(a: { ascent_style?: string | null; attempt_type?: string | null }) {
@@ -156,7 +156,7 @@ export default function DashboardPage() {
             <Link to="/my-routes" style={{
               display: 'inline-flex', alignItems: 'center', gap: 6,
               height: 40, padding: '0 18px', borderRadius: 999,
-              background: 'linear-gradient(135deg, #E85D35, #B83B20)',
+              background: 'linear-gradient(135deg, #C85F3A, #A8502F)',
               color: '#FFF7EA', fontSize: 13, fontWeight: 800,
               textDecoration: 'none', boxShadow: '0 4px 14px rgba(232,93,53,0.38)',
             }}>
@@ -222,7 +222,7 @@ export default function DashboardPage() {
           <p className="chart-description">Grado massimo raggiunto nel tempo.</p>
           <ResponsiveContainer width="100%" height={260}>
             <LineChart data={chartData} margin={{ top: 4, right: 8, bottom: 0, left: -16 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(29,22,17,0.10)" />
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(247,243,234,0.10)" />
               <XAxis dataKey="date" tick={{ fontSize: 11, fill: 'var(--text-muted)' }} tickLine={false} />
               <YAxis tick={{ fontSize: 11, fill: 'var(--text-muted)' }} tickLine={false} tickFormatter={v => {
                 const entry = chartData.find(d => d.grade === v)
@@ -243,9 +243,9 @@ export default function DashboardPage() {
               <Line
                 type="stepAfter"
                 dataKey="grade"
-                stroke="#E85D35"
+                stroke="#E27A4F"
                 strokeWidth={2.5}
-                dot={{ r: 3, fill: '#E85D35' }}
+                dot={{ r: 3, fill: '#E27A4F' }}
                 activeDot={{ r: 5 }}
                 name="Grado max"
               />
@@ -275,7 +275,7 @@ export default function DashboardPage() {
               {recentAscents.map((a, i) => (
                 <div key={a.id} style={{
                   display: 'flex', alignItems: 'center', gap: 10, padding: '9px 0',
-                  borderBottom: i < recentAscents.length - 1 ? '1px solid rgba(29,22,17,0.10)' : 'none',
+                  borderBottom: i < recentAscents.length - 1 ? '1px solid rgba(247,243,234,0.10)' : 'none',
                 }}>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontWeight: 700, fontSize: 13, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: 'var(--text)' }}>
@@ -318,7 +318,7 @@ export default function DashboardPage() {
               {activeProjects.map((p, i) => (
                 <div key={p.id} style={{
                   display: 'flex', alignItems: 'center', gap: 10, padding: '9px 0',
-                  borderBottom: i < activeProjects.length - 1 ? '1px solid rgba(29,22,17,0.10)' : 'none',
+                  borderBottom: i < activeProjects.length - 1 ? '1px solid rgba(247,243,234,0.10)' : 'none',
                 }}>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontWeight: 700, fontSize: 13, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: 'var(--text)' }}>

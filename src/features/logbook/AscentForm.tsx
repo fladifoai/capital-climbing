@@ -132,14 +132,14 @@ export default function AscentForm({ preselectedRoute, onSubmit, onCancel, isLoa
           {showDropdown && results && results.length > 0 && (
             <div style={{
               position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 100,
-              background: '#FFF9EF', border: '1px solid rgba(29,22,17,0.14)', borderRadius: 10,
-              boxShadow: '0 8px 24px rgba(23,18,14,0.22)', maxHeight: 260, overflowY: 'auto',
+              background: '#2A3240', border: '1px solid rgba(247,243,234,0.14)', borderRadius: 10,
+              boxShadow: '0 8px 24px rgba(0,0,0,0.40)', maxHeight: 260, overflowY: 'auto',
             }}>
               {results.map(r => (
                 <div
                   key={r.id}
                   onClick={() => handleRouteSelect(r)}
-                  style={{ padding: '10px 14px', cursor: 'pointer', borderBottom: '1px solid rgba(29,22,17,0.08)', fontSize: 13 }}
+                  style={{ padding: '10px 14px', cursor: 'pointer', borderBottom: '1px solid rgba(247,243,234,0.08)', fontSize: 13 }}
                   onMouseEnter={e => (e.currentTarget.style.background = 'rgba(232,93,53,0.08)')}
                   onMouseLeave={e => (e.currentTarget.style.background = '')}
                 >

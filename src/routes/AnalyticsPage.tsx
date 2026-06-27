@@ -44,11 +44,11 @@ import '../styles/analytics.css'
 type Tab = 'panoramica' | 'progressione' | 'volume' | 'profilo' | 'falesie' | 'efficienza' | 'qualita'
 
 const SCATTER_STYLE_COLORS: Record<string, string> = {
-  onsight: '#1a6e2c',
-  flash: '#e07b00',
-  redpoint: '#c0392b',
-  repeat: '#5a7ab8',
-  unknown: '#aac0a7',
+  onsight: '#28B487',
+  flash: '#4C9BE8',
+  redpoint: '#D9902F',
+  repeat: '#A78BFA',
+  unknown: '#8E887E',
 }
 
 function ScatterTooltipContent({ active, payload }: { active?: boolean; payload?: Array<{ payload: Record<string, unknown> }> }) {
@@ -85,16 +85,16 @@ function QualityBar({ label, value, total, warn }: { label: string; value: numbe
     <div className="quality-row">
       <div className="quality-row-label">{label}</div>
       <div className="quality-bar-wrap">
-        <div className="quality-bar-fill" style={{ width: `${pct}%`, background: warn && pct > 0 ? '#c0392b' : '#E85D35' }} />
+        <div className="quality-bar-fill" style={{ width: `${pct}%`, background: warn && pct > 0 ? '#E06455' : '#C85F3A' }} />
       </div>
-      <div className="quality-row-value" style={{ color: warn && value > 0 ? '#c0392b' : undefined }}>
+      <div className="quality-row-value" style={{ color: warn && value > 0 ? '#FFB0A5' : undefined }}>
         {value} <span>({pct}%)</span>
       </div>
     </div>
   )
 }
 
-function WithinBar({ label, value, total, color = '#E85D35' }: { label: string; value: number; total: number; color?: string }) {
+function WithinBar({ label, value, total, color = '#C85F3A' }: { label: string; value: number; total: number; color?: string }) {
   const pct = total > 0 ? Math.round((value / total) * 100) : 0
   return (
     <div className="quality-row">
@@ -221,8 +221,8 @@ export default function AnalyticsPage() {
   return (
     <div className="analytics-page">
       {ascentsError && (
-        <div className="chart-section" style={{ borderColor: '#f5c6cb', background: '#fff5f5', marginBottom: 16 }}>
-          <h2 style={{ color: '#c0392b' }}>Errore caricamento dati</h2>
+        <div className="chart-section" style={{ borderColor: 'rgba(224,100,85,0.35)', background: 'rgba(224,100,85,0.08)', marginBottom: 16 }}>
+          <h2 style={{ color: '#FFB0A5' }}>Errore caricamento dati</h2>
           <p className="chart-description">
             {ascentsQueryError instanceof Error ? ascentsQueryError.message : 'Errore sconosciuto dal server.'}
             {' '}Controlla la console (F12) per dettagli.
@@ -230,7 +230,7 @@ export default function AnalyticsPage() {
         </div>
       )}
       {!ascentsError && ascents?.length === 0 && (
-        <div className="chart-section" style={{ borderColor: '#bee5eb', background: '#f0f8ff', marginBottom: 16 }}>
+        <div className="chart-section" style={{ borderColor: 'rgba(76,155,232,0.30)', background: 'rgba(76,155,232,0.08)', marginBottom: 16 }}>
           <h2>Nessuna ascensione nel logbook</h2>
           <p className="chart-description">
             Aggiungi le prime salite dal logbook.
@@ -342,16 +342,16 @@ export default function AnalyticsPage() {
             ) : (
               <ResponsiveContainer width="100%" height={220}>
                 <LineChart data={progressionLineData} margin={{ top: 4, right: 16, left: -10, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(29,22,17,0.10)" />
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(247,243,234,0.10)" />
                   <XAxis dataKey="label" tick={{ fontSize: 10 }} interval="preserveStartEnd" />
                   <YAxis allowDecimals={false} tick={{ fontSize: 10 }} tickFormatter={(n: number) => numToGrade(n)} domain={['auto', 'auto']} />
                   <Tooltip
-                    contentStyle={{ fontSize: 11, borderRadius: 8 }}
+                    contentStyle={{ fontSize: 11, borderRadius: 8, background: '#181E27', border: '1px solid rgba(247,243,234,0.14)', color: '#F7F3EA' }}
                     formatter={(value, name) => [numToGrade(Math.round(Number(value))), name === 'best' ? 'Massimo' : 'Media']}
                   />
                   <Legend formatter={(v: string) => v === 'best' ? 'Grado massimo' : 'Media'} wrapperStyle={{ fontSize: 11 }} />
-                  <Line type="monotone" dataKey="best" stroke="#E85D35" strokeWidth={2} dot={{ r: 3 }} name="best" />
-                  <Line type="monotone" dataKey="avg" stroke="#e07b00" strokeWidth={2} dot={{ r: 3 }} strokeDasharray="4 2" name="avg" />
+                  <Line type="monotone" dataKey="best" stroke="#E27A4F" strokeWidth={2} dot={{ r: 3 }} name="best" />
+                  <Line type="monotone" dataKey="avg" stroke="#4C9BE8" strokeWidth={2} dot={{ r: 3 }} strokeDasharray="4 2" name="avg" />
                 </LineChart>
               </ResponsiveContainer>
             )}
@@ -366,11 +366,11 @@ export default function AnalyticsPage() {
               ) : (
                 <ResponsiveContainer width="100%" height={200}>
                   <BarChart data={monthlyData} margin={{ top: 4, right: 8, left: -20, bottom: 0 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(29,22,17,0.10)" />
+                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(247,243,234,0.10)" />
                     <XAxis dataKey="label" tick={{ fontSize: 10 }} interval="preserveStartEnd" />
                     <YAxis allowDecimals={false} tick={{ fontSize: 10 }} />
-                    <Tooltip contentStyle={{ fontSize: 11, borderRadius: 8 }} formatter={(v) => [v, 'Salite']} />
-                    <Bar dataKey="count" fill="#E85D35" radius={[3, 3, 0, 0]} />
+                    <Tooltip contentStyle={{ fontSize: 11, borderRadius: 8, background: '#181E27', border: '1px solid rgba(247,243,234,0.14)', color: '#F7F3EA' }} formatter={(v) => [v, 'Salite']} />
+                    <Bar dataKey="count" fill="#C85F3A" radius={[3, 3, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               )}
@@ -386,10 +386,10 @@ export default function AnalyticsPage() {
                     data={modeBreakdown.map(e => ({ count: e.count, label: ASCENT_STYLE_LABELS[e.ascentStyle] }))}
                     layout="vertical" margin={{ top: 4, right: 16, left: 80, bottom: 0 }}
                   >
-                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(29,22,17,0.10)" horizontal={false} />
+                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(247,243,234,0.10)" horizontal={false} />
                     <XAxis type="number" allowDecimals={false} tick={{ fontSize: 10 }} />
                     <YAxis type="category" dataKey="label" tick={{ fontSize: 10 }} width={80} />
-                    <Tooltip contentStyle={{ fontSize: 11, borderRadius: 8 }} formatter={(v) => [v, 'Salite']} />
+                    <Tooltip contentStyle={{ fontSize: 11, borderRadius: 8, background: '#181E27', border: '1px solid rgba(247,243,234,0.14)', color: '#F7F3EA' }} formatter={(v) => [v, 'Salite']} />
                     <Bar dataKey="count" radius={[0, 3, 3, 0]}>
                       {modeBreakdown.map(entry => (
                         <Cell key={entry.ascentStyle} fill={ASCENT_STYLE_COLORS[entry.ascentStyle]} />
@@ -411,15 +411,15 @@ export default function AnalyticsPage() {
               ) : (
                 <ResponsiveContainer width="100%" height={Math.max(160, Math.min(pyramidData.length, 10) * 26)}>
                   <BarChart data={pyramidData.slice(0, 10)} layout="vertical" margin={{ top: 4, right: 8, left: 36, bottom: 4 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(29,22,17,0.10)" horizontal={false} />
+                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(247,243,234,0.10)" horizontal={false} />
                     <XAxis type="number" allowDecimals={false} tick={{ fontSize: 10 }} />
                     <YAxis type="category" dataKey="grade" tick={{ fontSize: 10 }} width={36} />
-                    <Tooltip contentStyle={{ fontSize: 11, borderRadius: 8 }} />
-                    <Bar dataKey="onsight"  name="OS"  stackId="a" fill="#1a6e2c" />
-                    <Bar dataKey="flash"    name="FL"  stackId="a" fill="#e07b00" />
-                    <Bar dataKey="redpoint" name="RP"  stackId="a" fill="#c0392b" />
-                    <Bar dataKey="repeat"   name="Rip" stackId="a" fill="#5a7ab8" />
-                    <Bar dataKey="unknown"  name="?"   stackId="a" fill="#aac0a7" radius={[0, 3, 3, 0]} />
+                    <Tooltip contentStyle={{ fontSize: 11, borderRadius: 8, background: '#181E27', border: '1px solid rgba(247,243,234,0.14)', color: '#F7F3EA' }} />
+                    <Bar dataKey="onsight"  name="OS"  stackId="a" fill="#28B487" />
+                    <Bar dataKey="flash"    name="FL"  stackId="a" fill="#4C9BE8" />
+                    <Bar dataKey="redpoint" name="RP"  stackId="a" fill="#D9902F" />
+                    <Bar dataKey="repeat"   name="Rip" stackId="a" fill="#A78BFA" />
+                    <Bar dataKey="unknown"  name="?"   stackId="a" fill="#8E887E" radius={[0, 3, 3, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               )}
@@ -432,11 +432,11 @@ export default function AnalyticsPage() {
               ) : (
                 <ResponsiveContainer width="100%" height={Math.max(160, Math.min(topCrags.length, 8) * 26)}>
                   <BarChart data={topCrags.slice(0, 8)} layout="vertical" margin={{ top: 4, right: 16, left: 8, bottom: 0 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(29,22,17,0.10)" horizontal={false} />
+                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(247,243,234,0.10)" horizontal={false} />
                     <XAxis type="number" allowDecimals={false} tick={{ fontSize: 10 }} />
                     <YAxis type="category" dataKey="name" tick={{ fontSize: 10 }} width={100} />
-                    <Tooltip contentStyle={{ fontSize: 11, borderRadius: 8 }} formatter={(v) => [v, 'Salite']} />
-                    <Bar dataKey="count" fill="#4a8a42" radius={[0, 3, 3, 0]} />
+                    <Tooltip contentStyle={{ fontSize: 11, borderRadius: 8, background: '#181E27', border: '1px solid rgba(247,243,234,0.14)', color: '#F7F3EA' }} formatter={(v) => [v, 'Salite']} />
+                    <Bar dataKey="count" fill="#28B487" radius={[0, 3, 3, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               )}
@@ -460,7 +460,7 @@ export default function AnalyticsPage() {
             ) : (
               <ResponsiveContainer width="100%" height={320}>
                 <ScatterChart margin={{ top: 8, right: 16, bottom: 8, left: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(29,22,17,0.10)" />
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(247,243,234,0.10)" />
                   <XAxis
                     dataKey="dateTs" type="number" domain={['auto', 'auto']} scale="time"
                     tick={{ fontSize: 10 }}
@@ -481,7 +481,7 @@ export default function AnalyticsPage() {
                   {Object.entries(scatterByStyle).map(([style, points]) => (
                     <Scatter
                       key={style} name={style} data={points}
-                      fill={SCATTER_STYLE_COLORS[style] ?? '#aac0a7'} fillOpacity={0.85}
+                      fill={SCATTER_STYLE_COLORS[style] ?? '#8E887E'} fillOpacity={0.85}
                     />
                   ))}
                 </ScatterChart>
@@ -497,7 +497,7 @@ export default function AnalyticsPage() {
             ) : (
               <ResponsiveContainer width="100%" height={220}>
                 <LineChart data={cumulativeMax} margin={{ top: 4, right: 16, left: -10, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(29,22,17,0.10)" />
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(247,243,234,0.10)" />
                   <XAxis
                     dataKey="dateTs" type="number" domain={['auto', 'auto']} scale="time"
                     tick={{ fontSize: 10 }}
@@ -511,11 +511,11 @@ export default function AnalyticsPage() {
                     tick={{ fontSize: 10 }} tickFormatter={(n: number) => numToGrade(n)} width={36}
                   />
                   <Tooltip
-                    contentStyle={{ fontSize: 11, borderRadius: 8 }}
+                    contentStyle={{ fontSize: 11, borderRadius: 8, background: '#181E27', border: '1px solid rgba(247,243,234,0.14)', color: '#F7F3EA' }}
                     formatter={(v) => [numToGrade(Number(v)), 'Record']}
                     labelFormatter={(ts) => new Date(Number(ts)).toLocaleDateString('it-IT')}
                   />
-                  <Line type="stepAfter" dataKey="gradeValue" stroke="#E85D35" strokeWidth={2} dot={{ r: 4, fill: '#E85D35' }} name="Record" />
+                  <Line type="stepAfter" dataKey="gradeValue" stroke="#E27A4F" strokeWidth={2} dot={{ r: 4, fill: '#E27A4F' }} name="Record" />
                 </LineChart>
               </ResponsiveContainer>
             )}
@@ -529,17 +529,17 @@ export default function AnalyticsPage() {
             ) : (
               <ResponsiveContainer width="100%" height={220}>
                 <LineChart data={maxByStylePerPeriod} margin={{ top: 4, right: 16, left: -10, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(29,22,17,0.10)" />
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(247,243,234,0.10)" />
                   <XAxis dataKey="label" tick={{ fontSize: 10 }} interval="preserveStartEnd" />
                   <YAxis allowDecimals={false} tick={{ fontSize: 10 }} tickFormatter={(n: number) => numToGrade(n)} domain={['auto', 'auto']} />
                   <Tooltip
-                    contentStyle={{ fontSize: 11, borderRadius: 8 }}
+                    contentStyle={{ fontSize: 11, borderRadius: 8, background: '#181E27', border: '1px solid rgba(247,243,234,0.14)', color: '#F7F3EA' }}
                     formatter={(v, name) => [v != null ? numToGrade(Number(v)) : '—', name === 'onsight' ? 'On-sight' : name === 'flash' ? 'Flash' : 'Redpoint']}
                   />
                   <Legend wrapperStyle={{ fontSize: 11 }} formatter={(v: string) => v === 'onsight' ? 'On-sight' : v === 'flash' ? 'Flash' : 'Redpoint'} />
-                  <Line type="monotone" dataKey="onsight"  stroke="#1a6e2c" strokeWidth={2} dot={{ r: 3 }} connectNulls name="onsight" />
-                  <Line type="monotone" dataKey="flash"    stroke="#e07b00" strokeWidth={2} dot={{ r: 3 }} connectNulls name="flash" />
-                  <Line type="monotone" dataKey="redpoint" stroke="#c0392b" strokeWidth={2} dot={{ r: 3 }} connectNulls name="redpoint" />
+                  <Line type="monotone" dataKey="onsight"  stroke="#28B487" strokeWidth={2} dot={{ r: 3 }} connectNulls name="onsight" />
+                  <Line type="monotone" dataKey="flash"    stroke="#4C9BE8" strokeWidth={2} dot={{ r: 3 }} connectNulls name="flash" />
+                  <Line type="monotone" dataKey="redpoint" stroke="#D9902F" strokeWidth={2} dot={{ r: 3 }} connectNulls name="redpoint" />
                 </LineChart>
               </ResponsiveContainer>
             )}
@@ -553,16 +553,16 @@ export default function AnalyticsPage() {
             ) : (
               <ResponsiveContainer width="100%" height={220}>
                 <LineChart data={progressionLineData} margin={{ top: 4, right: 16, left: -10, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(29,22,17,0.10)" />
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(247,243,234,0.10)" />
                   <XAxis dataKey="label" tick={{ fontSize: 10 }} interval="preserveStartEnd" />
                   <YAxis allowDecimals={false} tick={{ fontSize: 10 }} tickFormatter={(n: number) => numToGrade(n)} domain={['auto', 'auto']} />
                   <Tooltip
-                    contentStyle={{ fontSize: 11, borderRadius: 8 }}
+                    contentStyle={{ fontSize: 11, borderRadius: 8, background: '#181E27', border: '1px solid rgba(247,243,234,0.14)', color: '#F7F3EA' }}
                     formatter={(value, name) => [numToGrade(Math.round(Number(value))), name === 'best' ? 'Massimo' : 'Media']}
                   />
                   <Legend formatter={(v: string) => v === 'best' ? 'Grado massimo' : 'Media'} wrapperStyle={{ fontSize: 11 }} />
-                  <Line type="monotone" dataKey="best" stroke="#E85D35" strokeWidth={2} dot={{ r: 3 }} name="best" />
-                  <Line type="monotone" dataKey="avg" stroke="#e07b00" strokeWidth={2} dot={{ r: 3 }} strokeDasharray="4 2" name="avg" />
+                  <Line type="monotone" dataKey="best" stroke="#E27A4F" strokeWidth={2} dot={{ r: 3 }} name="best" />
+                  <Line type="monotone" dataKey="avg" stroke="#4C9BE8" strokeWidth={2} dot={{ r: 3 }} strokeDasharray="4 2" name="avg" />
                 </LineChart>
               </ResponsiveContainer>
             )}
@@ -579,18 +579,18 @@ export default function AnalyticsPage() {
                   <thead>
                     <tr>
                       <th>Anno</th>
-                      <th style={{ textAlign: 'center', color: '#1a6e2c' }}>On-sight</th>
-                      <th style={{ textAlign: 'center', color: '#e07b00' }}>Flash</th>
-                      <th style={{ textAlign: 'center', color: '#c0392b' }}>Redpoint</th>
+                      <th style={{ textAlign: 'center', color: '#28B487' }}>On-sight</th>
+                      <th style={{ textAlign: 'center', color: '#4C9BE8' }}>Flash</th>
+                      <th style={{ textAlign: 'center', color: '#D9902F' }}>Redpoint</th>
                     </tr>
                   </thead>
                   <tbody>
                     {maxByStyleByYear.map(row => (
                       <tr key={row.year}>
                         <td style={{ fontWeight: 600 }}>{row.year}</td>
-                        <td style={{ textAlign: 'center', color: '#1a6e2c' }}>{row.onsightLabel}</td>
-                        <td style={{ textAlign: 'center', color: '#e07b00' }}>{row.flashLabel}</td>
-                        <td style={{ textAlign: 'center', color: '#c0392b' }}>{row.redpointLabel}</td>
+                        <td style={{ textAlign: 'center', color: '#28B487' }}>{row.onsightLabel}</td>
+                        <td style={{ textAlign: 'center', color: '#4C9BE8' }}>{row.flashLabel}</td>
+                        <td style={{ textAlign: 'center', color: '#D9902F' }}>{row.redpointLabel}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -617,11 +617,11 @@ export default function AnalyticsPage() {
               ) : (
                 <ResponsiveContainer width="100%" height={220}>
                   <BarChart data={monthlyData} margin={{ top: 4, right: 8, left: -20, bottom: 0 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(29,22,17,0.10)" />
+                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(247,243,234,0.10)" />
                     <XAxis dataKey="label" tick={{ fontSize: 10 }} interval="preserveStartEnd" />
                     <YAxis allowDecimals={false} tick={{ fontSize: 10 }} />
-                    <Tooltip contentStyle={{ fontSize: 11, borderRadius: 8 }} formatter={(v) => [v, 'Salite']} />
-                    <Bar dataKey="count" fill="#E85D35" radius={[3, 3, 0, 0]} />
+                    <Tooltip contentStyle={{ fontSize: 11, borderRadius: 8, background: '#181E27', border: '1px solid rgba(247,243,234,0.14)', color: '#F7F3EA' }} formatter={(v) => [v, 'Salite']} />
+                    <Bar dataKey="count" fill="#C85F3A" radius={[3, 3, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               )}
@@ -634,11 +634,11 @@ export default function AnalyticsPage() {
               ) : (
                 <ResponsiveContainer width="100%" height={220}>
                   <BarChart data={sessionsPerMonth} margin={{ top: 4, right: 8, left: -20, bottom: 0 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(29,22,17,0.10)" />
+                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(247,243,234,0.10)" />
                     <XAxis dataKey="label" tick={{ fontSize: 10 }} interval="preserveStartEnd" />
                     <YAxis allowDecimals={false} tick={{ fontSize: 10 }} />
-                    <Tooltip contentStyle={{ fontSize: 11, borderRadius: 8 }} formatter={(v) => [v, 'Sessioni']} />
-                    <Bar dataKey="count" fill="#5a7ab8" radius={[3, 3, 0, 0]} />
+                    <Tooltip contentStyle={{ fontSize: 11, borderRadius: 8, background: '#181E27', border: '1px solid rgba(247,243,234,0.14)', color: '#F7F3EA' }} formatter={(v) => [v, 'Sessioni']} />
+                    <Bar dataKey="count" fill="#A78BFA" radius={[3, 3, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               )}
@@ -654,13 +654,13 @@ export default function AnalyticsPage() {
             ) : (
               <ResponsiveContainer width="100%" height={220}>
                 <BarChart data={uniqueVsRepeat} margin={{ top: 4, right: 16, left: -20, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(29,22,17,0.10)" />
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(247,243,234,0.10)" />
                   <XAxis dataKey="label" tick={{ fontSize: 10 }} interval="preserveStartEnd" />
                   <YAxis allowDecimals={false} tick={{ fontSize: 10 }} />
-                  <Tooltip contentStyle={{ fontSize: 11, borderRadius: 8 }} />
+                  <Tooltip contentStyle={{ fontSize: 11, borderRadius: 8, background: '#181E27', border: '1px solid rgba(247,243,234,0.14)', color: '#F7F3EA' }} />
                   <Legend wrapperStyle={{ fontSize: 11 }} />
-                  <Bar dataKey="unique" name="Vie uniche" stackId="a" fill="#E85D35" />
-                  <Bar dataKey="repeat" name="Ripetizioni" stackId="a" fill="#aac0a7" radius={[3, 3, 0, 0]} />
+                  <Bar dataKey="unique" name="Vie uniche" stackId="a" fill="#C85F3A" />
+                  <Bar dataKey="repeat" name="Ripetizioni" stackId="a" fill="#8E887E" radius={[3, 3, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             )}
@@ -675,13 +675,13 @@ export default function AnalyticsPage() {
               ) : (
                 <ResponsiveContainer width="100%" height={200}>
                   <BarChart data={dayOfWeek} margin={{ top: 4, right: 8, left: -20, bottom: 0 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(29,22,17,0.10)" />
+                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(247,243,234,0.10)" />
                     <XAxis dataKey="day" tick={{ fontSize: 10 }} />
                     <YAxis allowDecimals={false} tick={{ fontSize: 10 }} />
-                    <Tooltip contentStyle={{ fontSize: 11, borderRadius: 8 }} formatter={(v) => [v, 'Salite']} />
-                    <Bar dataKey="count" fill="#4a8a42" radius={[3, 3, 0, 0]}>
+                    <Tooltip contentStyle={{ fontSize: 11, borderRadius: 8, background: '#181E27', border: '1px solid rgba(247,243,234,0.14)', color: '#F7F3EA' }} formatter={(v) => [v, 'Salite']} />
+                    <Bar dataKey="count" fill="#28B487" radius={[3, 3, 0, 0]}>
                       {dayOfWeek.map((d, i) => (
-                        <Cell key={d.day} fill={i === 0 || i === 6 ? '#e07b00' : '#4a8a42'} />
+                        <Cell key={d.day} fill={i === 0 || i === 6 ? '#D9902F' : '#28B487'} />
                       ))}
                     </Bar>
                   </BarChart>
@@ -697,11 +697,11 @@ export default function AnalyticsPage() {
               ) : (
                 <ResponsiveContainer width="100%" height={200}>
                   <BarChart data={seasonal} margin={{ top: 4, right: 8, left: -20, bottom: 0 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(29,22,17,0.10)" />
+                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(247,243,234,0.10)" />
                     <XAxis dataKey="month" tick={{ fontSize: 10 }} />
                     <YAxis allowDecimals={false} tick={{ fontSize: 10 }} />
-                    <Tooltip contentStyle={{ fontSize: 11, borderRadius: 8 }} formatter={(v) => [v, 'Salite']} />
-                    <Bar dataKey="count" fill="#E85D35" radius={[3, 3, 0, 0]} />
+                    <Tooltip contentStyle={{ fontSize: 11, borderRadius: 8, background: '#181E27', border: '1px solid rgba(247,243,234,0.14)', color: '#F7F3EA' }} formatter={(v) => [v, 'Salite']} />
+                    <Bar dataKey="count" fill="#C85F3A" radius={[3, 3, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               )}
@@ -726,11 +726,11 @@ export default function AnalyticsPage() {
               ) : (
                 <ResponsiveContainer width="100%" height={Math.max(180, Math.min(gradeDist.length, 14) * 22)}>
                   <BarChart data={gradeDist} layout="vertical" margin={{ top: 4, right: 8, left: 36, bottom: 4 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(29,22,17,0.10)" horizontal={false} />
+                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(247,243,234,0.10)" horizontal={false} />
                     <XAxis type="number" allowDecimals={false} tick={{ fontSize: 10 }} />
                     <YAxis type="category" dataKey="grade" tick={{ fontSize: 10 }} width={36} />
-                    <Tooltip contentStyle={{ fontSize: 11, borderRadius: 8 }} formatter={(v) => [v, 'Salite']} />
-                    <Bar dataKey="count" fill="#E85D35" radius={[0, 3, 3, 0]} />
+                    <Tooltip contentStyle={{ fontSize: 11, borderRadius: 8, background: '#181E27', border: '1px solid rgba(247,243,234,0.14)', color: '#F7F3EA' }} formatter={(v) => [v, 'Salite']} />
+                    <Bar dataKey="count" fill="#C85F3A" radius={[0, 3, 3, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               )}
@@ -744,16 +744,16 @@ export default function AnalyticsPage() {
               ) : (
                 <ResponsiveContainer width="100%" height={Math.max(180, Math.min(pyramidData.length, 14) * 22)}>
                   <BarChart data={pyramidData} layout="vertical" margin={{ top: 4, right: 16, left: 44, bottom: 4 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(29,22,17,0.10)" horizontal={false} />
+                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(247,243,234,0.10)" horizontal={false} />
                     <XAxis type="number" allowDecimals={false} tick={{ fontSize: 10 }} />
                     <YAxis type="category" dataKey="grade" tick={{ fontSize: 11 }} width={44} />
-                    <Tooltip contentStyle={{ fontSize: 11, borderRadius: 8 }} />
+                    <Tooltip contentStyle={{ fontSize: 11, borderRadius: 8, background: '#181E27', border: '1px solid rgba(247,243,234,0.14)', color: '#F7F3EA' }} />
                     <Legend wrapperStyle={{ fontSize: 11 }} />
-                    <Bar dataKey="onsight"  name="On-sight"    stackId="a" fill="#1a6e2c" />
-                    <Bar dataKey="flash"    name="Flash"       stackId="a" fill="#e07b00" />
-                    <Bar dataKey="redpoint" name="Redpoint"    stackId="a" fill="#c0392b" />
-                    <Bar dataKey="repeat"   name="Ripetizione" stackId="a" fill="#5a7ab8" />
-                    <Bar dataKey="unknown"  name="Non spec."   stackId="a" fill="#aac0a7" radius={[0, 3, 3, 0]} />
+                    <Bar dataKey="onsight"  name="On-sight"    stackId="a" fill="#28B487" />
+                    <Bar dataKey="flash"    name="Flash"       stackId="a" fill="#4C9BE8" />
+                    <Bar dataKey="redpoint" name="Redpoint"    stackId="a" fill="#D9902F" />
+                    <Bar dataKey="repeat"   name="Ripetizione" stackId="a" fill="#A78BFA" />
+                    <Bar dataKey="unknown"  name="Non spec."   stackId="a" fill="#8E887E" radius={[0, 3, 3, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               )}
@@ -769,16 +769,16 @@ export default function AnalyticsPage() {
             ) : (
               <ResponsiveContainer width="100%" height={Math.max(200, uniquePyramid.length * 28)}>
                 <BarChart data={uniquePyramid} layout="vertical" margin={{ top: 4, right: 16, left: 44, bottom: 4 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(29,22,17,0.10)" horizontal={false} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(247,243,234,0.10)" horizontal={false} />
                   <XAxis type="number" allowDecimals={false} tick={{ fontSize: 10 }} />
                   <YAxis type="category" dataKey="grade" tick={{ fontSize: 11 }} width={44} />
-                  <Tooltip contentStyle={{ fontSize: 11, borderRadius: 8 }} />
+                  <Tooltip contentStyle={{ fontSize: 11, borderRadius: 8, background: '#181E27', border: '1px solid rgba(247,243,234,0.14)', color: '#F7F3EA' }} />
                   <Legend wrapperStyle={{ fontSize: 11 }} />
-                  <Bar dataKey="onsight"  name="On-sight"    stackId="a" fill="#1a6e2c" />
-                  <Bar dataKey="flash"    name="Flash"       stackId="a" fill="#e07b00" />
-                  <Bar dataKey="redpoint" name="Redpoint"    stackId="a" fill="#c0392b" />
-                  <Bar dataKey="repeat"   name="Ripetizione" stackId="a" fill="#5a7ab8" />
-                  <Bar dataKey="unknown"  name="Non spec."   stackId="a" fill="#aac0a7" radius={[0, 3, 3, 0]} />
+                  <Bar dataKey="onsight"  name="On-sight"    stackId="a" fill="#28B487" />
+                  <Bar dataKey="flash"    name="Flash"       stackId="a" fill="#4C9BE8" />
+                  <Bar dataKey="redpoint" name="Redpoint"    stackId="a" fill="#D9902F" />
+                  <Bar dataKey="repeat"   name="Ripetizione" stackId="a" fill="#A78BFA" />
+                  <Bar dataKey="unknown"  name="Non spec."   stackId="a" fill="#8E887E" radius={[0, 3, 3, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             )}
@@ -795,10 +795,10 @@ export default function AnalyticsPage() {
                   data={modeBreakdown.map(e => ({ count: e.count, label: ASCENT_STYLE_LABELS[e.ascentStyle] }))}
                   layout="vertical" margin={{ top: 4, right: 24, left: 80, bottom: 0 }}
                 >
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(29,22,17,0.10)" horizontal={false} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(247,243,234,0.10)" horizontal={false} />
                   <XAxis type="number" allowDecimals={false} tick={{ fontSize: 10 }} />
                   <YAxis type="category" dataKey="label" tick={{ fontSize: 10 }} width={80} />
-                  <Tooltip contentStyle={{ fontSize: 11, borderRadius: 8 }} formatter={(v) => [v, 'Salite']} />
+                  <Tooltip contentStyle={{ fontSize: 11, borderRadius: 8, background: '#181E27', border: '1px solid rgba(247,243,234,0.14)', color: '#F7F3EA' }} formatter={(v) => [v, 'Salite']} />
                   <Bar dataKey="count" radius={[0, 3, 3, 0]}>
                     {modeBreakdown.map(entry => (
                       <Cell key={entry.ascentStyle} fill={ASCENT_STYLE_COLORS[entry.ascentStyle]} />
@@ -820,11 +820,11 @@ export default function AnalyticsPage() {
                   data={bucketBreakdown.map(e => ({ count: e.count, label: ATTEMPT_BUCKET_LABELS[e.bucket] }))}
                   layout="vertical" margin={{ top: 4, right: 24, left: 96, bottom: 0 }}
                 >
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(29,22,17,0.10)" horizontal={false} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(247,243,234,0.10)" horizontal={false} />
                   <XAxis type="number" allowDecimals={false} tick={{ fontSize: 10 }} />
                   <YAxis type="category" dataKey="label" tick={{ fontSize: 10 }} width={96} />
-                  <Tooltip contentStyle={{ fontSize: 11, borderRadius: 8 }} formatter={(v) => [v, 'Salite']} />
-                  <Bar dataKey="count" fill="#4a8a42" radius={[0, 3, 3, 0]} />
+                  <Tooltip contentStyle={{ fontSize: 11, borderRadius: 8, background: '#181E27', border: '1px solid rgba(247,243,234,0.14)', color: '#F7F3EA' }} formatter={(v) => [v, 'Salite']} />
+                  <Bar dataKey="count" fill="#28B487" radius={[0, 3, 3, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             )}
@@ -840,16 +840,16 @@ export default function AnalyticsPage() {
                   data={modeByAttempt.map(e => ({ ...e, label: ATTEMPT_BUCKET_LABELS[e.bucket as AttemptBucket] ?? e.bucket }))}
                   layout="vertical" margin={{ top: 4, right: 16, left: 96, bottom: 4 }}
                 >
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(29,22,17,0.10)" horizontal={false} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(247,243,234,0.10)" horizontal={false} />
                   <XAxis type="number" allowDecimals={false} tick={{ fontSize: 10 }} />
                   <YAxis type="category" dataKey="label" tick={{ fontSize: 10 }} width={96} />
-                  <Tooltip contentStyle={{ fontSize: 11, borderRadius: 8 }} />
+                  <Tooltip contentStyle={{ fontSize: 11, borderRadius: 8, background: '#181E27', border: '1px solid rgba(247,243,234,0.14)', color: '#F7F3EA' }} />
                   <Legend wrapperStyle={{ fontSize: 11 }} />
-                  <Bar dataKey="onsight"  name="On-sight"    stackId="a" fill="#1a6e2c" />
-                  <Bar dataKey="flash"    name="Flash"       stackId="a" fill="#e07b00" />
-                  <Bar dataKey="redpoint" name="Redpoint"    stackId="a" fill="#c0392b" />
-                  <Bar dataKey="repeat"   name="Ripetizione" stackId="a" fill="#5a7ab8" />
-                  <Bar dataKey="unknown"  name="Non spec."   stackId="a" fill="#aac0a7" radius={[0, 3, 3, 0]} />
+                  <Bar dataKey="onsight"  name="On-sight"    stackId="a" fill="#28B487" />
+                  <Bar dataKey="flash"    name="Flash"       stackId="a" fill="#4C9BE8" />
+                  <Bar dataKey="redpoint" name="Redpoint"    stackId="a" fill="#D9902F" />
+                  <Bar dataKey="repeat"   name="Ripetizione" stackId="a" fill="#A78BFA" />
+                  <Bar dataKey="unknown"  name="Non spec."   stackId="a" fill="#8E887E" radius={[0, 3, 3, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             )}
@@ -873,11 +873,11 @@ export default function AnalyticsPage() {
               ) : (
                 <ResponsiveContainer width="100%" height={Math.max(160, topCrags.length * 30)}>
                   <BarChart data={topCrags} layout="vertical" margin={{ top: 4, right: 24, left: 8, bottom: 0 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(29,22,17,0.10)" horizontal={false} />
+                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(247,243,234,0.10)" horizontal={false} />
                     <XAxis type="number" allowDecimals={false} tick={{ fontSize: 10 }} />
                     <YAxis type="category" dataKey="name" tick={{ fontSize: 10 }} width={110} />
-                    <Tooltip contentStyle={{ fontSize: 11, borderRadius: 8 }} formatter={(v) => [v, 'Salite']} />
-                    <Bar dataKey="count" fill="#4a8a42" radius={[0, 3, 3, 0]} />
+                    <Tooltip contentStyle={{ fontSize: 11, borderRadius: 8, background: '#181E27', border: '1px solid rgba(247,243,234,0.14)', color: '#F7F3EA' }} formatter={(v) => [v, 'Salite']} />
+                    <Bar dataKey="count" fill="#28B487" radius={[0, 3, 3, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               )}
@@ -890,11 +890,11 @@ export default function AnalyticsPage() {
               ) : (
                 <ResponsiveContainer width="100%" height={Math.max(160, topCragsByUnique.length * 30)}>
                   <BarChart data={topCragsByUnique} layout="vertical" margin={{ top: 4, right: 24, left: 8, bottom: 0 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(29,22,17,0.10)" horizontal={false} />
+                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(247,243,234,0.10)" horizontal={false} />
                     <XAxis type="number" allowDecimals={false} tick={{ fontSize: 10 }} />
                     <YAxis type="category" dataKey="name" tick={{ fontSize: 10 }} width={110} />
-                    <Tooltip contentStyle={{ fontSize: 11, borderRadius: 8 }} formatter={(v) => [v, 'Vie uniche']} />
-                    <Bar dataKey="count" fill="#E85D35" radius={[0, 3, 3, 0]} />
+                    <Tooltip contentStyle={{ fontSize: 11, borderRadius: 8, background: '#181E27', border: '1px solid rgba(247,243,234,0.14)', color: '#F7F3EA' }} formatter={(v) => [v, 'Vie uniche']} />
+                    <Bar dataKey="count" fill="#C85F3A" radius={[0, 3, 3, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               )}
@@ -910,14 +910,14 @@ export default function AnalyticsPage() {
             ) : (
               <ResponsiveContainer width="100%" height={Math.max(160, topCragsByGrade.length * 30)}>
                 <BarChart data={topCragsByGrade} layout="vertical" margin={{ top: 4, right: 24, left: 8, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(29,22,17,0.10)" horizontal={false} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(247,243,234,0.10)" horizontal={false} />
                   <XAxis type="number" allowDecimals={false} tick={{ fontSize: 10 }} tickFormatter={(n: number) => numToGrade(n)} />
                   <YAxis type="category" dataKey="name" tick={{ fontSize: 10 }} width={110} />
                   <Tooltip
-                    contentStyle={{ fontSize: 11, borderRadius: 8 }}
+                    contentStyle={{ fontSize: 11, borderRadius: 8, background: '#181E27', border: '1px solid rgba(247,243,234,0.14)', color: '#F7F3EA' }}
                     formatter={(v) => [numToGrade(Number(v)), 'Grado medio']}
                   />
-                  <Bar dataKey="count" fill="#5a7ab8" radius={[0, 3, 3, 0]} />
+                  <Bar dataKey="count" fill="#A78BFA" radius={[0, 3, 3, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             )}
@@ -942,11 +942,11 @@ export default function AnalyticsPage() {
               <div className="chart-empty">Nessun dato nel periodo.</div>
             ) : (
               <div className="quality-panel">
-                <WithinBar label="Al 1° giro (OS + Flash)" value={kpis.within1} total={total} color="#1a6e2c" />
-                <WithinBar label="Entro 3 giri" value={kpis.within3} total={total} color="#E85D35" />
-                <WithinBar label="Entro 5 giri" value={kpis.within5} total={total} color="#4a8a42" />
-                <WithinBar label="Entro 10 giri" value={kpis.within10} total={total} color="#7ab87a" />
-                <WithinBar label="Oltre 10 giri" value={kpis.beyond10} total={total} color="#c0392b" />
+                <WithinBar label="Al 1° giro (OS + Flash)" value={kpis.within1} total={total} color="#28B487" />
+                <WithinBar label="Entro 3 giri" value={kpis.within3} total={total} color="#C85F3A" />
+                <WithinBar label="Entro 5 giri" value={kpis.within5} total={total} color="#4C9BE8" />
+                <WithinBar label="Entro 10 giri" value={kpis.within10} total={total} color="#A78BFA" />
+                <WithinBar label="Oltre 10 giri" value={kpis.beyond10} total={total} color="#E06455" />
               </div>
             )}
           </div>
@@ -961,13 +961,13 @@ export default function AnalyticsPage() {
                   data={bucketBreakdown.map(e => ({ count: e.count, label: ATTEMPT_BUCKET_LABELS[e.bucket] }))}
                   layout="vertical" margin={{ top: 4, right: 24, left: 96, bottom: 0 }}
                 >
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(29,22,17,0.10)" horizontal={false} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(247,243,234,0.10)" horizontal={false} />
                   <XAxis type="number" allowDecimals={false} tick={{ fontSize: 10 }} />
                   <YAxis type="category" dataKey="label" tick={{ fontSize: 10 }} width={96} />
-                  <Tooltip contentStyle={{ fontSize: 11, borderRadius: 8 }} formatter={(v) => [v, 'Salite']} />
+                  <Tooltip contentStyle={{ fontSize: 11, borderRadius: 8, background: '#181E27', border: '1px solid rgba(247,243,234,0.14)', color: '#F7F3EA' }} formatter={(v) => [v, 'Salite']} />
                   <Bar dataKey="count" radius={[0, 3, 3, 0]}>
                     {bucketBreakdown.map((e, i) => (
-                      <Cell key={e.bucket} fill={i === 0 ? '#1a6e2c' : i <= 2 ? '#4a8a42' : i <= 4 ? '#e07b00' : '#c0392b'} />
+                      <Cell key={e.bucket} fill={i === 0 ? '#28B487' : i <= 2 ? '#4C9BE8' : i <= 4 ? '#D9902F' : '#E06455'} />
                     ))}
                   </Bar>
                 </BarChart>
@@ -989,13 +989,13 @@ export default function AnalyticsPage() {
               return (
                 <ResponsiveContainer width="100%" height={Math.max(180, Math.min(data.length, 14) * 22)}>
                   <BarChart data={data} layout="vertical" margin={{ top: 4, right: 8, left: 36, bottom: 4 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(29,22,17,0.10)" horizontal={false} />
+                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(247,243,234,0.10)" horizontal={false} />
                     <XAxis type="number" allowDecimals={false} tick={{ fontSize: 10 }} />
                     <YAxis type="category" dataKey="grade" tick={{ fontSize: 10 }} width={36} />
-                    <Tooltip contentStyle={{ fontSize: 11, borderRadius: 8 }} />
+                    <Tooltip contentStyle={{ fontSize: 11, borderRadius: 8, background: '#181E27', border: '1px solid rgba(247,243,234,0.14)', color: '#F7F3EA' }} />
                     <Legend wrapperStyle={{ fontSize: 11 }} />
-                    <Bar dataKey="firstGo" name="OS / Flash" stackId="a" fill="#1a6e2c" />
-                    <Bar dataKey="other" name="Altro" stackId="a" fill="#e0e0d8" radius={[0, 3, 3, 0]} />
+                    <Bar dataKey="firstGo" name="OS / Flash" stackId="a" fill="#28B487" />
+                    <Bar dataKey="other" name="Altro" stackId="a" fill="#8E887E" radius={[0, 3, 3, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               )
@@ -1040,8 +1040,8 @@ export default function AnalyticsPage() {
           </div>
 
           {dataQuality.needsReview > 0 && (
-            <div className="chart-section" style={{ borderColor: '#f5c6cb', background: '#fff5f5' }}>
-              <h2 style={{ color: '#c0392b' }}>Ascensioni da revisionare</h2>
+            <div className="chart-section" style={{ borderColor: 'rgba(224,100,85,0.35)', background: 'rgba(224,100,85,0.08)' }}>
+              <h2 style={{ color: '#FFB0A5' }}>Ascensioni da revisionare</h2>
               <p className="chart-description">
                 {dataQuality.needsReview} ascensioni con <code>needs_review = true</code>.
                 Apri ogni ascensione e inserisci il numero esatto di tentativi.

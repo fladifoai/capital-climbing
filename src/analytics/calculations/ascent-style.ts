@@ -20,11 +20,11 @@ export const ASCENT_STYLE_LABELS: Record<AscentStyle, string> = {
 }
 
 export const ASCENT_STYLE_COLORS: Record<AscentStyle, string> = {
-  onsight: '#1a6e2c',
-  flash: '#e07b00',
-  redpoint: '#c0392b',
-  repeat: '#5a7ab8',
-  unknown: '#aac0a7',
+  onsight: '#28B487',
+  flash: '#4C9BE8',
+  redpoint: '#D9902F',
+  repeat: '#A78BFA',
+  unknown: '#8E887E',
 }
 
 export const ASCENT_STYLE_ORDER: AscentStyle[] = ['onsight', 'flash', 'redpoint', 'repeat', 'unknown']

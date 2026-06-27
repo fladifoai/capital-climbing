@@ -12,8 +12,8 @@ const ATTEMPT_LABELS: Record<string, string> = {
   repeat: 'Rip', unknown: '?',
 }
 const ATTEMPT_COLORS: Record<string, string> = {
-  onsight: '#1a6e2c', flash: '#c47800', redpoint: '#c0392b', second: '#c0392b', third: '#c0392b', four_plus: '#c0392b',
-  repeat: '#5a7ab8', unknown: '#aac0a7',
+  onsight: '#28B487', flash: '#4C9BE8', redpoint: '#D9902F', second: '#D9902F', third: '#D9902F', four_plus: '#D9902F',
+  repeat: '#A78BFA', unknown: '#8E887E',
 }
 
 type SortKey = 'date_desc' | 'date_asc' | 'grade_desc' | 'grade_asc' | 'quality_desc'
@@ -92,7 +92,7 @@ function AscentRow({ a, onDelete, isPending }: AscentRowProps) {
           <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>{open ? '▲' : '▼'}</span>
           <button
             className="btn-secondary"
-            style={{ fontSize: 11, padding: '2px 7px', color: '#c0392b' }}
+            style={{ fontSize: 11, padding: '2px 7px', color: '#FFB0A5' }}
             onClick={e => { e.stopPropagation(); onDelete(a.id, a.route?.name ?? '') }}
             disabled={isPending}
           >×</button>
@@ -305,9 +305,9 @@ export default function MyRoutesPage() {
               style={{
                 padding: '3px 9px', fontSize: 11, borderRadius: 12, border: '1px solid',
                 cursor: 'pointer', fontFamily: 'inherit', fontWeight: 600,
-                background: sort === key ? '#E85D35' : 'transparent',
-                color: sort === key ? '#FFF7EA' : 'var(--text-on-dark-muted)',
-                borderColor: sort === key ? '#E85D35' : 'rgba(255,247,234,0.22)',
+                background: sort === key ? '#C85F3A' : 'transparent',
+                color: sort === key ? '#FFF7EA' : 'var(--text-muted)',
+                borderColor: sort === key ? '#C85F3A' : 'rgba(247,243,234,0.14)',
               }}
             >
               {label}
@@ -315,7 +315,7 @@ export default function MyRoutesPage() {
           ))}
         </div>
 
-        <div style={{ display: 'flex', gap: 4, background: 'rgba(29,22,17,0.18)', borderRadius: 999, padding: 3, marginLeft: 'auto' }}>
+        <div style={{ display: 'flex', gap: 4, background: 'rgba(247,243,234,0.08)', borderRadius: 999, padding: 3, marginLeft: 'auto' }}>
           {([['grade', '▤ Per grado'], ['list', '≡ Lista']] as [ViewMode, string][]).map(([v, label]) => (
             <button
               key={v}
@@ -384,9 +384,9 @@ export default function MyRoutesPage() {
               {g.items.length} {g.items.length === 1 ? 'via' : 'vie'}
             </span>
             <span style={{ fontSize: 12, color: 'var(--text-on-dark-muted)', display: 'flex', gap: 8 }}>
-              {g.os > 0 && <span style={{ color: '#3a9e51', fontWeight: 700 }}>{g.os} OS</span>}
-              {g.fl > 0 && <span style={{ color: '#c47800', fontWeight: 700 }}>{g.fl} FL</span>}
-              {g.rp > 0 && <span style={{ color: '#c0392b', fontWeight: 700 }}>{g.rp} RP</span>}
+              {g.os > 0 && <span style={{ color: '#28B487', fontWeight: 700 }}>{g.os} OS</span>}
+              {g.fl > 0 && <span style={{ color: '#4C9BE8', fontWeight: 700 }}>{g.fl} FL</span>}
+              {g.rp > 0 && <span style={{ color: '#D9902F', fontWeight: 700 }}>{g.rp} RP</span>}
             </span>
           </div>
           {g.items.map(a => (
