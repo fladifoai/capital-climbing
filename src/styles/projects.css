@@ -8,73 +8,81 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 20px;
+  margin-bottom: 24px;
   gap: 12px;
   flex-wrap: wrap;
 }
 
 .projects-header h1 {
-  font-size: 22px;
-  font-weight: 700;
-  color: var(--text);
+  font-family: "Sora", "Inter", system-ui, sans-serif;
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--text-on-dark);
   margin: 0;
+  letter-spacing: -0.03em;
 }
 
+/* ── Status tabs ── */
 .status-tabs {
   display: flex;
-  gap: 6px;
+  gap: 5px;
   flex-wrap: wrap;
-  margin-bottom: 18px;
+  margin-bottom: 20px;
+  background: rgba(255,247,234,0.08);
+  border: 1px solid rgba(255,247,234,0.12);
+  border-radius: 999px;
+  padding: 5px;
+  width: fit-content;
 }
 
 .status-tab {
-  padding: 5px 14px;
-  border-radius: 20px;
-  border: 1px solid #d0d8cc;
-  background: #fff;
+  padding: 7px 16px;
+  border-radius: 999px;
+  border: none;
+  background: transparent;
   font-size: 12px;
-  font-weight: 600;
-  color: #6a7a68;
+  font-weight: 700;
+  color: var(--text-on-dark-muted);
   cursor: pointer;
-  transition: all 0.15s;
+  transition: all var(--t-fast) var(--ease);
+  font-family: inherit;
 }
 
 .status-tab:hover {
-  border-color: #2d5a27;
-  color: #2d5a27;
+  background: rgba(255,247,234,0.10);
+  color: var(--text-on-dark);
 }
 
 .status-tab.active {
-  background: #2d5a27;
-  border-color: #2d5a27;
-  color: #fff;
+  background: linear-gradient(135deg, #FFF9EF, #F4E4CA);
+  color: var(--text);
+  box-shadow: 0 4px 14px rgba(23,18,14,0.20);
 }
 
-/* Project card */
+/* ── Project card ── */
 .project-card {
-  background: #fff;
-  border: 1px solid #e0e0d8;
-  border-radius: 10px;
+  background: linear-gradient(180deg, #FFF9EF 0%, #F4E4CA 100%);
+  border: 1px solid rgba(255,255,255,0.40);
+  border-radius: 18px;
   margin-bottom: 10px;
   overflow: hidden;
+  box-shadow: var(--cc-shadow-card);
+  transition: transform var(--t-mid) var(--ease), box-shadow var(--t-mid) var(--ease);
 }
+
+.project-card:hover { transform: translateY(-1px); box-shadow: var(--cc-shadow-soft); }
 
 .project-card-main {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 14px 16px;
+  padding: 16px 18px;
   cursor: pointer;
 }
 
-.project-card-main:hover {
-  background: #fafaf8;
-}
+.project-card-main:hover { background: rgba(29,22,17,0.04); }
 
-.project-route-info {
-  flex: 1;
-  min-width: 0;
-}
+.project-route-info { flex: 1; min-width: 0; }
 
 .project-route-name {
   font-weight: 700;
@@ -87,7 +95,7 @@
 
 .project-route-sub {
   font-size: 11px;
-  color: #8a9a87;
+  color: var(--text-muted);
   margin-top: 2px;
 }
 
@@ -100,36 +108,36 @@
 
 .status-badge {
   display: inline-block;
-  padding: 2px 8px;
-  border-radius: 10px;
+  padding: 3px 10px;
+  border-radius: 999px;
   font-size: 11px;
-  font-weight: 600;
+  font-weight: 700;
 }
 
-.status-badge.active   { background: #e8f5e4; color: #2d5a27; }
-.status-badge.paused   { background: #fff3cd; color: #856404; }
-.status-badge.completed { background: #d1ecf1; color: #0c5460; }
-.status-badge.abandoned { background: #f8d7da; color: #721c24; }
+.status-badge.active    { background: #DDF5E8; color: #176C42; }
+.status-badge.paused    { background: #FFF0CC; color: #8A5414; }
+.status-badge.completed { background: rgba(232,93,53,0.14); color: var(--cc-primary-dark); }
+.status-badge.abandoned { background: rgba(29,22,17,0.10); color: var(--text-muted); }
 
 .priority-badge {
   display: inline-block;
-  padding: 2px 7px;
-  border-radius: 10px;
+  padding: 2px 8px;
+  border-radius: 999px;
   font-size: 10px;
-  font-weight: 700;
+  font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }
 
-.priority-badge.high   { background: #f8d7da; color: #721c24; }
-.priority-badge.medium { background: #fff3cd; color: #856404; }
-.priority-badge.low    { background: #e2e3e5; color: #495057; }
+.priority-badge.high   { background: #F3DED2; color: #934021; }
+.priority-badge.medium { background: #FFF0CC; color: #8A5414; }
+.priority-badge.low    { background: rgba(29,22,17,0.08); color: var(--text-muted); }
 
 .project-stats {
   display: flex;
   gap: 16px;
   font-size: 11px;
-  color: #6a7a68;
+  color: var(--text-muted);
   flex-shrink: 0;
 }
 
@@ -140,42 +148,37 @@
   gap: 1px;
 }
 
-.project-stat strong {
-  font-size: 14px;
-  color: var(--text);
-}
+.project-stat strong { font-size: 14px; color: var(--text); }
 
 /* Progress bar */
 .progress-bar-wrap {
   width: 60px;
   height: 5px;
-  background: #e8ece7;
+  background: rgba(29,22,17,0.12);
   border-radius: 3px;
   overflow: hidden;
 }
 
 .progress-bar-fill {
   height: 100%;
-  background: #2d5a27;
+  background: linear-gradient(90deg, var(--accent), var(--accent-dark));
   border-radius: 3px;
 }
 
-/* Expand chevron */
 .expand-chevron {
   font-size: 12px;
-  color: #aaa;
+  color: var(--text-muted);
   flex-shrink: 0;
   transition: transform 0.15s;
 }
 
-.expand-chevron.open {
-  transform: rotate(180deg);
-}
+.expand-chevron.open { transform: rotate(180deg); }
 
-/* Card body (expanded) */
+/* Card body expanded */
 .project-card-body {
-  border-top: 1px solid #f0f0e8;
-  padding: 16px;
+  border-top: 1px solid rgba(29,22,17,0.10);
+  padding: 16px 18px;
+  background: var(--surface-muted);
 }
 
 .project-actions {
@@ -192,9 +195,7 @@
   margin-bottom: 10px;
 }
 
-.project-notes-full {
-  margin-bottom: 10px;
-}
+.project-notes-full { margin-bottom: 10px; }
 
 .project-save-row {
   display: flex;
@@ -205,25 +206,27 @@
 
 /* New project form */
 .new-project-form {
-  background: #f5f7f4;
-  border: 1px solid #d8e2d5;
-  border-radius: 10px;
-  padding: 16px;
+  background: linear-gradient(180deg, #FFF9EF 0%, #F4E4CA 100%);
+  border: 1px solid rgba(255,255,255,0.45);
+  border-radius: 20px;
+  padding: 18px;
   margin-bottom: 16px;
+  box-shadow: var(--cc-shadow-card);
 }
 
 .new-project-form h3 {
   margin: 0 0 14px;
-  font-size: 14px;
+  font-family: "Sora", "Inter", system-ui, sans-serif;
+  font-size: 15px;
   font-weight: 700;
   color: var(--text);
 }
 
 /* Convert ascent panel */
 .convert-panel {
-  background: #f0f7ee;
-  border: 2px solid #2d5a27;
-  border-radius: 10px;
+  background: rgba(232,93,53,0.08);
+  border: 2px solid rgba(232,93,53,0.35);
+  border-radius: 16px;
   padding: 16px;
   margin-bottom: 16px;
 }
@@ -232,7 +235,7 @@
   margin: 0 0 14px;
   font-size: 14px;
   font-weight: 700;
-  color: #2d5a27;
+  color: var(--accent-dark);
 }
 
 @media (max-width: 600px) {

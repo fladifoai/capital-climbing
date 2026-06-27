@@ -5,7 +5,7 @@ export default function AdminGuard() {
   const { user, isAdmin, loading } = useAuth()
 
   if (loading) return (
-    <div style={{ display: 'grid', placeItems: 'center', minHeight: '200px', color: '#6b7a67', fontSize: 14 }}>
+    <div style={{ display: 'grid', placeItems: 'center', minHeight: '200px', color: 'var(--text-on-dark-muted)', fontSize: 14 }}>
       Caricamento…
     </div>
   )

@@ -97,7 +97,7 @@ export default function AdminCragPage() {
               <span className="crag-meta-item">
                 <span className={`access-badge ${crag.access_status}`}>{crag.access_status}</span>
               </span>
-              {crag.rainproof && <span className="crag-meta-item" style={{ color: '#2d5a27' }}>Pioggia OK</span>}
+              {crag.rainproof && <span className="crag-meta-item" style={{ color: 'var(--accent)' }}>Pioggia OK</span>}
             </div>
           </div>
         )}

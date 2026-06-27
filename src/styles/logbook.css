@@ -9,10 +9,12 @@
 }
 
 .logbook-title {
-  font-size: 24px;
-  font-weight: 700;
-  color: var(--text);
-  letter-spacing: -0.02em;
+  font-family: "Sora", "Inter", system-ui, sans-serif;
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--text-on-dark);
+  letter-spacing: -0.03em;
+  margin: 0;
 }
 
 /* ── Filter bar ──────────────────────────────────────────────────────────── */
@@ -27,23 +29,25 @@
   flex: 1;
   min-width: 160px;
   padding: 8px 13px;
-  border: 1.5px solid var(--neutral-200);
+  border: 1.5px solid rgba(29,22,17,0.18);
   border-radius: var(--r-sm);
   font-size: 13px;
   font-family: inherit;
   background: var(--surface);
   color: var(--text);
   outline: none;
+  box-shadow: var(--cc-shadow-card);
   transition: border-color var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease);
 }
+.logbook-search:hover { border-color: rgba(232,93,53,0.40); }
 .logbook-search:focus {
-  border-color: var(--green-500);
-  box-shadow: 0 0 0 3px rgba(45,138,66,0.10);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(232,93,53,0.16);
 }
 
 .logbook-select {
   padding: 8px 10px;
-  border: 1.5px solid var(--neutral-200);
+  border: 1.5px solid rgba(29,22,17,0.18);
   border-radius: var(--r-sm);
   font-size: 12px;
   font-family: inherit;
@@ -51,9 +55,11 @@
   color: var(--text);
   cursor: pointer;
   outline: none;
+  box-shadow: var(--cc-shadow-card);
   transition: border-color var(--t-fast) var(--ease);
 }
-.logbook-select:focus { border-color: var(--green-500); }
+.logbook-select:hover { border-color: rgba(232,93,53,0.40); }
+.logbook-select:focus { border-color: var(--accent); }
 
 .logbook-sort-bar {
   display: flex;
@@ -63,16 +69,16 @@
   margin-bottom: 14px;
 }
 
-/* ── Ascent table (legacy view) ──────────────────────────────────────────── */
+/* ── Ascent table ────────────────────────────────────────────────────────── */
 .ascent-table {
   width: 100%;
   border-collapse: collapse;
-  background: var(--surface);
+  background: linear-gradient(180deg, #FFF9EF 0%, #F4E4CA 100%);
   border-radius: var(--r-md);
   overflow: hidden;
   font-size: 13px;
-  box-shadow: var(--shadow-sm);
-  border: 1px solid rgba(0,0,0,0.04);
+  box-shadow: var(--cc-shadow-card);
+  border: 1px solid rgba(255,255,255,0.45);
 }
 
 .ascent-table th {
@@ -83,19 +89,19 @@
   text-transform: uppercase;
   letter-spacing: 0.05em;
   color: var(--text-muted);
-  background: var(--neutral-50);
-  border-bottom: 1px solid var(--neutral-100);
+  background: var(--surface-muted);
+  border-bottom: 1px solid rgba(29,22,17,0.10);
 }
 
 .ascent-table td {
   padding: 10px 16px;
-  border-bottom: 1px solid var(--neutral-100);
+  border-bottom: 1px solid rgba(29,22,17,0.08);
   color: var(--text);
   vertical-align: middle;
 }
 
 .ascent-table tr:last-child td { border-bottom: none; }
-.ascent-table tr:hover td { background: var(--neutral-50); }
+.ascent-table tr:hover td { background: rgba(232,93,53,0.06); }
 
 /* ── Badges ──────────────────────────────────────────────────────────────── */
 .attempt-badge {
@@ -104,8 +110,8 @@
   font-weight: 600;
   padding: 2px 8px;
   border-radius: var(--r-pill);
-  background: var(--green-100);
-  color: var(--green-700);
+  background: rgba(232,93,53,0.14);
+  color: var(--cc-primary-dark);
 }
 
 .attempt-badge.attempted {
@@ -118,7 +124,7 @@
   font-size: 10px;
   padding: 2px 6px;
   border-radius: var(--r-pill);
-  background: var(--neutral-100);
+  background: rgba(29,22,17,0.10);
   color: var(--text-muted);
 }
 
@@ -129,21 +135,24 @@
 
 /* ── Ascent card rows ────────────────────────────────────────────────────── */
 .ascent-card-row {
-  background: var(--surface);
+  background: linear-gradient(180deg, #FFF9EF 0%, #F4E4CA 100%);
   border-radius: var(--r-md);
   margin-bottom: 6px;
   font-size: 13px;
-  box-shadow: var(--shadow-xs);
-  border: 1px solid rgba(0,0,0,0.05);
+  box-shadow: var(--cc-shadow-card);
+  border: 1px solid rgba(255,255,255,0.45);
   overflow: hidden;
-  transition: box-shadow var(--t-fast) var(--ease);
+  transition: box-shadow var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
 }
 
-.ascent-card-row:hover { box-shadow: var(--shadow-sm); }
+.ascent-card-row:hover {
+  box-shadow: var(--cc-shadow-soft);
+  transform: translateY(-1px);
+}
 
 .ascent-card-row.expanded {
-  box-shadow: var(--shadow-sm);
-  border-color: rgba(45,138,66,0.20);
+  box-shadow: var(--cc-shadow-soft);
+  border-color: rgba(232,93,53,0.30);
 }
 
 .ascent-row-header {
@@ -165,7 +174,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.ascent-row-name:hover { text-decoration: underline; color: var(--green-600); }
+.ascent-row-name:hover { text-decoration: underline; color: var(--accent); }
 
 .ascent-row-sub {
   font-size: 11px;
@@ -198,17 +207,17 @@
   gap: 10px;
   padding: 6px 4px;
   margin-bottom: 6px;
-  border-bottom: 2px solid var(--neutral-200);
+  border-bottom: 2px solid rgba(232,93,53,0.22);
 }
 
 .grade-group .ascent-card-row {
-  border-left: 3px solid var(--green-500);
+  border-left: 3px solid var(--accent);
 }
 
 /* ── Detail panel ────────────────────────────────────────────────────────── */
 .ascent-detail-panel {
-  border-top: 1px solid var(--neutral-100);
-  background: var(--neutral-50);
+  border-top: 1px solid rgba(29,22,17,0.10);
+  background: var(--surface-muted);
   padding: 12px 14px;
 }
 

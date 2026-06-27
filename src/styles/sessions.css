@@ -8,74 +8,80 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 20px;
+  margin-bottom: 24px;
   gap: 12px;
 }
 
 .sessions-header h1 {
-  font-size: 22px;
-  font-weight: 700;
-  color: var(--text);
+  font-family: "Sora", "Inter", system-ui, sans-serif;
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--text-on-dark);
   margin: 0;
+  letter-spacing: -0.03em;
 }
 
+/* ── Session table ── */
 .session-table {
   width: 100%;
   border-collapse: collapse;
-  background: #fff;
-  border: 1px solid #e0e0d8;
-  border-radius: 10px;
+  background: linear-gradient(180deg, #FFF9EF 0%, #F4E4CA 100%);
+  border: 1px solid rgba(255,255,255,0.45);
+  border-radius: 18px;
   overflow: hidden;
   font-size: 13px;
+  box-shadow: var(--cc-shadow-card);
 }
 
 .session-table th {
   text-align: left;
-  padding: 10px 14px;
-  background: #f5f7f4;
-  font-size: 11px;
-  font-weight: 700;
-  color: #6a7a68;
+  padding: 11px 16px;
+  background: var(--surface-muted);
+  font-size: 10px;
+  font-weight: 800;
+  color: var(--text-2);
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  border-bottom: 1px solid #e0e0d8;
+  border-bottom: 1px solid rgba(29,22,17,0.12);
 }
 
 .session-table td {
-  padding: 10px 14px;
-  border-bottom: 1px solid #f0f0e8;
+  padding: 11px 16px;
+  border-bottom: 1px solid rgba(29,22,17,0.08);
   color: var(--text);
   vertical-align: middle;
 }
 
-.session-table tr:last-child td {
-  border-bottom: none;
-}
-
-.session-table tr:hover td {
-  background: #fafaf8;
-}
+.session-table tr:last-child td { border-bottom: none; }
+.session-table tr:hover td { background: rgba(232,93,53,0.06); }
 
 .rpe-badge {
   display: inline-block;
-  padding: 2px 7px;
-  border-radius: 10px;
+  padding: 3px 9px;
+  border-radius: 999px;
   font-size: 11px;
   font-weight: 700;
-  background: #e8f5e4;
-  color: #2d5a27;
+  background: rgba(232,93,53,0.14);
+  color: var(--cc-primary-dark);
 }
 
-.rpe-badge.hard { background: #f8d7da; color: #721c24; }
-.rpe-badge.medium { background: #fff3cd; color: #856404; }
+.rpe-badge.hard   { background: #F3DED2; color: #934021; }
+.rpe-badge.medium { background: #FFF0CC; color: #8A5414; }
 
-/* Session cards */
+/* ── Session cards ── */
 .session-card {
-  background: #fff;
-  border: 1px solid #e0e0d8;
-  border-radius: 10px;
+  background: linear-gradient(180deg, #FFF9EF 0%, #F4E4CA 100%);
+  border: 1px solid rgba(255,255,255,0.40);
+  border-radius: 18px;
   margin-bottom: 10px;
   overflow: hidden;
+  box-shadow: var(--cc-shadow-card);
+  transition: transform var(--t-mid) var(--ease), box-shadow var(--t-mid) var(--ease);
+}
+
+.session-card:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--cc-shadow-soft);
 }
 
 .session-card-header {
@@ -83,7 +89,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding: 12px 14px;
+  padding: 14px 18px;
 }
 
 .session-card-left {
@@ -102,7 +108,7 @@
 
 .session-crag-name {
   font-size: 13px;
-  color: #4a5a48;
+  color: var(--text-2);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -117,31 +123,32 @@
 
 .session-meta-item {
   font-size: 12px;
-  color: #6a7a68;
+  color: var(--text-muted);
 }
 
 .session-route-count {
   font-size: 11px;
-  font-weight: 700;
-  color: #2d5a27;
-  background: #e8f5e4;
-  padding: 2px 8px;
-  border-radius: 10px;
+  font-weight: 800;
+  color: var(--cc-primary-dark);
+  background: rgba(232,93,53,0.12);
+  border: 1px solid rgba(232,93,53,0.22);
+  padding: 2px 9px;
+  border-radius: 999px;
   white-space: nowrap;
 }
 
 .session-notes {
   font-size: 12px;
-  color: #6a7a68;
-  padding: 0 14px 10px;
-  border-top: 1px solid #f0f0e8;
+  color: var(--text-muted);
+  padding: 0 18px 12px;
+  border-top: 1px solid rgba(29,22,17,0.08);
   padding-top: 8px;
   font-style: italic;
 }
 
 .session-routes-list {
-  border-top: 1px solid #f0f0e8;
-  background: #fafaf8;
+  border-top: 1px solid rgba(29,22,17,0.08);
+  background: var(--surface-muted);
 }
 
 .session-route-row {
@@ -149,14 +156,12 @@
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  padding: 8px 14px;
-  border-bottom: 1px solid #f0f0e8;
+  padding: 9px 18px;
+  border-bottom: 1px solid rgba(29,22,17,0.08);
   font-size: 13px;
 }
 
-.session-route-row:last-child {
-  border-bottom: none;
-}
+.session-route-row:last-child { border-bottom: none; }
 
 .session-route-name {
   color: var(--text);
@@ -169,21 +174,23 @@
 
 .session-route-name:hover {
   text-decoration: underline;
-  color: #2d5a27;
+  color: var(--accent);
 }
 
-/* New session form */
+/* ── New session form ── */
 .new-session-form {
-  background: #f5f7f4;
-  border: 1px solid #d8e2d5;
-  border-radius: 10px;
-  padding: 16px;
+  background: linear-gradient(180deg, #FFF9EF 0%, #F4E4CA 100%);
+  border: 1px solid rgba(255,255,255,0.45);
+  border-radius: 20px;
+  padding: 20px;
   margin-bottom: 20px;
+  box-shadow: var(--cc-shadow-card);
 }
 
 .new-session-form h3 {
   margin: 0 0 14px;
-  font-size: 14px;
+  font-family: "Sora", "Inter", system-ui, sans-serif;
+  font-size: 15px;
   font-weight: 700;
   color: var(--text);
 }

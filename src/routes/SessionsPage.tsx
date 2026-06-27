@@ -123,7 +123,7 @@ function SessionCard({ session, confirmDelete, setConfirmDelete, onDelete }: Ses
                   <span className="grade-badge">{a.grade_at_ascent}</span>
                 )}
                 {(a.ascent_style ?? a.attempt_type) && (
-                  <span style={{ fontSize: 11, fontWeight: 700, color: '#2d5a27' }}>
+                  <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--accent)' }}>
                     {ATTEMPT_LABELS[a.ascent_style ?? a.attempt_type ?? ''] ?? (a.ascent_style ?? a.attempt_type)}
                   </span>
                 )}
@@ -220,19 +220,19 @@ export default function SessionsPage() {
                   placeholder="Cerca falesia…"
                   autoComplete="off"
                 />
-                {cragFetching && <span style={{ fontSize: 11, color: '#8a9a87' }}>Ricerca…</span>}
+                {cragFetching && <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>Ricerca…</span>}
                 {showCragDropdown && (cragResults?.length ?? 0) > 0 && (
                   <div style={{
                     position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 200,
-                    background: '#fff', border: '1px solid #e0e0d8', borderRadius: 8,
-                    boxShadow: '0 4px 12px rgba(0,0,0,0.08)', maxHeight: 180, overflowY: 'auto',
+                    background: '#FFF9EF', border: '1px solid rgba(29,22,17,0.14)', borderRadius: 10,
+                    boxShadow: '0 8px 24px rgba(23,18,14,0.22)', maxHeight: 180, overflowY: 'auto',
                   }}>
                     {cragResults!.map(c => (
                       <div
                         key={c.id}
                         onClick={() => { setSelectedCrag(c); setCragQuery(c.name); setShowCragDropdown(false) }}
-                        style={{ padding: '9px 12px', cursor: 'pointer', fontSize: 13, borderBottom: '1px solid #f0f0e8' }}
-                        onMouseEnter={e => (e.currentTarget.style.background = '#f5f7f4')}
+                        style={{ padding: '9px 12px', cursor: 'pointer', fontSize: 13, borderBottom: '1px solid rgba(29,22,17,0.08)', color: 'var(--text)' }}
+                        onMouseEnter={e => (e.currentTarget.style.background = 'rgba(232,93,53,0.08)')}
                         onMouseLeave={e => (e.currentTarget.style.background = '')}
                       >
                         {c.name}
@@ -241,7 +241,7 @@ export default function SessionsPage() {
                   </div>
                 )}
                 {selectedCrag && (
-                  <span style={{ fontSize: 11, color: '#2d5a27', fontWeight: 600 }}>✓ {selectedCrag.name}</span>
+                  <span style={{ fontSize: 11, color: 'var(--accent)', fontWeight: 600 }}>✓ {selectedCrag.name}</span>
                 )}
               </div>
 

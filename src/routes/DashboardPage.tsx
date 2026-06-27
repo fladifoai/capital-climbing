@@ -48,10 +48,10 @@ export default function DashboardPage() {
   return (
     <div className="analytics-page">
       <div style={{ marginBottom: 24 }}>
-        <h1 style={{ fontSize: 22, fontWeight: 700, color: 'var(--text)', margin: '0 0 4px' }}>
+        <h1 style={{ fontFamily: '"Sora", "Inter", system-ui, sans-serif', fontSize: 22, fontWeight: 800, color: 'var(--text-on-dark)', margin: '0 0 4px', letterSpacing: '-0.02em' }}>
           Ciao, {displayName.split('@')[0]} 👋
         </h1>
-        <p style={{ fontSize: 13, color: '#8a9a87', margin: 0 }}>{currentYear} · in progresso</p>
+        <p style={{ fontSize: 13, color: 'var(--text-on-dark-muted)', margin: 0 }}>{currentYear} · in progresso</p>
       </div>
 
       {/* Quick KPIs */}
@@ -79,21 +79,21 @@ export default function DashboardPage() {
         <div className="chart-section" style={{ marginBottom: 0 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
             <h2 style={{ margin: 0 }}>Ultime salite</h2>
-            <Link to="/my-routes" style={{ fontSize: 12, color: '#2d5a27', textDecoration: 'none', fontWeight: 600 }}>
+            <Link to="/my-routes" style={{ fontSize: 12, color: 'var(--accent)', textDecoration: 'none', fontWeight: 600 }}>
               Vedi tutte →
             </Link>
           </div>
-          {loadingAscents && <div style={{ fontSize: 13, color: '#8a9a87' }}>Caricamento…</div>}
+          {loadingAscents && <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>Caricamento…</div>}
           {!loadingAscents && recentAscents.length === 0 && (
-            <div style={{ fontSize: 13, color: '#8a9a87', textAlign: 'center', padding: '20px 0' }}>
+            <div style={{ fontSize: 13, color: 'var(--text-muted)', textAlign: 'center', padding: '20px 0' }}>
               Nessuna salita ancora.{' '}
-              <Link to="/explore" style={{ color: '#2d5a27', fontWeight: 600 }}>Cerca vie →</Link>
+              <Link to="/explore" style={{ color: 'var(--accent)', fontWeight: 600 }}>Cerca vie →</Link>
             </div>
           )}
           {recentAscents.map(a => (
             <div key={a.id} style={{
               display: 'flex', alignItems: 'center', gap: 8, padding: '7px 0',
-              borderBottom: '1px solid #f0f0e8', fontSize: 13,
+              borderBottom: '1px solid rgba(29,22,17,0.10)', fontSize: 13,
             }}>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
@@ -101,13 +101,13 @@ export default function DashboardPage() {
                     {a.route?.name}
                   </Link>
                 </div>
-                <div style={{ fontSize: 11, color: '#8a9a87' }}>{a.date}</div>
+                <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{a.date}</div>
               </div>
               {(a.grade_at_ascent ?? a.route?.official_grade) && (
                 <span className="grade-badge">{a.grade_at_ascent ?? a.route?.official_grade}</span>
               )}
               {(a.ascent_style ?? a.attempt_type) && (
-                <span style={{ fontSize: 11, fontWeight: 700, color: '#2d5a27' }}>
+                <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--accent)' }}>
                   {ATTEMPT_LABELS[a.ascent_style ?? a.attempt_type ?? ''] ?? (a.ascent_style ?? a.attempt_type)}
                 </span>
               )}
@@ -119,20 +119,20 @@ export default function DashboardPage() {
         <div className="chart-section" style={{ marginBottom: 0 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
             <h2 style={{ margin: 0 }}>Progetti attivi</h2>
-            <Link to="/projects" style={{ fontSize: 12, color: '#2d5a27', textDecoration: 'none', fontWeight: 600 }}>
+            <Link to="/projects" style={{ fontSize: 12, color: 'var(--accent)', textDecoration: 'none', fontWeight: 600 }}>
               Vedi tutti →
             </Link>
           </div>
           {activeProjects.length === 0 && (
-            <div style={{ fontSize: 13, color: '#8a9a87', textAlign: 'center', padding: '20px 0' }}>
+            <div style={{ fontSize: 13, color: 'var(--text-muted)', textAlign: 'center', padding: '20px 0' }}>
               Nessun progetto attivo.{' '}
-              <Link to="/projects" style={{ color: '#2d5a27', fontWeight: 600 }}>Aggiungi →</Link>
+              <Link to="/projects" style={{ color: 'var(--accent)', fontWeight: 600 }}>Aggiungi →</Link>
             </div>
           )}
           {activeProjects.slice(0, 5).map(p => (
             <div key={p.id} style={{
               display: 'flex', alignItems: 'center', gap: 8, padding: '7px 0',
-              borderBottom: '1px solid #f0f0e8', fontSize: 13,
+              borderBottom: '1px solid rgba(29,22,17,0.10)', fontSize: 13,
             }}>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
@@ -140,7 +140,7 @@ export default function DashboardPage() {
                     {p.route?.name}
                   </Link>
                 </div>
-                <div style={{ fontSize: 11, color: '#8a9a87' }}>
+                <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>
                   {p.route?.sector?.crag?.name} · {p.attempts_count} tent.
                 </div>
               </div>
@@ -148,7 +148,7 @@ export default function DashboardPage() {
                 <span className="grade-badge">{p.route.official_grade}</span>
               )}
               {p.progress > 0 && (
-                <span style={{ fontSize: 11, color: '#8a9a87' }}>{p.progress}%</span>
+                <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>{p.progress}%</span>
               )}
             </div>
           ))}
@@ -159,12 +159,12 @@ export default function DashboardPage() {
       <div className="chart-section" style={{ marginTop: 16 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
           <h2 style={{ margin: 0 }}>Attività amici</h2>
-          <Link to="/users" style={{ fontSize: 12, color: '#2d5a27', textDecoration: 'none', fontWeight: 600 }}>
+          <Link to="/users" style={{ fontSize: 12, color: 'var(--accent)', textDecoration: 'none', fontWeight: 600 }}>
             Cerca utenti →
           </Link>
         </div>
         {(feedAscents?.length ?? 0) === 0 && (
-          <div style={{ fontSize: 13, color: '#8a9a87', textAlign: 'center', padding: '20px 0' }}>
+          <div style={{ fontSize: 13, color: 'var(--text-muted)', textAlign: 'center', padding: '20px 0' }}>
             Nessuna attività. Segui altri arrampicatori per vedere le loro salite.
           </div>
         )}
@@ -194,7 +194,7 @@ export default function DashboardPage() {
               <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginTop: 2 }}>
                 {a.grade_at_ascent && <span className="grade-badge">{a.grade_at_ascent}</span>}
                 {a.attempt_type && (
-                  <span style={{ fontSize: 11, fontWeight: 700, color: '#2d5a27' }}>
+                  <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--accent)' }}>
                     {ATTEMPT_LABELS[a.attempt_type] ?? a.attempt_type}
                   </span>
                 )}
@@ -205,13 +205,13 @@ export default function DashboardPage() {
       </div>
 
       <div style={{ marginTop: 20, display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-        <Link to="/analytics" style={{ fontSize: 13, color: '#2d5a27', fontWeight: 600, textDecoration: 'none' }}>
+        <Link to="/analytics" style={{ fontSize: 13, color: 'var(--accent)', fontWeight: 600, textDecoration: 'none' }}>
           → Analisi complete
         </Link>
-        <Link to="/explore" style={{ fontSize: 13, color: '#2d5a27', fontWeight: 600, textDecoration: 'none' }}>
+        <Link to="/explore" style={{ fontSize: 13, color: 'var(--accent)', fontWeight: 600, textDecoration: 'none' }}>
           → Esplora falesie
         </Link>
-        <Link to="/sessions" style={{ fontSize: 13, color: '#2d5a27', fontWeight: 600, textDecoration: 'none' }}>
+        <Link to="/sessions" style={{ fontSize: 13, color: 'var(--accent)', fontWeight: 600, textDecoration: 'none' }}>
           → Aggiungi sessione
         </Link>
       </div>

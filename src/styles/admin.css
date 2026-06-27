@@ -11,9 +11,11 @@
 }
 
 .admin-title {
+  font-family: "Sora", "Inter", system-ui, sans-serif;
   font-size: 26px;
-  font-weight: 700;
-  color: var(--text);
+  font-weight: 800;
+  color: var(--text-on-dark);
+  letter-spacing: -0.03em;
 }
 
 .admin-section {
@@ -29,36 +31,42 @@
 
 .admin-section-title {
   font-size: 16px;
-  font-weight: 600;
-  color: var(--text);
+  font-weight: 700;
+  color: var(--text-on-dark);
 }
 
 /* ── Buttons ─────────────────────────────────────────────────────────── */
 .btn-primary {
-  background: #2d5a27;
-  color: #fff;
+  background: linear-gradient(135deg, #E85D35, #B83B20);
+  color: #FFF7EA;
   border: none;
-  border-radius: 6px;
-  padding: 7px 14px;
+  border-radius: 999px;
+  padding: 7px 18px;
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 700;
+  font-family: inherit;
   cursor: pointer;
-  transition: background 0.15s;
+  box-shadow: 0 4px 12px rgba(232,93,53,0.28);
+  transition: transform var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease);
 }
-.btn-primary:hover:not(:disabled) { background: #234820; }
+.btn-primary:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(232,93,53,0.36);
+}
 .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
 
 .btn-secondary {
-  background: #f5f5f0;
+  background: var(--surface);
   color: var(--text);
-  border: 1px solid #e0e0d8;
-  border-radius: 6px;
-  padding: 6px 12px;
+  border: 1px solid rgba(29,22,17,0.16);
+  border-radius: 999px;
+  padding: 6px 14px;
   font-size: 13px;
+  font-family: inherit;
   cursor: pointer;
-  transition: background 0.15s;
+  transition: background var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease);
 }
-.btn-secondary:hover { background: #ececea; }
+.btn-secondary:hover { background: var(--surface-warm); border-color: rgba(232,93,53,0.30); }
 
 .btn-danger {
   background: none;
@@ -67,6 +75,7 @@
   border-radius: 6px;
   padding: 4px 10px;
   font-size: 12px;
+  font-family: inherit;
   cursor: pointer;
   transition: background 0.15s;
 }
@@ -74,25 +83,27 @@
 
 .btn-edit {
   background: none;
-  color: #2d5a27;
-  border: 1px solid #2d5a27;
+  color: var(--accent);
+  border: 1px solid var(--accent);
   border-radius: 6px;
   padding: 4px 10px;
   font-size: 12px;
+  font-family: inherit;
   cursor: pointer;
   transition: background 0.15s;
 }
-.btn-edit:hover { background: #e8f5e4; }
+.btn-edit:hover { background: rgba(232,93,53,0.10); }
 
 /* ── Admin table ─────────────────────────────────────────────────────── */
 .admin-table {
   width: 100%;
   border-collapse: collapse;
-  background: #fff;
-  border: 1px solid #e0e0d8;
-  border-radius: 10px;
+  background: linear-gradient(180deg, #FFF9EF 0%, #F4E4CA 100%);
+  border: 1px solid rgba(255,255,255,0.45);
+  border-radius: 14px;
   overflow: hidden;
   font-size: 13px;
+  box-shadow: var(--cc-shadow-card);
 }
 
 .admin-table th {
@@ -102,19 +113,20 @@
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  color: #8a9a87;
-  background: #fafaf8;
-  border-bottom: 1px solid #e0e0d8;
+  color: var(--text-muted);
+  background: var(--surface-muted);
+  border-bottom: 1px solid rgba(29,22,17,0.10);
 }
 
 .admin-table td {
   padding: 10px 16px;
-  border-bottom: 1px solid #f0f0e8;
+  border-bottom: 1px solid rgba(29,22,17,0.08);
   color: var(--text);
   vertical-align: middle;
 }
 
 .admin-table tr:last-child td { border-bottom: none; }
+.admin-table tr:hover td { background: rgba(232,93,53,0.06); }
 
 .admin-table .actions {
   display: flex;
@@ -124,11 +136,12 @@
 
 /* ── Inline form ─────────────────────────────────────────────────────── */
 .inline-form {
-  background: #f9faf8;
-  border: 1px solid #d0dace;
-  border-radius: 8px;
+  background: linear-gradient(180deg, #FFF9EF 0%, #F4E4CA 100%);
+  border: 1px solid rgba(255,255,255,0.45);
+  border-radius: 14px;
   padding: 16px;
   margin-bottom: 16px;
+  box-shadow: var(--cc-shadow-card);
 }
 
 .form-grid {
@@ -157,30 +170,31 @@
 
 .form-group label {
   font-size: 11px;
-  font-weight: 600;
+  font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  color: #8a9a87;
+  color: var(--text-muted);
 }
 
 .form-group input,
 .form-group select,
 .form-group textarea {
-  border: 1px solid #e0e0d8;
-  border-radius: 6px;
+  border: 1px solid rgba(29,22,17,0.18);
+  border-radius: 8px;
   padding: 7px 10px;
   font-size: 13px;
   font-family: inherit;
-  background: #fff;
+  background: #FFFDF7;
   color: var(--text);
   outline: none;
-  transition: border-color 0.15s;
+  transition: border-color var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease);
 }
 
 .form-group input:focus,
 .form-group select:focus,
 .form-group textarea:focus {
-  border-color: #2d5a27;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(232,93,53,0.14);
 }
 
 .form-group textarea {
@@ -207,16 +221,17 @@
 
 /* ── Sector blocks ───────────────────────────────────────────────────── */
 .admin-sector-block {
-  background: #fff;
-  border: 1px solid #e0e0d8;
-  border-radius: 10px;
+  background: linear-gradient(180deg, #FFF9EF 0%, #F4E4CA 100%);
+  border: 1px solid rgba(255,255,255,0.45);
+  border-radius: 14px;
   margin-bottom: 10px;
   overflow: hidden;
+  box-shadow: var(--cc-shadow-card);
 }
 
 .admin-sector-header {
   padding: 12px 16px;
-  background: #fafaf8;
+  background: var(--surface-muted);
   border-bottom: 1px solid transparent;
   display: flex;
   align-items: center;
@@ -224,7 +239,7 @@
 }
 
 .admin-sector-block:has(.admin-sector-body) .admin-sector-header {
-  border-bottom-color: #f0f0e8;
+  border-bottom-color: rgba(29,22,17,0.10);
 }
 
 .admin-sector-toggle {
@@ -232,7 +247,7 @@
   border: none;
   cursor: pointer;
   font-size: 12px;
-  color: #6b7a67;
+  color: var(--text-muted);
   padding: 0 2px;
   line-height: 1;
 }
@@ -249,7 +264,7 @@
 
 .admin-routes-loading {
   font-size: 13px;
-  color: #8a9a87;
+  color: var(--text-muted);
   padding: 8px 0;
 }
 

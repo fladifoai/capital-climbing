@@ -119,7 +119,7 @@ export default function UserProfilePage() {
                   <span className="grade-badge">{a.grade_at_ascent ?? a.route?.official_grade}</span>
                 )}
                 {(a.ascent_style ?? a.attempt_type) && (
-                  <span style={{ fontSize: 11, fontWeight: 700, color: '#2d5a27' }}>
+                  <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--accent)' }}>
                     {ATTEMPT_LABELS[a.ascent_style ?? a.attempt_type ?? ''] ?? (a.ascent_style ?? a.attempt_type)}
                   </span>
                 )}
@@ -151,10 +151,10 @@ export default function UserProfilePage() {
               <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
                 {p.route?.official_grade && <span className="grade-badge">{p.route.official_grade}</span>}
                 {p.attempts_count > 0 && (
-                  <span style={{ fontSize: 11, color: '#8a9a87' }}>{p.attempts_count} tent.</span>
+                  <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>{p.attempts_count} tent.</span>
                 )}
                 {p.progress > 0 && (
-                  <span style={{ fontSize: 11, color: '#8a9a87' }}>{p.progress}%</span>
+                  <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>{p.progress}%</span>
                 )}
               </div>
             </div>

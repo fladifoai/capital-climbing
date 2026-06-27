@@ -84,9 +84,9 @@ export default function SettingsPage() {
     <div className="settings-page">
       <h1>Impostazioni</h1>
       {profile && (
-        <p style={{ fontSize: 13, color: '#8a9a87', margin: '0 0 20px' }}>
+        <p style={{ fontSize: 13, color: 'var(--text-on-dark-muted)', margin: '0 0 20px' }}>
           Profilo pubblico:{' '}
-          <Link to={`/u/${profile.username}`} style={{ color: '#2d5a27' }}>@{profile.username}</Link>
+          <Link to={`/u/${profile.username}`} style={{ color: 'var(--accent)' }}>@{profile.username}</Link>
         </p>
       )}
 

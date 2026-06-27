@@ -5,7 +5,7 @@ export default function AuthGuard() {
   const { user, loading } = useAuth()
 
   if (loading) return (
-    <div style={{ display: 'grid', placeItems: 'center', minHeight: '100vh', color: '#6b7a67', fontSize: 14 }}>
+    <div style={{ display: 'grid', placeItems: 'center', minHeight: '100vh', color: 'var(--text-on-dark-muted)', fontSize: 14 }}>
       Caricamento…
     </div>
   )

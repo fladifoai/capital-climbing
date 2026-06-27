@@ -15,10 +15,11 @@
 }
 
 .analytics-header h1 {
-  font-size: 24px;
-  font-weight: 700;
-  color: var(--text);
-  letter-spacing: -0.02em;
+  font-family: "Sora", "Inter", system-ui, sans-serif;
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--text-on-dark);
+  letter-spacing: -0.03em;
   margin: 0;
 }
 
@@ -106,15 +107,16 @@
 }
 
 .kpi-card {
-  background: var(--surface);
+  background: linear-gradient(180deg, #FFF9EF 0%, #F2DEC0 100%);
   border-radius: var(--r-md);
-  padding: 16px 14px 14px;
+  padding: 18px 14px 16px;
   text-align: center;
-  box-shadow: var(--shadow-sm);
-  border: 1px solid rgba(0,0,0,0.04);
+  box-shadow: var(--cc-shadow-card);
+  border: 1px solid rgba(255,255,255,0.50);
   transition: box-shadow var(--t-mid) var(--ease), transform var(--t-mid) var(--ease);
   position: relative;
   overflow: hidden;
+  color: var(--text);
 }
 
 .kpi-card::before {
@@ -122,8 +124,8 @@
   position: absolute;
   top: 0; left: 0; right: 0;
   height: 3px;
-  background: linear-gradient(90deg, var(--green-500), var(--green-400));
-  opacity: 0.6;
+  background: linear-gradient(90deg, var(--accent), var(--accent-dark));
+  opacity: 0.8;
 }
 
 .kpi-card:hover {
@@ -132,12 +134,13 @@
 }
 
 .kpi-value {
-  font-size: 26px;
-  font-weight: 800;
-  color: var(--green-700);
+  font-family: "Sora", "Inter", system-ui, sans-serif;
+  font-size: 30px;
+  font-weight: 900;
+  color: var(--text);
   line-height: 1;
   margin-bottom: 6px;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.04em;
 }
 
 .kpi-label {
@@ -200,12 +203,13 @@
 
 /* ── Chart sections ──────────────────────────────────────────────────────── */
 .chart-section {
-  background: var(--surface);
+  background: linear-gradient(180deg, #FFF9EF 0%, #F4E4CA 100%);
   border-radius: var(--r-lg);
   padding: 20px 20px 18px;
   margin-bottom: 14px;
-  box-shadow: var(--shadow-sm);
-  border: 1px solid rgba(0,0,0,0.04);
+  box-shadow: var(--cc-shadow-card);
+  border: 1px solid rgba(255,255,255,0.50);
+  color: var(--text);
 }
 
 .chart-section h2 {
@@ -256,18 +260,19 @@
 
 /* ── Scatter tooltip ─────────────────────────────────────────────────────── */
 .chart-tooltip {
-  background: var(--surface);
-  border: 1px solid rgba(0,0,0,0.08);
+  background: #1D1611;
+  border: 1px solid rgba(255,247,234,0.14);
   border-radius: var(--r-md);
   padding: 10px 14px;
   font-size: 12px;
   max-width: 220px;
-  box-shadow: var(--shadow-md);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.40);
+  color: #FFF7EA;
 }
-.chart-tooltip-title { font-weight: 700; margin-bottom: 2px; color: var(--text); }
-.chart-tooltip-sub { color: var(--text-2); margin-bottom: 6px; font-size: 11px; }
+.chart-tooltip-title { font-weight: 700; margin-bottom: 2px; color: #FFF7EA; }
+.chart-tooltip-sub { color: rgba(255,247,234,0.64); margin-bottom: 6px; font-size: 11px; }
 .chart-tooltip-row { display: flex; gap: 10px; align-items: baseline; }
-.chart-tooltip-date { color: var(--text-muted); margin-top: 4px; font-size: 11px; }
+.chart-tooltip-date { color: rgba(255,247,234,0.48); margin-top: 4px; font-size: 11px; }
 
 /* ── Data quality / within panel ─────────────────────────────────────────── */
 .quality-panel {

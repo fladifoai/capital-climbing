@@ -90,23 +90,23 @@ function NewProjectForm({ userId, onDone, onCancel }: NewProjectFormProps) {
           placeholder="Cerca per nome via…"
           autoComplete="off"
         />
-        {isFetching && <span style={{ fontSize: 11, color: '#8a9a87' }}>Ricerca…</span>}
+        {isFetching && <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>Ricerca…</span>}
         {showDropdown && results && results.length > 0 && (
           <div style={{
             position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 200,
-            background: '#fff', border: '1px solid #e0e0d8', borderRadius: 8,
-            boxShadow: '0 4px 16px rgba(0,0,0,0.1)', maxHeight: 220, overflowY: 'auto',
+            background: '#FFF9EF', border: '1px solid rgba(29,22,17,0.14)', borderRadius: 10,
+            boxShadow: '0 8px 24px rgba(23,18,14,0.22)', maxHeight: 220, overflowY: 'auto',
           }}>
             {results.map(r => (
               <div
                 key={r.id}
                 onClick={() => { setSelectedRoute(r); setQuery(r.name); setShowDropdown(false) }}
-                style={{ padding: '9px 12px', cursor: 'pointer', borderBottom: '1px solid #f0f0e8', fontSize: 13 }}
-                onMouseEnter={e => (e.currentTarget.style.background = '#f5f7f4')}
+                style={{ padding: '9px 12px', cursor: 'pointer', borderBottom: '1px solid rgba(29,22,17,0.08)', fontSize: 13 }}
+                onMouseEnter={e => (e.currentTarget.style.background = 'rgba(232,93,53,0.08)')}
                 onMouseLeave={e => (e.currentTarget.style.background = '')}
               >
-                <div style={{ fontWeight: 600 }}>{r.name}</div>
-                <div style={{ fontSize: 11, color: '#8a9a87' }}>
+                <div style={{ fontWeight: 600, color: 'var(--text)' }}>{r.name}</div>
+                <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>
                   {r.crag_name} › {r.sector_name}
                   {r.official_grade && <span className="grade-badge" style={{ marginLeft: 8 }}>{r.official_grade}</span>}
                 </div>
@@ -115,10 +115,10 @@ function NewProjectForm({ userId, onDone, onCancel }: NewProjectFormProps) {
           </div>
         )}
         {showDropdown && query.length >= 2 && results?.length === 0 && !isFetching && (
-          <div style={{ fontSize: 12, color: '#8a9a87', marginTop: 4 }}>Nessuna via trovata.</div>
+          <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4 }}>Nessuna via trovata.</div>
         )}
         {selectedRoute && (
-          <div style={{ fontSize: 12, color: '#2d5a27', fontWeight: 600, marginTop: 4 }}>
+          <div style={{ fontSize: 12, color: 'var(--accent)', fontWeight: 600, marginTop: 4 }}>
             ✓ {selectedRoute.crag_name} › {selectedRoute.sector_name} › {selectedRoute.name}
           </div>
         )}
@@ -492,17 +492,17 @@ export default function ProjectsPage() {
   return (
     <div className="projects-page">
       <div className="projects-header">
-        <h1>Progetti {activeCount > 0 && <span style={{ fontSize: 14, color: '#8a9a87', fontWeight: 400 }}>({activeCount} attivi)</span>}</h1>
+        <h1>Progetti {activeCount > 0 && <span style={{ fontSize: 14, color: 'var(--text-on-dark-muted)', fontWeight: 400 }}>({activeCount} attivi)</span>}</h1>
         {!addingNew && !convertingProject && (
           <button className="btn-primary" onClick={() => setAddingNew(true)}>+ Nuovo progetto</button>
         )}
       </div>
 
       {convertDone && (
-        <div style={{ background: '#e8f5e4', border: '1px solid #b8d8b0', borderRadius: 8, padding: '12px 16px', marginBottom: 16, fontSize: 13, color: '#2d5a27', fontWeight: 600 }}>
+        <div style={{ background: '#DDF5E8', border: '1px solid #A8D5BE', borderRadius: 10, padding: '12px 16px', marginBottom: 16, fontSize: 13, color: '#176C42', fontWeight: 600 }}>
           ✓ Ascensione registrata e progetto completato!{' '}
           <button
-            style={{ background: 'none', border: 'none', color: '#2d5a27', cursor: 'pointer', fontWeight: 600, textDecoration: 'underline', fontSize: 13 }}
+            style={{ background: 'none', border: 'none', color: '#176C42', cursor: 'pointer', fontWeight: 600, textDecoration: 'underline', fontSize: 13 }}
             onClick={() => setConvertDone(false)}
           >
             Chiudi

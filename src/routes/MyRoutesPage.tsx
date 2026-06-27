@@ -80,7 +80,7 @@ function AscentRow({ a, onDelete, isPending }: AscentRowProps) {
         <div className="ascent-row-meta">
           {grade && <span className="grade-badge">{grade}</span>}
           {type && (
-            <span style={{ fontSize: 11, fontWeight: 700, color: ATTEMPT_COLORS[type] ?? '#2d5a27' }}>
+            <span style={{ fontSize: 11, fontWeight: 700, color: ATTEMPT_COLORS[type] ?? 'var(--accent)' }}>
               {ATTEMPT_LABELS[type] ?? type}
             </span>
           )}
@@ -105,7 +105,7 @@ function AscentRow({ a, onDelete, isPending }: AscentRowProps) {
           <div className="ascent-detail-grid">
             <div className="ascent-detail-item">
               <span className="ascent-detail-label">Via</span>
-              <Link to={`/routes/${a.route?.id}`} style={{ color: '#2d5a27', fontWeight: 600, textDecoration: 'none' }}>
+              <Link to={`/routes/${a.route?.id}`} style={{ color: 'var(--accent)', fontWeight: 600, textDecoration: 'none' }}>
                 {a.route?.name}
               </Link>
             </div>
@@ -291,7 +291,7 @@ export default function MyRoutesPage() {
       {/* Sort + group controls */}
       <div className="logbook-sort-bar">
         <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-          <span style={{ fontSize: 11, color: '#8a9a87', fontWeight: 600 }}>Ordina:</span>
+          <span style={{ fontSize: 11, color: 'var(--text-on-dark-muted)', fontWeight: 600 }}>Ordina:</span>
           {([
             ['date_desc', 'Data ↓'],
             ['date_asc', 'Data ↑'],
@@ -305,20 +305,20 @@ export default function MyRoutesPage() {
               style={{
                 padding: '3px 9px', fontSize: 11, borderRadius: 12, border: '1px solid',
                 cursor: 'pointer', fontFamily: 'inherit', fontWeight: 600,
-                background: sort === key ? '#2d5a27' : 'transparent',
-                color: sort === key ? '#fff' : '#6a7a68',
-                borderColor: sort === key ? '#2d5a27' : '#d0d8cc',
+                background: sort === key ? '#E85D35' : 'transparent',
+                color: sort === key ? '#FFF7EA' : 'var(--text-on-dark-muted)',
+                borderColor: sort === key ? '#E85D35' : 'rgba(255,247,234,0.22)',
               }}
             >
               {label}
             </button>
           ))}
         </div>
-        <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, cursor: 'pointer', color: '#4a5a48' }}>
+        <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, cursor: 'pointer', color: 'var(--text-on-dark-muted)' }}>
           <input type="checkbox" checked={grouped} onChange={e => setGrouped(e.target.checked)} />
           Raggruppa per grado
         </label>
-        <span style={{ fontSize: 12, color: '#8a9a87', marginLeft: 'auto' }}>
+        <span style={{ fontSize: 12, color: 'var(--text-on-dark-muted)', marginLeft: 'auto' }}>
           {filtered.length} {filtered.length === 1 ? 'ascensione' : 'ascensioni'}
         </span>
       </div>
@@ -335,7 +335,7 @@ export default function MyRoutesPage() {
         <div key={g.grade} className="grade-group">
           <div className="grade-group-header">
             <span className="grade-badge" style={{ fontSize: 14 }}>{g.grade}</span>
-            <span style={{ fontSize: 12, color: '#8a9a87' }}>{g.items.length} {g.items.length === 1 ? 'salita' : 'salite'}</span>
+            <span style={{ fontSize: 12, color: 'var(--text-on-dark-muted)' }}>{g.items.length} {g.items.length === 1 ? 'salita' : 'salite'}</span>
           </div>
           {g.items.map(a => (
             <AscentRow key={a.id} a={a} onDelete={handleDelete} isPending={deleteAscent.isPending} />
