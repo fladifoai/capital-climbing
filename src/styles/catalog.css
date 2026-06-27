@@ -1,7 +1,7 @@
 .catalog-page { max-width: 1100px; }
 
 /* ── Header ── */
-.catalog-header { margin-bottom: 32px; }
+.catalog-header { margin-bottom: 32px; display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
 
 .catalog-title {
   font-family: "Sora", "Inter", system-ui, sans-serif;

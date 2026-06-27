@@ -4,24 +4,24 @@ import '../styles/landing.css'
 
 const FEATURES = [
   {
+    icon: '🗺️',
+    title: 'Catalogo tecnico',
+    desc: 'Falesie, settori e vie organizzati per regione, area e grado. Non una lista piatta.',
+  },
+  {
     icon: '📋',
-    title: 'Registra ascensioni',
-    desc: 'Via, falesia, settore, grado, tipo tentativo e note personali. Ogni dettaglio al posto giusto.',
+    title: 'Logbook personale',
+    desc: 'Ascensioni, tentativi, sessioni, progetti e note. Ogni dato personale resta legato al tuo account.',
   },
   {
     icon: '📈',
-    title: 'Analizza la progressione',
-    desc: 'Grafici su gradi, OS, Flash, Redpoint e andamento nel tempo. Capisci davvero come stai crescendo.',
+    title: 'Analisi per migliorare',
+    desc: 'Grafici, progressione, distribuzione per grado, OS/Flash/RP, volume, progetti. Capisci come stai crescendo.',
   },
   {
-    icon: '🎯',
-    title: 'Gestisci progetti',
-    desc: 'Monitora progetti attivi, tentativi, beta e prossima strategia. Nessun progetto dimenticato.',
-  },
-  {
-    icon: '🗺️',
-    title: 'Organizza falesie e vie',
-    desc: 'Catalogo ordinato per falesia, settore, grado e stato personale. Tutto al suo posto.',
+    icon: '🔒',
+    title: 'Privacy per default',
+    desc: 'I tuoi dati personali sono privati. Decidi tu cosa condividere sul profilo pubblico.',
   },
 ]
 
@@ -51,8 +51,8 @@ const STEPS = [
 export default function LandingPage() {
   const { user } = useAuth()
 
-  const ctaTo = user ? '/dashboard' : '/register'
-  const ctaLabel = user ? 'Vai alla dashboard →' : 'Inizia ora — è gratis'
+  const ctaTo = user ? '/home' : '/register'
+  const ctaLabel = user ? 'Vai alla Home →' : 'Inizia ora — è gratis'
 
   return (
     <div className="landing-page">
@@ -64,6 +64,7 @@ export default function LandingPage() {
         </Link>
 
         <nav className="landing-nav">
+          <Link to="/explore" className="landing-nav-link">Esplora</Link>
           <a href="#funzionalita" className="landing-nav-link">Funzionalità</a>
           <a href="#come-funziona" className="landing-nav-link">Come funziona</a>
           <a href="#privacy" className="landing-nav-link">Privacy</a>
@@ -92,29 +93,29 @@ export default function LandingPage() {
             Registra vie, falesie, sessioni e progetti. Analizza la tua progressione con statistiche pensate per climber veri.
           </p>
           <div className="landing-hero-actions">
-            <Link to={ctaTo} className="btn-hero-primary">
+            <Link to="/explore" className="btn-hero-primary">
+              Esplora le falesie
+            </Link>
+            <Link to={ctaTo} className="btn-hero-secondary">
               {ctaLabel}
             </Link>
-            <a href="#come-funziona" className="btn-hero-secondary">
-              Scopri come funziona
-            </a>
           </div>
         </div>
 
-        {/* Preview mock */}
+        {/* Preview mock — dati demo, non reali */}
         <div className="landing-hero-preview">
           <div className="preview-kpi-card">
-            <div className="preview-kpi-val">80</div>
-            <div className="preview-kpi-label">Vie completate</div>
+            <div className="preview-kpi-val">124</div>
+            <div className="preview-kpi-label">Vie demo</div>
           </div>
           <div className="preview-kpi-card">
-            <div className="preview-kpi-val">7a+</div>
-            <div className="preview-kpi-label">Grado massimo</div>
+            <div className="preview-kpi-val">7b</div>
+            <div className="preview-kpi-label">Grado max demo</div>
           </div>
           <div className="preview-chart-card">
-            <div className="preview-chart-title">Progressione gradi</div>
+            <div className="preview-chart-title">Progressione gradi (demo)</div>
             <div className="preview-chart-bars">
-              {[30,45,50,55,60,65,75,82,88,92,100,95].map((h, i) => (
+              {[20,35,42,48,55,60,68,74,80,87,92,95].map((h, i) => (
                 <div
                   key={i}
                   className="preview-chart-bar"
@@ -126,17 +127,17 @@ export default function LandingPage() {
           <div className="preview-ascent-card">
             <div className="preview-ascent-dot" />
             <div>
-              <div className="preview-ascent-text">Donkey Kong · 7a+</div>
-              <div className="preview-ascent-sub">Collepardo · On-sight · oggi</div>
+              <div className="preview-ascent-text">Spigolo Tecnico · 7a</div>
+              <div className="preview-ascent-sub">Monte Demo · On-sight · ieri</div>
             </div>
           </div>
           <div className="preview-kpi-card">
-            <div className="preview-kpi-val">6c+</div>
-            <div className="preview-kpi-label">Max On-sight</div>
+            <div className="preview-kpi-val">61%</div>
+            <div className="preview-kpi-label">OS + Flash demo</div>
           </div>
           <div className="preview-kpi-card">
-            <div className="preview-kpi-val">3</div>
-            <div className="preview-kpi-label">Progetti attivi</div>
+            <div className="preview-kpi-val">4</div>
+            <div className="preview-kpi-label">Progetti demo</div>
           </div>
         </div>
       </section>
@@ -246,14 +247,14 @@ export default function LandingPage() {
           Pronto a capire davvero come stai scalando?
         </h2>
         <p className="landing-cta-final-sub">
-          Crea il tuo account e inizia a tracciare le tue salite oggi.
+          Esplora il catalogo pubblico subito, oppure crea un account per tracciare le tue salite.
         </p>
         <div className="landing-cta-final-actions">
-          <Link to={ctaTo} className="btn-hero-primary">
-            {ctaLabel}
+          <Link to="/explore" className="btn-hero-primary">
+            Esplora le falesie
           </Link>
-          <Link to="/explore" className="btn-hero-secondary">
-            Esplora il catalogo
+          <Link to={ctaTo} className="btn-hero-secondary">
+            {ctaLabel}
           </Link>
         </div>
       </section>

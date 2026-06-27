@@ -4,17 +4,17 @@ import ErrorBoundary from './ErrorBoundary'
 import './Layout.css'
 
 const publicNavItems = [
-  { to: '/explore', label: 'Falesie' },
-  { to: '/users', label: 'Utenti' },
+  { to: '/explore', label: 'Esplora' },
 ]
 
 const privateNavItems = [
-  { to: '/dashboard', label: 'Dashboard' },
-  { to: '/my-routes', label: 'Le mie vie' },
+  { to: '/home', label: 'Home' },
+  { to: '/explore', label: 'Esplora' },
   { to: '/sessions', label: 'Sessioni' },
   { to: '/projects', label: 'Progetti' },
   { to: '/analytics', label: 'Analisi' },
-  { to: '/settings', label: 'Impostazioni' },
+  { to: '/my-routes', label: 'Le mie vie' },
+  { to: '/settings', label: 'Profilo' },
 ]
 
 const adminNavItems = [
@@ -41,10 +41,10 @@ export default function Layout() {
   return (
     <div className="layout">
       <aside className="sidebar">
-        <div className="brand">
+        <Link to={user ? '/home' : '/'} className="brand" style={{ textDecoration: 'none' }}>
           <span className="brandmark">▲</span>
           <span className="brand-name">Capital Climbing</span>
-        </div>
+        </Link>
         <nav>
           {navItems.map(({ to, label: navLabel }) => (
             <NavLink

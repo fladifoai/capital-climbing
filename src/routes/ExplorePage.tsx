@@ -9,8 +9,21 @@ export default function ExplorePage() {
   return (
     <div className="catalog-page">
       <div className="catalog-header">
-        <h1 className="catalog-title">Falesie</h1>
-        <p className="catalog-subtitle">Italia · tutte le regioni</p>
+        <div>
+          <h1 className="catalog-title">Esplora il catalogo</h1>
+          <p className="catalog-subtitle">Cerca falesie, settori e vie. Il catalogo è condiviso, i tuoi dati personali restano separati.</p>
+        </div>
+        <Link to="/home" style={{
+          display: 'inline-flex', alignItems: 'center', gap: 6,
+          height: 36, padding: '0 14px', borderRadius: 999,
+          border: '1px solid rgba(255,247,234,0.20)',
+          background: 'rgba(255,247,234,0.05)',
+          color: 'var(--text-muted)', fontSize: 13, fontWeight: 600,
+          textDecoration: 'none',
+          flexShrink: 0,
+        }}>
+          ← Home
+        </Link>
       </div>
 
       {stats && (
