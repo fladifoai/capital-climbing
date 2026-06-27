@@ -78,48 +78,107 @@ export default function CragDetailPage() {
         <div className="empty-state">Nessun settore ancora inserito.</div>
       )}
 
-      {sectors && sectors.map(sector => (
-        <div key={sector.id} className="sector-block">
-          <div className="sector-header">
-            <span className="sector-name">{sector.name}</span>
-            <span className="sector-badge">{sector.routes.length} vie</span>
-          </div>
+      {sectors && sectors.map(sector => {
+        const routesWithGrade = sector.routes.filter(r => r.grade_numeric != null)
+        const minRoute = routesWithGrade.length
+          ? routesWithGrade.reduce((a, b) => (a.grade_numeric! < b.grade_numeric! ? a : b))
+          : null
+        const maxRoute = routesWithGrade.length
+          ? routesWithGrade.reduce((a, b) => (a.grade_numeric! > b.grade_numeric! ? a : b))
+          : null
+        const gradeRange = minRoute && maxRoute && minRoute.id !== maxRoute.id
+          ? `${minRoute.official_grade} – ${maxRoute.official_grade}`
+          : (minRoute ? minRoute.official_grade : null)
 
-          {sector.routes.length === 0 ? (
-            <div className="empty-state" style={{ padding: '20px' }}>Nessuna via.</div>
-          ) : (
-            <table className="route-table">
-              <thead>
-                <tr>
-                  <th>#</th>
-                  <th>Via</th>
-                  <th>Grado</th>
-                  <th>Lunghezza</th>
-                  <th>Spit</th>
-                </tr>
-              </thead>
-              <tbody>
-                {sector.routes.map((route, i) => (
-                  <tr
-                    key={route.id}
-                    onClick={() => navigate(`/routes/${route.id}`)}
-                  >
-                    <td style={{ color: '#8a9a87' }}>{route.line_order ?? i + 1}</td>
-                    <td><strong>{route.name}</strong></td>
-                    <td>
-                      {route.official_grade
-                        ? <span className="grade-badge">{route.official_grade}</span>
-                        : <span style={{ color: '#ccc' }}>—</span>}
-                    </td>
-                    <td>{route.length_m ? `${route.length_m} m` : '—'}</td>
-                    <td>{route.bolts ?? '—'}</td>
+        return (
+          <div key={sector.id} className="sector-block">
+            <div className="sector-header">
+              <div>
+                <span className="sector-name">{sector.name}</span>
+                {(sector.orientation || sector.approach_notes) && (
+                  <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>
+                    {[sector.orientation, sector.approach_notes].filter(Boolean).join(' · ')}
+                  </div>
+                )}
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 2 }}>
+                <span className="sector-badge">{sector.routes.length} vie</span>
+                {gradeRange && (
+                  <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>{gradeRange}</span>
+                )}
+              </div>
+            </div>
+
+            {sector.routes.length === 0 ? (
+              <div className="empty-state" style={{ padding: '20px' }}>Nessuna via.</div>
+            ) : (
+              <table className="route-table">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Via</th>
+                    <th>Grado</th>
+                    <th>Lunghezza</th>
+                    <th>Spit</th>
                   </tr>
+                </thead>
+                <tbody>
+                  {sector.routes.map((route, i) => (
+                    <tr
+                      key={route.id}
+                      onClick={() => navigate(`/routes/${route.id}`)}
+                    >
+                      <td style={{ color: '#8a9a87' }}>{route.line_order ?? i + 1}</td>
+                      <td><strong>{route.name}</strong></td>
+                      <td>
+                        {route.official_grade
+                          ? <span className="grade-badge">{route.official_grade}</span>
+                          : <span style={{ color: '#ccc' }}>—</span>}
+                      </td>
+                      <td>{route.length_m ? `${route.length_m} m` : '—'}</td>
+                      <td>{route.bolts ?? '—'}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+
+            {sector.subsectors && sector.subsectors.length > 0 && (
+              <div style={{ padding: '0 16px 16px' }}>
+                {sector.subsectors.map(sub => (
+                  <div key={sub.id} style={{ marginTop: 12 }}>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-2)', padding: '8px 6px 4px' }}>
+                      {sub.name}
+                      <span style={{ fontSize: 11, fontWeight: 400, color: 'var(--text-muted)', marginLeft: 8 }}>
+                        {sub.routes.length} vie
+                      </span>
+                    </div>
+                    {sub.routes.length > 0 && (
+                      <table className="route-table">
+                        <tbody>
+                          {sub.routes.map((route, i) => (
+                            <tr key={route.id} onClick={() => navigate(`/routes/${route.id}`)}>
+                              <td style={{ color: '#8a9a87' }}>{route.line_order ?? i + 1}</td>
+                              <td><strong>{route.name}</strong></td>
+                              <td>
+                                {route.official_grade
+                                  ? <span className="grade-badge">{route.official_grade}</span>
+                                  : <span style={{ color: '#ccc' }}>—</span>}
+                              </td>
+                              <td>{route.length_m ? `${route.length_m} m` : '—'}</td>
+                              <td>{route.bolts ?? '—'}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    )}
+                  </div>
                 ))}
-              </tbody>
-            </table>
-          )}
-        </div>
-      ))}
+              </div>
+            )}
+          </div>
+        )
+      })}
     </div>
   )
 }

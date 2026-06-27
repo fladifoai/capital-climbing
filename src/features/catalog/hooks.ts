@@ -22,6 +22,7 @@ export interface CragSummary {
 
 export interface SectorWithRoutes extends Sector {
   routes: Route[]
+  subsectors?: SectorWithRoutes[]
 }
 
 export function useRegionsWithCounts(countryId: string) {
@@ -136,8 +137,8 @@ export function useSectorsWithRoutes(cragId: string) {
       const [sectorsRes, routesRes] = await Promise.all([
         supabase.from('sectors').select('*').eq('crag_id', cragId).order('sort_order'),
         supabase.from('routes')
-          .select('*, sectors!inner(crag_id)')
-          .eq('sectors.crag_id', cragId)
+          .select('*')
+          .eq('crag_id', cragId)
           .order('line_order', { nullsFirst: false })
           .order('name'),
       ])
@@ -145,16 +146,55 @@ export function useSectorsWithRoutes(cragId: string) {
       if (routesRes.error) throw routesRes.error
 
       const routesBySector = new Map<string, Route[]>()
+      const unsectoredRoutes: Route[] = []
+
       ;(routesRes.data ?? []).forEach(r => {
-        const list = routesBySector.get(r.sector_id) ?? []
-        list.push(r as Route)
-        routesBySector.set(r.sector_id, list)
+        if (r.sector_id) {
+          const list = routesBySector.get(r.sector_id) ?? []
+          list.push(r as Route)
+          routesBySector.set(r.sector_id, list)
+        } else {
+          unsectoredRoutes.push(r as Route)
+        }
       })
 
-      return (sectorsRes.data ?? []).map(s => ({
+      const topLevelSectors = (sectorsRes.data ?? []).filter(s => !s.parent_sector_id)
+      const subsectorsBySector = new Map<string, typeof sectorsRes.data>()
+      ;(sectorsRes.data ?? []).filter(s => s.parent_sector_id).forEach(s => {
+        const list = subsectorsBySector.get(s.parent_sector_id!) ?? []
+        list.push(s)
+        subsectorsBySector.set(s.parent_sector_id!, list)
+      })
+
+      const result: SectorWithRoutes[] = topLevelSectors.map(s => ({
         ...s,
         routes: routesBySector.get(s.id) ?? [],
+        subsectors: (subsectorsBySector.get(s.id) ?? []).map(sub => ({
+          ...sub,
+          routes: routesBySector.get(sub.id) ?? [],
+        })),
       }))
+
+      if (unsectoredRoutes.length > 0) {
+        result.push({
+          id: '__unsectored__',
+          crag_id: cragId,
+          parent_sector_id: null,
+          name: 'Da assegnare',
+          normalized_name: 'da-assegnare',
+          slug: null,
+          aliases: [],
+          description: null,
+          orientation: null,
+          approach_notes: null,
+          sort_order: 9999,
+          created_at: '',
+          updated_at: '',
+          routes: unsectoredRoutes,
+        })
+      }
+
+      return result
     },
     enabled: !!cragId,
   })

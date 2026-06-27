@@ -75,6 +75,8 @@ export interface Crag {
   id: string
   name: string
   normalized_name: string
+  slug: string | null
+  aliases: string[]
   country: string
   country_id: string | null
   region: string | null
@@ -103,8 +105,11 @@ export interface Crag {
 export interface Sector {
   id: string
   crag_id: string
+  parent_sector_id: string | null
   name: string
   normalized_name: string
+  slug: string | null
+  aliases: string[]
   description: string | null
   orientation: string | null
   approach_notes: string | null
@@ -115,11 +120,15 @@ export interface Sector {
 
 export interface Route {
   id: string
-  sector_id: string
+  crag_id: string | null
+  sector_id: string | null
   name: string
   normalized_name: string
+  slug: string | null
   official_grade: string | null
   grade_numeric: number | null
+  community_grade_raw: string | null
+  community_grade_numeric: number | null
   length_m: number | null
   pitches: number
   bolts: number | null
@@ -129,6 +138,12 @@ export interface Route {
   first_ascent: string | null
   bolter: string | null
   description: string | null
+  notes_public: string | null
+  safety_notes: string | null
+  beauty_avg: number | null
+  repetitions_count: number
+  source: string | null
+  source_url: string | null
   line_order: number | null
   position_label: string | null
   created_at: string
@@ -148,6 +163,11 @@ export interface Ascent {
   attempt_bucket: string | null
   legacy_attempt_type: string | null
   needs_review: boolean
+  route_name_snapshot: string | null
+  crag_name_snapshot: string | null
+  sector_name_snapshot: string | null
+  grade_snapshot: string | null
+  community_grade_snapshot: string | null
   grade_at_ascent: string | null
   grade_numeric_at_ascent: number | null
   score: number | null
@@ -261,5 +281,20 @@ export interface ImportRow {
   normalized_data: Record<string, unknown>
   status: ImportRowStatus
   errors: unknown[]
+  needs_review: boolean
   created_at: string
+}
+
+export type ExternalSourceEntityType = 'crag' | 'sector' | 'route'
+
+export interface ExternalSource {
+  id: string
+  entity_type: ExternalSourceEntityType
+  entity_id: string
+  source_name: string
+  source_url: string | null
+  external_id: string | null
+  raw_name: string | null
+  raw_payload: Record<string, unknown> | null
+  imported_at: string
 }
