@@ -1,0 +1,14 @@
+{
+  "country": "Italy",
+  "region": "Lazio",
+  "province": "Rieti",
+  "crag": "Configni",
+  "sector": "Settore B",
+  "routes": [
+    { "name": "Paperino", "grade": "6a" },
+    { "name": "Qui", "grade": "6b" },
+    { "name": "Quo", "grade": "6c" },
+    { "name": "Qua", "grade": "6b+" },
+    { "name": "Paperoga", "grade": "6a" }
+  ]
+}

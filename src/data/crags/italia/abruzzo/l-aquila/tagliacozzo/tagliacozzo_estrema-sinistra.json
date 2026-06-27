@@ -1,0 +1,17 @@
+{
+  "country": "Italy",
+  "region": "Abruzzo",
+  "province": "L'Aquila",
+  "crag": "Tagliacozzo",
+  "sector": "Estrema Sinistra",
+  "routes": [
+    { "name": "Vituzza", "grade": "6a" },
+    { "name": "Pasqualina 08", "grade": "6a" },
+    { "name": "Rossino", "grade": "6b+" },
+    { "name": "Senza nome 1", "grade": null },
+    { "name": "Unita' vinofila", "grade": "5c" },
+    { "name": "Spigoletto", "grade": "5c" },
+    { "name": "Camel trek", "grade": "6a" },
+    { "name": "Senza nome 2", "grade": null }
+  ]
+}

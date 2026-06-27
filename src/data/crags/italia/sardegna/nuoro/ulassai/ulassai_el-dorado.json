@@ -1,0 +1,29 @@
+{
+  "country": "Italy",
+  "region": "Sardegna",
+  "province": "Nuoro",
+  "crag": "Ulassai",
+  "sector": "El Dorado",
+  "routes": [
+    { "name": "Liposuzione", "grade": "6c" },
+    { "name": "Effetto doppler", "grade": null },
+    { "name": "Killer Pablito", "grade": null },
+    { "name": "Caballo desbocado", "grade": "8a" },
+    { "name": "Carovana", "grade": "6c" },
+    { "name": "Il furbetto L1", "grade": "7b+" },
+    { "name": "Il furbetto L1+L2", "grade": "7c" },
+    { "name": "Nuovo mondo L1", "grade": "7a+" },
+    { "name": "Nuovo mondo L1+L2", "grade": "7b" },
+    { "name": "El Dorado", "grade": null },
+    { "name": "La strada per el dorado", "grade": "7c" },
+    { "name": "Il missionario", "grade": "7b" },
+    { "name": "Junkie paradise", "grade": null },
+    { "name": "Risonanzà L1", "grade": "7a" },
+    { "name": "Risonanzà L1+L2", "grade": null },
+    { "name": "Empatia e moralità", "grade": null },
+    { "name": "La bella Ila", "grade": null },
+    { "name": "Mimimi", "grade": null },
+    { "name": "Non una di meno L1", "grade": "5b" },
+    { "name": "Non una di meno L1+L2", "grade": "7b+" }
+  ]
+}

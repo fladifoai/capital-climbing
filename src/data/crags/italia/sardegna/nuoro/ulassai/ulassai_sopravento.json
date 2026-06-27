@@ -1,0 +1,21 @@
+{
+  "country": "Italy",
+  "region": "Sardegna",
+  "province": "Nuoro",
+  "crag": "Ulassai",
+  "sector": "Sopravento",
+  "routes": [
+    { "name": "Shiver mi whiskers", "grade": "7b+" },
+    { "name": "6 piedi sotto la luna", "grade": "6c+" },
+    { "name": "Melone melone", "grade": "8a" },
+    { "name": "King's Cross", "grade": "7c+" },
+    { "name": "La sete di Squiki", "grade": "7b+" },
+    { "name": "The colour prince", "grade": "7a" },
+    { "name": "Salty wind", "grade": "7b" },
+    { "name": "Tigre d'Ogliastra", "grade": "7c+" },
+    { "name": "So you think you can climb?", "grade": "7c" },
+    { "name": "Goat licker", "grade": "7a+" },
+    { "name": "What's cracking", "grade": "6b+" },
+    { "name": "Jhonny sends", "grade": "6b+" }
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "country": "Italy",
+  "region": "Sardegna",
+  "province": "Nuoro",
+  "crag": "Ulassai",
+  "sector": "La Piramide",
+  "routes": [
+    { "name": "Anubi", "grade": "6c" },
+    { "name": "Cheope", "grade": "5c" },
+    { "name": "Amon", "grade": "6a+" },
+    { "name": "Bastet", "grade": "6a+" },
+    { "name": "Mut", "grade": "6a" },
+    { "name": "Set", "grade": "6b" }
+  ]
+}

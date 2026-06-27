@@ -1,0 +1,19 @@
+{
+  "country": "Italy",
+  "region": "Lazio",
+  "province": "Rieti",
+  "crag": "Configni",
+  "sector": "Placca Rossa",
+  "routes": [
+    { "name": "Rinascita di Configni", "grade": "6b" },
+    { "name": "Ai Configni della Realtà", "grade": "6a+" },
+    { "name": "I confini di Configni", "grade": "6c" },
+    { "name": "Wang", "grade": "7a+" },
+    { "name": "Magica bula", "grade": "6b" },
+    { "name": "I tozzetti di Anna", "grade": "6a+" },
+    { "name": "Il calderone celtico", "grade": "6a" },
+    { "name": "Leo Tre Caffè", "grade": "6b" },
+    { "name": "Shamshi", "grade": "6a+" },
+    { "name": "Litodomi", "grade": "6b" }
+  ]
+}

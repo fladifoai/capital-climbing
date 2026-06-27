@@ -1,0 +1,28 @@
+{
+  "country": "Italy",
+  "region": "Sardegna",
+  "province": "Nuoro",
+  "crag": "Ulassai",
+  "sector": "Wallstreet",
+  "routes": [
+    { "name": "K3", "grade": "7a" },
+    { "name": "La proposta", "grade": "8a+" },
+    { "name": "Tilda", "grade": "5c" },
+    { "name": "Le vent nous portera", "grade": "7b" },
+    { "name": "Tunderpoo", "grade": "5b" },
+    { "name": "L'alpinista", "grade": "6a" },
+    { "name": "Wilf", "grade": "7a" },
+    { "name": "Grazie tante nonnine", "grade": "8a" },
+    { "name": "Bellirisima", "grade": "7c+" },
+    { "name": "Stoneman", "grade": "8a" },
+    { "name": "Slow pilot", "grade": "8b" },
+    { "name": "Lorelei", "grade": "8a" },
+    { "name": "Wallstreet of Antwerp", "grade": "6b" },
+    { "name": "Beefy", "grade": "6c" },
+    { "name": "Quicky and the beast", "grade": "6b+" },
+    { "name": "The wolf L1", "grade": "6a" },
+    { "name": "The wolf L1+L2", "grade": "7b" },
+    { "name": "Arezu", "grade": "7b" },
+    { "name": "The lonely shephard", "grade": "7c" }
+  ]
+}

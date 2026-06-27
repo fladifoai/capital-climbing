@@ -1,0 +1,22 @@
+{
+  "country": "Italy",
+  "region": "Lazio",
+  "province": "Rieti",
+  "crag": "Configni",
+  "sector": "Settore C",
+  "routes": [
+    { "name": "Hagrid", "grade": "6b" },
+    { "name": "Califano", "grade": "6a+" },
+    { "name": "Variante sx Il pilastrino", "grade": "6a+" },
+    { "name": "Pilastrino", "grade": "6b" },
+    { "name": "Jambo", "grade": "7b" },
+    { "name": "L'urlo", "grade": "7a" },
+    { "name": "Cetlen", "grade": "6a" },
+    { "name": "Le du socere", "grade": "5b" },
+    { "name": "Ra L1", "grade": "3a" },
+    { "name": "Ra L2", "grade": "5c" },
+    { "name": "3m", "grade": "4b" },
+    { "name": "Xiatien L1", "grade": "4b" },
+    { "name": "Xiatien L2", "grade": "5c" }
+  ]
+}

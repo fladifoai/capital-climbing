@@ -1,0 +1,11 @@
+{
+  "country": "Italy",
+  "region": "Lazio",
+  "province": "Rieti",
+  "crag": "Configni",
+  "sector": "Settore F",
+  "routes": [
+    { "name": "Configni a 360", "grade": "5c" },
+    { "name": "Il prugnolo", "grade": "5c" }
+  ]
+}

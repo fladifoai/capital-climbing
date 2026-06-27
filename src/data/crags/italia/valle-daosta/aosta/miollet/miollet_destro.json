@@ -1,0 +1,30 @@
+{
+  "country": "Italy",
+  "region": "Valle d'Aosta",
+  "province": "Aosta",
+  "municipality": "Valgrisenche",
+  "crag": "Miollet",
+  "sector": "Destro",
+  "routes": [
+    { "name": "Petolla frolla", "grade": "7c" },
+    { "name": "Masterplax", "grade": "6c+" },
+    { "name": "Tot dret", "grade": "6b+" },
+    { "name": "La ciociara", "grade": "6b" },
+    { "name": "Harborea", "grade": "7b+" },
+    { "name": "Acquargento", "grade": "7a" },
+    { "name": "Senza nome 1", "grade": "7b+/7c" },
+    { "name": "Déjà vu", "grade": "7a" },
+    { "name": "Il porco", "grade": "6b" },
+    { "name": "La maiala", "grade": "6a" },
+    { "name": "Fessurino", "grade": "5c" },
+    { "name": "Intifada", "grade": "6a" },
+    { "name": "Salonicco", "grade": "6a" },
+    { "name": "La sfera", "grade": "6a" },
+    { "name": "Infernalia", "grade": "5c" },
+    { "name": "Senza nome 2", "grade": "6a+" },
+    { "name": "Senza nome 3", "grade": "5c" },
+    { "name": "Senza nome 4", "grade": "5c" },
+    { "name": "Senza nome 5", "grade": "5c" },
+    { "name": "Senza nome 6", "grade": "5c" }
+  ]
+}

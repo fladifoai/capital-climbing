@@ -1,0 +1,24 @@
+{
+  "country": "Italy",
+  "region": "Lazio",
+  "province": "Frosinone",
+  "crag": "Caprile",
+  "sector": "Le Canne",
+  "routes": [
+    { "name": "Ma che cactus fai?", "grade": "6a+/6b" },
+    { "name": "Califfato ciociaro", "grade": "6b+" },
+    { "name": "Senza nome 1", "grade": "7a" },
+    { "name": "Senza nome 2", "grade": "6b+" },
+    { "name": "Senza nome 3", "grade": "7a" },
+    { "name": "Senza nome 4", "grade": "7a+" },
+    { "name": "Senza nome 5", "grade": "7a" },
+    { "name": "Stalattite nel bucone", "grade": "6c+" },
+    { "name": "Senza nome 5 bis", "grade": null },
+    { "name": "Senza nome 6", "grade": "6c+" },
+    { "name": "Senza nome 6 bis", "grade": null },
+    { "name": "Canne rosse", "grade": "6b+" },
+    { "name": "Senza nome 7", "grade": "7a" },
+    { "name": "Senza nome 8", "grade": "6c" },
+    { "name": "Senza nome 9", "grade": "6b+" }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "country": "Italy",
+  "region": "Lazio",
+  "province": "Rieti",
+  "crag": "Configni",
+  "sector": "Settore D",
+  "routes": [
+    { "name": "La giostra di Zazza", "grade": "6a" },
+    { "name": "Mi faccio il riccio", "grade": "6a" },
+    { "name": "E adesso basta", "grade": "6a" }
+  ]
+}

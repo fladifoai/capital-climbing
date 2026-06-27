@@ -1,0 +1,31 @@
+{
+  "country": "Italy",
+  "region": "Abruzzo",
+  "province": "L'Aquila",
+  "crag": "Tagliacozzo",
+  "sector": "Scudo Centrale",
+  "routes": [
+    { "name": "Muccassassina", "grade": null },
+    { "name": "40° all'ombra", "grade": "6c" },
+    { "name": "Bultro 71", "grade": "7a" },
+    { "name": "Ultima chans", "grade": "6c+" },
+    { "name": "Giorgia", "grade": "6c" },
+    { "name": "La spagnola L1", "grade": "6b" },
+    { "name": "La spagnola L1+L2", "grade": "6b" },
+    { "name": "Inglese", "grade": "6b+" },
+    { "name": "Distretto marsicano", "grade": "7a+" },
+    { "name": "Cazzo è finita la birra", "grade": "7a" },
+    { "name": "A tutta birra", "grade": "6a+" },
+    { "name": "Samoano", "grade": "6a+/6b" },
+    { "name": "Mistral", "grade": "6c+" },
+    { "name": "Miky Mouse", "grade": "6b+" },
+    { "name": "Buona la prima", "grade": "5c" },
+    { "name": "Scassa palle", "grade": "5b" },
+    { "name": "Jumping fox", "grade": "6a+" },
+    { "name": "Versante est", "grade": "6b" },
+    { "name": "Vecchio chiodo", "grade": "6b" },
+    { "name": "Arihummer", "grade": "5c+/6a" },
+    { "name": "Angelo custode", "grade": "5c+" },
+    { "name": "Ottoz", "grade": "5b" }
+  ]
+}

@@ -13,7 +13,11 @@
     "preview": "vite preview",
     "structure": "node scripts/update-structure.mjs",
     "dry-run-logbook": "node scripts/dry-run-logbook.mjs",
-    "import-logbook": "node scripts/import-logbook.mjs"
+    "import-logbook": "node scripts/import-logbook.mjs",
+    "import:pdf-crags": "tsx scripts/import-pdf-crags.ts",
+    "validate:crags": "tsx scripts/validate-crags.ts",
+    "generate:crag-index": "tsx scripts/generate-crag-index.ts",
+    "import:crags-to-db": "tsx scripts/import-crags-to-db.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.4.0",
@@ -38,6 +42,7 @@
     "@vitest/coverage-v8": "^4.1.9",
     "jsdom": "^29.1.1",
     "oxlint": "^1.69.0",
+    "tsx": "^4.22.4",
     "typescript": "~6.0.2",
     "vite": "^8.1.0",
     "vitest": "^4.1.9"

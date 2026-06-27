@@ -1,0 +1,15 @@
+{
+  "country": "Italy",
+  "region": "Abruzzo",
+  "province": "L'Aquila",
+  "crag": "Tagliacozzo",
+  "sector": "Estrema Destra",
+  "routes": [
+    { "name": "Senza nome 4", "grade": "6b" },
+    { "name": "Diedro naril", "grade": "5a" },
+    { "name": "Antonello lo spiantato", "grade": "5c+" },
+    { "name": "Sbagliando t'impala", "grade": "6a+" },
+    { "name": "Serpentone", "grade": "5c+" },
+    { "name": "Acido nirvanico", "grade": "6a" }
+  ]
+}

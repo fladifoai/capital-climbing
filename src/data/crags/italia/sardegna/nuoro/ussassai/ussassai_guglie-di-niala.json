@@ -1,0 +1,17 @@
+{
+  "country": "Italy",
+  "region": "Sardegna",
+  "province": "Nuoro",
+  "crag": "Ussassai",
+  "sector": "Guglie di Niala",
+  "routes": [
+    { "name": "Senza nome 1", "grade": null },
+    { "name": "Far Est Story L1", "grade": "4a" },
+    { "name": "Far Est Story L2", "grade": "6b+" },
+    { "name": "Far Est Story L3", "grade": "6b+" },
+    { "name": "Far Est Story L4", "grade": "6a" },
+    { "name": "Tacchi a spillo L1", "grade": "6b" },
+    { "name": "Tacchi a spillo L2", "grade": "6b" },
+    { "name": "Tacchi a spillo L3", "grade": "6a+" }
+  ]
+}
