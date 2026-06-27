@@ -39,6 +39,7 @@
   color: var(--accent);
   line-height: 1;
   filter: drop-shadow(0 0 8px rgba(232,93,53,0.50));
+  animation: cc-glow-pulse 3.5s ease-in-out infinite;
 }
 
 .landing-logo-name {
@@ -191,6 +192,7 @@
   letter-spacing: 0.04em;
   text-transform: uppercase;
   margin-bottom: 20px;
+  animation: cc-fade-up 0.55s var(--ease) 0.05s both;
 }
 
 .landing-hero-title {
@@ -201,6 +203,7 @@
   letter-spacing: -0.04em;
   line-height: 1.05;
   margin: 0 0 18px;
+  animation: cc-fade-up 0.65s var(--ease) 0.18s both;
 }
 
 .landing-hero-title span {
@@ -213,12 +216,14 @@
   line-height: 1.65;
   margin: 0 0 32px;
   max-width: 480px;
+  animation: cc-fade-up 0.55s var(--ease) 0.32s both;
 }
 
 .landing-hero-actions {
   display: flex;
   gap: 12px;
   flex-wrap: wrap;
+  animation: cc-fade-up 0.55s var(--ease) 0.46s both;
 }
 
 .btn-hero-primary {
@@ -271,7 +276,15 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 10px;
+  animation: cc-fade-in 0.8s var(--ease) 0.28s both;
 }
+
+.landing-hero-preview > div { animation: cc-float 4.5s ease-in-out infinite; }
+.landing-hero-preview > div:nth-child(2) { animation-delay: 0.9s; }
+.landing-hero-preview > div:nth-child(3) { animation-delay: 1.8s; }
+.landing-hero-preview > div:nth-child(4) { animation-delay: 0.5s; }
+.landing-hero-preview > div:nth-child(5) { animation-delay: 1.3s; }
+.landing-hero-preview > div:nth-child(6) { animation-delay: 2.2s; }
 
 .preview-kpi-card {
   background: linear-gradient(180deg, #FFF9EF 0%, #F2DEC0 100%);
@@ -386,12 +399,16 @@
   border: 1px solid rgba(255,247,234,0.10);
   border-radius: 20px;
   padding: 28px;
-  transition: background var(--t-mid) var(--ease), border-color var(--t-mid) var(--ease);
+  transform: translateY(0);
+  transition: background var(--t-mid) var(--ease), border-color var(--t-mid) var(--ease),
+              transform var(--t-mid) var(--ease), box-shadow var(--t-mid) var(--ease);
 }
 
 .landing-feature-card:hover {
   background: rgba(255,247,234,0.08);
   border-color: rgba(232,93,53,0.24);
+  transform: translateY(-4px);
+  box-shadow: 0 14px 36px rgba(23,18,14,0.40);
 }
 
 .landing-feature-icon {
@@ -492,7 +509,12 @@
   font-weight: 800;
   margin-bottom: 14px;
   box-shadow: 0 4px 12px rgba(232,93,53,0.36);
+  animation: cc-float 3.2s ease-in-out infinite;
 }
+
+.landing-step:nth-child(2) .landing-step-num { animation-delay: 0.8s; }
+.landing-step:nth-child(3) .landing-step-num { animation-delay: 1.6s; }
+.landing-step:nth-child(4) .landing-step-num { animation-delay: 2.4s; }
 
 .landing-step-icon {
   font-size: 22px;

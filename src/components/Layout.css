@@ -35,6 +35,7 @@
   font-size: 20px;
   line-height: 1;
   filter: drop-shadow(0 0 8px rgba(232, 93, 53, 0.50));
+  animation: cc-glow-pulse 4s ease-in-out infinite;
 }
 
 .brand-name {
