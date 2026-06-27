@@ -1,0 +1,9 @@
+# HTML page cache (re-downloadable, don't commit)
+raw/climbook_pages_cache/*.html
+
+# Processed outputs (generated files)
+processed/climbook_crags_sectors_routes.csv
+processed/climbook_crags_sectors_routes.json
+processed/climbook_import_report.md
+raw/climbook_scrape_raw.json
+raw/climbook_targets.csv

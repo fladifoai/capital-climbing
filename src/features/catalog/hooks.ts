@@ -31,8 +31,8 @@ export function useRegionsWithCounts(countryId: string) {
       const [regionsRes, cragsRes, sectorsRes, routesRes] = await Promise.all([
         supabase.from('regions').select('*').eq('country_id', countryId).order('name'),
         supabase.from('crags').select('id, region_id').eq('country_id', countryId),
-        supabase.from('sectors').select('id, crag_id'),
-        supabase.from('routes').select('id, sector_id'),
+        supabase.from('sectors').select('id, crag_id').limit(5000),
+        supabase.from('routes').select('id, sector_id').limit(10000),
       ])
 
       if (regionsRes.error) throw regionsRes.error
