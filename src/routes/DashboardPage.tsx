@@ -42,9 +42,7 @@ export default function DashboardPage() {
   const { data: projects = [] } = useMyProjects(user?.id ?? '')
   const { data: sessions = [] } = useMySessions(user?.id ?? '')
 
-  if (!user) return null
-
-  const displayName = (user.user_metadata?.display_name as string | undefined) ?? user.email?.split('@')[0] ?? 'Climber'
+  const displayName = (user?.user_metadata?.display_name as string | undefined) ?? user?.email?.split('@')[0] ?? 'Climber'
   const currentYear = new Date().getFullYear()
 
   const kpis = useMemo(
@@ -80,6 +78,8 @@ export default function DashboardPage() {
 
   const lastAscent = completed[0]
   const lastSession = sessions[0]
+
+  if (!user) return null
 
   const kpiCards = [
     { value: kpis.totalAscents, label: 'Vie completate', sub: 'ascensioni registrate' },
