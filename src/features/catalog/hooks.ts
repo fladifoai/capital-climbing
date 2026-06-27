@@ -134,28 +134,37 @@ export function useSectorsWithRoutes(cragId: string) {
   return useQuery({
     queryKey: ['sectors-with-routes', cragId],
     queryFn: async (): Promise<SectorWithRoutes[]> => {
-      const [sectorsRes, routesRes] = await Promise.all([
-        supabase.from('sectors').select('*').eq('crag_id', cragId).order('sort_order'),
-        supabase.from('routes')
-          .select('*')
+      const sectorsRes = await supabase
+        .from('sectors').select('*').eq('crag_id', cragId).order('sort_order')
+      if (sectorsRes.error) throw sectorsRes.error
+
+      const sectorIds = (sectorsRes.data ?? []).map(s => s.id)
+
+      // Query routes by sector_id (works regardless of whether crag_id backfill ran)
+      // Also fetch routes with crag_id but no sector (direct-on-crag routes)
+      const [bySecRes, byCragRes] = await Promise.all([
+        sectorIds.length > 0
+          ? supabase.from('routes').select('*')
+              .in('sector_id', sectorIds)
+              .order('line_order', { nullsFirst: false })
+              .order('name')
+          : Promise.resolve({ data: [], error: null }),
+        supabase.from('routes').select('*')
           .eq('crag_id', cragId)
+          .is('sector_id', null)
           .order('line_order', { nullsFirst: false })
           .order('name'),
       ])
-      if (sectorsRes.error) throw sectorsRes.error
-      if (routesRes.error) throw routesRes.error
+      if (bySecRes.error) throw bySecRes.error
+      if (byCragRes.error) throw byCragRes.error
 
       const routesBySector = new Map<string, Route[]>()
-      const unsectoredRoutes: Route[] = []
+      const unsectoredRoutes: Route[] = [...((byCragRes.data ?? []) as Route[])]
 
-      ;(routesRes.data ?? []).forEach(r => {
-        if (r.sector_id) {
-          const list = routesBySector.get(r.sector_id) ?? []
-          list.push(r as Route)
-          routesBySector.set(r.sector_id, list)
-        } else {
-          unsectoredRoutes.push(r as Route)
-        }
+      ;((bySecRes.data ?? []) as Route[]).forEach(r => {
+        const list = routesBySector.get(r.sector_id!) ?? []
+        list.push(r)
+        routesBySector.set(r.sector_id!, list)
       })
 
       const topLevelSectors = (sectorsRes.data ?? []).filter(s => !s.parent_sector_id)
