@@ -60,19 +60,60 @@ function slugify(s: string): string {
     .replace(/^-|-$/g, '')
 }
 
-interface DbCrag { id: string; name: string }
-interface DbSector { id: string; name: string; crag_id: string }
-interface DbRoute { id: string; name: string; sector_id: string | null; crag_id: string | null }
+function norm(s: string): string {
+  return s.toLowerCase().trim().normalize('NFD').replace(/[̀-ͯ]/g, '')
+}
 
-async function upsertCrag(sb: SupabaseClient, data: CragSector): Promise<string> {
+async function loadRegions(sb: SupabaseClient): Promise<Map<string, string>> {
+  const { data, error } = await sb.from('regions').select('id, name')
+  if (error) throw new Error(`regions load failed: ${error.message}`)
+  const map = new Map<string, string>()
+  for (const r of (data ?? [])) map.set(norm(r.name), r.id)
+  return map
+}
+
+async function loadCountry(sb: SupabaseClient, name: string): Promise<string | null> {
+  const { data } = await sb.from('countries').select('id').ilike('name', name).single()
+  return (data as { id: string } | null)?.id ?? null
+}
+
+async function upsertCrag(
+  sb: SupabaseClient,
+  data: CragSector,
+  regionId: string | null,
+  countryId: string | null,
+): Promise<string> {
   const { data: existing } = await sb
     .from('crags')
     .select('id')
     .ilike('name', data.crag)
-    .eq('region', data.region)
-    .single()
+    .eq('region_id', regionId ?? '')
+    .maybeSingle()
 
-  if (existing) return (existing as DbCrag).id
+  if (existing) return (existing as { id: string }).id
+
+  // Also try without region_id filter in case crag exists but lacks region_id
+  const { data: existingAny } = await sb
+    .from('crags')
+    .select('id, region_id')
+    .ilike('name', data.crag)
+    .is('region_id', null)
+    .maybeSingle()
+
+  if (existingAny) {
+    // Crag exists but missing region_id — patch it
+    if (!DRY_RUN) {
+      await sb.from('crags').update({
+        region_id: regionId,
+        country_id: countryId,
+        region: data.region,
+        province: data.province,
+        municipality: data.municipality ?? null,
+        slug: slugify(data.crag),
+      }).eq('id', (existingAny as { id: string }).id)
+    }
+    return (existingAny as { id: string }).id
+  }
 
   if (DRY_RUN) return `dry-crag-${slugify(data.crag)}`
 
@@ -80,15 +121,24 @@ async function upsertCrag(sb: SupabaseClient, data: CragSector): Promise<string>
     .from('crags')
     .insert({
       name: data.crag,
+      normalized_name: norm(data.crag),
       slug: slugify(data.crag),
-      region: data.region,
       country: data.country,
+      country_id: countryId,
+      region: data.region,
+      region_id: regionId,
+      province: data.province,
+      municipality: data.municipality ?? null,
+      access_status: 'open',
+      rainproof: false,
+      services: {},
+      aliases: [],
     })
     .select('id')
     .single()
 
   if (error) throw new Error(`crag insert failed (${data.crag}): ${error.message}`)
-  return (inserted as DbCrag).id
+  return (inserted as { id: string }).id
 }
 
 async function upsertSector(sb: SupabaseClient, cragId: string, sectorName: string): Promise<string> {
@@ -97,9 +147,9 @@ async function upsertSector(sb: SupabaseClient, cragId: string, sectorName: stri
     .select('id')
     .ilike('name', sectorName)
     .eq('crag_id', cragId)
-    .single()
+    .maybeSingle()
 
-  if (existing) return (existing as DbSector).id
+  if (existing) return (existing as { id: string }).id
 
   if (DRY_RUN) return `dry-sector-${slugify(sectorName)}`
 
@@ -107,14 +157,17 @@ async function upsertSector(sb: SupabaseClient, cragId: string, sectorName: stri
     .from('sectors')
     .insert({
       name: sectorName,
+      normalized_name: norm(sectorName),
       slug: slugify(sectorName),
       crag_id: cragId,
+      aliases: [],
+      sort_order: 0,
     })
     .select('id')
     .single()
 
   if (error) throw new Error(`sector insert failed (${sectorName}): ${error.message}`)
-  return (inserted as DbSector).id
+  return (inserted as { id: string }).id
 }
 
 async function upsertRoutes(
@@ -128,19 +181,24 @@ async function upsertRoutes(
     .select('name')
     .eq('sector_id', sectorId)
 
-  const existingNames = new Set(((existing ?? []) as DbRoute[]).map(r => r.name.toLowerCase().trim()))
-  const toInsert = routes.filter(r => !existingNames.has(r.name.toLowerCase().trim()))
+  const existingNames = new Set(((existing ?? []) as { name: string }[]).map(r => norm(r.name)))
+  const toInsert = routes.filter(r => !existingNames.has(norm(r.name)))
 
   if (toInsert.length === 0) return { inserted: 0, skipped: routes.length }
   if (DRY_RUN) return { inserted: toInsert.length, skipped: routes.length - toInsert.length }
 
   const rows = toInsert.map(r => ({
     name: r.name,
-    grade: r.grade,
+    normalized_name: norm(r.name),
+    official_grade: r.grade,
     slug: slugify(r.name),
     sector_id: sectorId,
     crag_id: cragId,
     source: 'pdf_import',
+    pitches: 1,
+    repetitions_count: 0,
+    route_type: 'sport',
+    aliases: [],
   }))
 
   const { error } = await sb.from('routes').insert(rows)
@@ -163,29 +221,49 @@ async function main() {
 
   const sb = createClient(url, secret, { auth: { autoRefreshToken: false, persistSession: false } })
 
+  // Load lookup tables once
+  const [regionMap, countryId] = await Promise.all([
+    loadRegions(sb),
+    loadCountry(sb, 'Italy'),
+  ])
+
+  console.log(`\nRegions in DB: ${regionMap.size}`)
+  console.log(`Country Italy ID: ${countryId ?? '(not found)'}`)
+
   const files = walkJson(CRAGS_DIR)
   console.log(`\nImporting ${files.length} sector files...\n`)
 
   let totalInsertedRoutes = 0
   let totalSkippedRoutes = 0
   let errors = 0
+  const missingRegions = new Set<string>()
 
   for (const file of files) {
     const rel = relative(ROOT, file).replace(/\\/g, '/')
     const data = JSON.parse(readFileSync(file, 'utf8')) as CragSector
 
+    const regionId = regionMap.get(norm(data.region)) ?? null
+    if (!regionId) missingRegions.add(data.region)
+
     try {
-      const cragId = await upsertCrag(sb, data)
+      const cragId = await upsertCrag(sb, data, regionId, countryId)
       const sectorId = await upsertSector(sb, cragId, data.sector)
       const { inserted, skipped } = await upsertRoutes(sb, data.routes, cragId, sectorId)
       totalInsertedRoutes += inserted
       totalSkippedRoutes += skipped
       const tag = inserted > 0 ? '✅' : '⏭ '
-      console.log(`${tag} ${rel} (+${inserted} routes, ${skipped} already exist)`)
+      const regionWarn = !regionId ? ' ⚠️  region_id not found' : ''
+      console.log(`${tag} ${rel} (+${inserted} routes, ${skipped} exist)${regionWarn}`)
     } catch (e) {
       console.error(`❌ ${rel}: ${(e as Error).message}`)
       errors++
     }
+  }
+
+  if (missingRegions.size > 0) {
+    console.log('\n⚠️  Regions not found in DB (crags inserted without region_id):')
+    for (const r of missingRegions) console.log(`   - "${r}"`)
+    console.log('\n   Fix: insert these regions via Admin panel or SQL, then re-run this script.')
   }
 
   console.log('\n' + '─'.repeat(60))
