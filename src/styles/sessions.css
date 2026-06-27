@@ -6,7 +6,7 @@
 
 .sessions-header {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   margin-bottom: 24px;
   gap: 12px;
@@ -21,59 +21,11 @@
   letter-spacing: -0.03em;
 }
 
-/* ── Session table ── */
-.session-table {
-  width: 100%;
-  border-collapse: collapse;
-  background: linear-gradient(180deg, #FFF9EF 0%, #F4E4CA 100%);
-  border: 1px solid rgba(255,255,255,0.45);
-  border-radius: 18px;
-  overflow: hidden;
-  font-size: 13px;
-  box-shadow: var(--cc-shadow-card);
-}
-
-.session-table th {
-  text-align: left;
-  padding: 11px 16px;
-  background: var(--surface-muted);
-  font-size: 10px;
-  font-weight: 800;
-  color: var(--text-2);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  border-bottom: 1px solid rgba(29,22,17,0.12);
-}
-
-.session-table td {
-  padding: 11px 16px;
-  border-bottom: 1px solid rgba(29,22,17,0.08);
-  color: var(--text);
-  vertical-align: middle;
-}
-
-.session-table tr:last-child td { border-bottom: none; }
-.session-table tr:hover td { background: rgba(232,93,53,0.06); }
-
-.rpe-badge {
-  display: inline-block;
-  padding: 3px 9px;
-  border-radius: 999px;
-  font-size: 11px;
-  font-weight: 700;
-  background: rgba(232,93,53,0.14);
-  color: var(--cc-primary-dark);
-}
-
-.rpe-badge.hard   { background: #F3DED2; color: #934021; }
-.rpe-badge.medium { background: #FFF0CC; color: #8A5414; }
-
-/* ── Session cards ── */
+/* ── Session card ── */
 .session-card {
   background: linear-gradient(180deg, #FFF9EF 0%, #F4E4CA 100%);
   border: 1px solid rgba(255,255,255,0.40);
   border-radius: 18px;
-  margin-bottom: 10px;
   overflow: hidden;
   box-shadow: var(--cc-shadow-card);
   transition: transform var(--t-mid) var(--ease), box-shadow var(--t-mid) var(--ease);
@@ -86,44 +38,10 @@
 
 .session-card-header {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   gap: 12px;
-  padding: 14px 18px;
-}
-
-.session-card-left {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  min-width: 0;
-}
-
-.session-date {
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--text);
-  white-space: nowrap;
-}
-
-.session-crag-name {
-  font-size: 13px;
-  color: var(--text-2);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.session-card-meta {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-shrink: 0;
-}
-
-.session-meta-item {
-  font-size: 12px;
-  color: var(--text-muted);
+  padding: 16px 18px 14px;
 }
 
 .session-route-count {
@@ -137,18 +55,10 @@
   white-space: nowrap;
 }
 
-.session-notes {
-  font-size: 12px;
-  color: var(--text-muted);
-  padding: 0 18px 12px;
-  border-top: 1px solid rgba(29,22,17,0.08);
-  padding-top: 8px;
-  font-style: italic;
-}
-
+/* ── Routes inside session ── */
 .session-routes-list {
   border-top: 1px solid rgba(29,22,17,0.08);
-  background: var(--surface-muted);
+  background: rgba(29,22,17,0.03);
 }
 
 .session-route-row {
@@ -157,7 +67,7 @@
   justify-content: space-between;
   gap: 8px;
   padding: 9px 18px;
-  border-bottom: 1px solid rgba(29,22,17,0.08);
+  border-bottom: 1px solid rgba(29,22,17,0.07);
   font-size: 13px;
 }
 
@@ -177,20 +87,55 @@
   color: var(--accent);
 }
 
+.grade-badge {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(29,22,17,0.08);
+  color: var(--text);
+  white-space: nowrap;
+}
+
 /* ── New session form ── */
 .new-session-form {
   background: linear-gradient(180deg, #FFF9EF 0%, #F4E4CA 100%);
   border: 1px solid rgba(255,255,255,0.45);
   border-radius: 20px;
-  padding: 20px;
+  padding: 22px 20px 20px;
   margin-bottom: 20px;
   box-shadow: var(--cc-shadow-card);
 }
 
 .new-session-form h3 {
-  margin: 0 0 14px;
+  margin: 0;
   font-family: "Sora", "Inter", system-ui, sans-serif;
   font-size: 15px;
-  font-weight: 700;
+  font-weight: 800;
   color: var(--text);
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
+}
+
+.form-full {
+  grid-column: 1 / -1;
+}
+
+@media (max-width: 600px) {
+  .form-grid { grid-template-columns: 1fr; }
+
+  .sessions-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .session-card-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
 }

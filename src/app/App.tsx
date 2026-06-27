@@ -23,6 +23,7 @@ import SettingsPage from '../routes/SettingsPage'
 import AdminPage from '../routes/AdminPage'
 import AdminCragPage from '../routes/AdminCragPage'
 import AdminImportPage from '../routes/AdminImportPage'
+import LandingPage from '../routes/LandingPage'
 
 const queryClient = new QueryClient()
 
@@ -32,6 +33,9 @@ export default function App() {
       <HashRouter>
         <AuthProvider>
           <Routes>
+            {/* Landing pubblica — senza layout */}
+            <Route path="/" element={<LandingPage />} />
+
             {/* Pagine auth — senza layout */}
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
@@ -66,7 +70,7 @@ export default function App() {
               </Route>
             </Route>
 
-            <Route path="*" element={<Navigate to="/explore" replace />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </AuthProvider>
       </HashRouter>

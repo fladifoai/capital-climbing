@@ -18,6 +18,7 @@ const ATTEMPT_COLORS: Record<string, string> = {
 
 type SortKey = 'date_desc' | 'date_asc' | 'grade_desc' | 'grade_asc' | 'quality_desc'
 type StatusFilter = 'completed' | 'attempted' | 'all'
+type ViewMode = 'grade' | 'list'
 
 function Stars({ n }: { n: number | null }) {
   if (!n) return null
@@ -60,7 +61,6 @@ function AscentRow({ a, onDelete, isPending }: AscentRowProps) {
 
   return (
     <div className={`ascent-card-row${open ? ' expanded' : ''}`}>
-      {/* Header — clicca per espandere */}
       <div className="ascent-row-header" onClick={() => setOpen(o => !o)} style={{ cursor: 'pointer' }}>
         <div className="ascent-row-main">
           <span className="ascent-row-name">
@@ -85,11 +85,11 @@ function AscentRow({ a, onDelete, isPending }: AscentRowProps) {
             </span>
           )}
           {a.status === 'attempted' && !type && (
-            <span style={{ fontSize: 11, color: '#8a9a87' }}>Tentativo</span>
+            <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>Tentativo</span>
           )}
           <Stars n={a.quality ?? null} />
           <span className="ascent-row-date">{a.date}</span>
-          <span style={{ fontSize: 11, color: '#8a9a87' }}>{open ? '▲' : '▼'}</span>
+          <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>{open ? '▲' : '▼'}</span>
           <button
             className="btn-secondary"
             style={{ fontSize: 11, padding: '2px 7px', color: '#c0392b' }}
@@ -99,7 +99,6 @@ function AscentRow({ a, onDelete, isPending }: AscentRowProps) {
         </div>
       </div>
 
-      {/* Pannello dettagli */}
       {open && (
         <div className="ascent-detail-panel">
           <div className="ascent-detail-grid">
@@ -169,13 +168,12 @@ export default function MyRoutesPage() {
   const [adding, setAdding] = useState(false)
   const [actionError, setActionError] = useState('')
 
-  // Filters + sort + view
   const [search, setSearch] = useState('')
   const [yearFilter, setYearFilter] = useState<string>('all')
   const [typeFilter, setTypeFilter] = useState<string>('all')
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('completed')
-  const [sort, setSort] = useState<SortKey>('date_desc')
-  const [grouped, setGrouped] = useState(false)
+  const [sort, setSort] = useState<SortKey>('grade_desc')
+  const [view, setView] = useState<ViewMode>('grade')
 
   async function handleCreate(values: AscentFormValues) {
     if (!user) return
@@ -198,14 +196,12 @@ export default function MyRoutesPage() {
     }
   }
 
-  // Available years from data
   const availableYears = useMemo(() => {
     const years = new Set<string>()
     ;(ascents ?? []).forEach(a => years.add(a.date.slice(0, 4)))
     return Array.from(years).sort((a, b) => b.localeCompare(a))
   }, [ascents])
 
-  // Filtered + sorted list
   const filtered = useMemo(() => {
     let list = ascents ?? []
     if (statusFilter !== 'all') list = list.filter(a => a.status === statusFilter)
@@ -221,7 +217,6 @@ export default function MyRoutesPage() {
     return sortAscents(list, sort)
   }, [ascents, statusFilter, yearFilter, typeFilter, search, sort])
 
-  // Grade groups (sorted highest first)
   const gradeGroups = useMemo(() => {
     const map = new Map<string, { numeric: number; items: AscentWithRoute[] }>()
     filtered.forEach(a => {
@@ -233,8 +228,16 @@ export default function MyRoutesPage() {
     })
     return Array.from(map.entries())
       .sort(([, a], [, b]) => b.numeric - a.numeric)
-      .map(([grade, { numeric, items }]) => ({ grade, numeric, items }))
+      .map(([grade, { numeric, items }]) => {
+        const os = items.filter(a => (a.ascent_style ?? a.attempt_type) === 'onsight').length
+        const fl = items.filter(a => (a.ascent_style ?? a.attempt_type) === 'flash').length
+        const rp = items.filter(a => ['redpoint','second','third','four_plus'].includes(a.ascent_style ?? a.attempt_type ?? '')).length
+        return { grade, numeric, items, os, fl, rp }
+      })
   }, [filtered])
+
+  const isEmpty = !isLoading && (ascents?.length ?? 0) === 0
+  const noResults = !isLoading && (ascents?.length ?? 0) > 0 && filtered.length === 0
 
   return (
     <div className="logbook-page">
@@ -265,18 +268,15 @@ export default function MyRoutesPage() {
           value={search}
           onChange={e => setSearch(e.target.value)}
         />
-
         <select className="logbook-select" value={yearFilter} onChange={e => setYearFilter(e.target.value)}>
           <option value="all">Tutti gli anni</option>
           {availableYears.map(y => <option key={y} value={y}>{y}</option>)}
         </select>
-
         <select className="logbook-select" value={statusFilter} onChange={e => setStatusFilter(e.target.value as StatusFilter)}>
           <option value="completed">Solo salite</option>
           <option value="attempted">Solo tentativi</option>
           <option value="all">Tutto</option>
         </select>
-
         <select className="logbook-select" value={typeFilter} onChange={e => setTypeFilter(e.target.value)}>
           <option value="all">Tutti i tipi</option>
           <option value="onsight">On-sight</option>
@@ -288,9 +288,9 @@ export default function MyRoutesPage() {
         </select>
       </div>
 
-      {/* Sort + group controls */}
+      {/* Sort bar + view toggle */}
       <div className="logbook-sort-bar">
-        <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap' }}>
           <span style={{ fontSize: 11, color: 'var(--text-on-dark-muted)', fontWeight: 600 }}>Ordina:</span>
           {([
             ['date_desc', 'Data ↓'],
@@ -314,11 +314,25 @@ export default function MyRoutesPage() {
             </button>
           ))}
         </div>
-        <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, cursor: 'pointer', color: 'var(--text-on-dark-muted)' }}>
-          <input type="checkbox" checked={grouped} onChange={e => setGrouped(e.target.checked)} />
-          Raggruppa per grado
-        </label>
-        <span style={{ fontSize: 12, color: 'var(--text-on-dark-muted)', marginLeft: 'auto' }}>
+
+        <div style={{ display: 'flex', gap: 4, background: 'rgba(29,22,17,0.18)', borderRadius: 999, padding: 3, marginLeft: 'auto' }}>
+          {([['grade', '▤ Per grado'], ['list', '≡ Lista']] as [ViewMode, string][]).map(([v, label]) => (
+            <button
+              key={v}
+              onClick={() => setView(v)}
+              style={{
+                padding: '3px 11px', borderRadius: 999, border: 'none', cursor: 'pointer',
+                fontSize: 11, fontWeight: 700, fontFamily: 'inherit',
+                background: view === v ? 'rgba(255,247,234,0.18)' : 'transparent',
+                color: view === v ? '#FFF7EA' : 'var(--text-on-dark-muted)',
+              }}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+
+        <span style={{ fontSize: 12, color: 'var(--text-on-dark-muted)' }}>
           {filtered.length} {filtered.length === 1 ? 'ascensione' : 'ascensioni'}
         </span>
       </div>
@@ -326,16 +340,54 @@ export default function MyRoutesPage() {
       {isLoading && <div className="loading-state">Caricamento…</div>}
       {error && <div className="error-state">Errore nel caricamento.</div>}
 
-      {!isLoading && filtered.length === 0 && (
-        <div className="empty-state">Nessuna ascensione con i filtri selezionati.</div>
+      {/* Empty state (no ascents at all) */}
+      {isEmpty && !adding && (
+        <div style={{
+          background: 'rgba(255,247,234,0.05)',
+          border: '2px dashed rgba(255,247,234,0.14)',
+          borderRadius: 20,
+          padding: '56px 32px',
+          textAlign: 'center',
+          marginTop: 8,
+        }}>
+          <div style={{ fontSize: 40, marginBottom: 16 }}>🧗</div>
+          <h2 style={{ color: 'var(--text-on-dark)', fontFamily: '"Sora","Inter",system-ui,sans-serif', fontWeight: 800, fontSize: 20, margin: '0 0 8px' }}>
+            Nessuna ascensione registrata
+          </h2>
+          <p style={{ color: 'var(--text-on-dark-muted)', fontSize: 14, lineHeight: 1.6, margin: '0 0 24px', maxWidth: 380, marginLeft: 'auto', marginRight: 'auto' }}>
+            Registra la tua prima ascensione o esplora il catalogo falesie per trovare le vie che hai scalato.
+          </p>
+          <div style={{ display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' }}>
+            <button className="btn-primary" onClick={() => { setAdding(true); setActionError('') }}>
+              + Prima ascensione
+            </button>
+            <Link to="/explore" className="btn-secondary" style={{ textDecoration: 'none' }}>
+              Esplora falesie
+            </Link>
+          </div>
+        </div>
       )}
 
-      {/* GROUPED VIEW */}
-      {grouped && gradeGroups.map(g => (
+      {/* No results from filters */}
+      {noResults && (
+        <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text-on-dark-muted)', fontSize: 14 }}>
+          Nessuna ascensione con i filtri selezionati.
+        </div>
+      )}
+
+      {/* Grade view */}
+      {!isLoading && view === 'grade' && gradeGroups.map(g => (
         <div key={g.grade} className="grade-group">
           <div className="grade-group-header">
-            <span className="grade-badge" style={{ fontSize: 14 }}>{g.grade}</span>
-            <span style={{ fontSize: 12, color: 'var(--text-on-dark-muted)' }}>{g.items.length} {g.items.length === 1 ? 'salita' : 'salite'}</span>
+            <span className="grade-badge" style={{ fontSize: 14, padding: '4px 12px' }}>{g.grade}</span>
+            <span style={{ fontSize: 13, color: 'var(--text-on-dark)', fontWeight: 600 }}>
+              {g.items.length} {g.items.length === 1 ? 'via' : 'vie'}
+            </span>
+            <span style={{ fontSize: 12, color: 'var(--text-on-dark-muted)', display: 'flex', gap: 8 }}>
+              {g.os > 0 && <span style={{ color: '#3a9e51', fontWeight: 700 }}>{g.os} OS</span>}
+              {g.fl > 0 && <span style={{ color: '#c47800', fontWeight: 700 }}>{g.fl} FL</span>}
+              {g.rp > 0 && <span style={{ color: '#c0392b', fontWeight: 700 }}>{g.rp} RP</span>}
+            </span>
           </div>
           {g.items.map(a => (
             <AscentRow key={a.id} a={a} onDelete={handleDelete} isPending={deleteAscent.isPending} />
@@ -343,8 +395,8 @@ export default function MyRoutesPage() {
         </div>
       ))}
 
-      {/* FLAT VIEW */}
-      {!grouped && filtered.map(a => (
+      {/* List view */}
+      {!isLoading && view === 'list' && filtered.map(a => (
         <AscentRow key={a.id} a={a} onDelete={handleDelete} isPending={deleteAscent.isPending} />
       ))}
     </div>
