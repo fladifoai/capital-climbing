@@ -20,6 +20,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
+      const sessionType = localStorage.getItem('cc_session_type')
+      const sessionAlive = sessionStorage.getItem('cc_session_only')
+      if (session && sessionType === 'session' && !sessionAlive) {
+        supabase.auth.signOut()
+        localStorage.removeItem('cc_session_type')
+        setLoading(false)
+        return
+      }
       setSession(session)
       setUser(session?.user ?? null)
       if (session?.user) checkAdmin(session.user.id)

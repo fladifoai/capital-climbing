@@ -46,6 +46,11 @@ export default function RegisterPage() {
         <h1 className="auth-title">Capital Climbing</h1>
         <p className="auth-sub">Crea il tuo account</p>
 
+        <div className="auth-tabs">
+          <Link to="/login" className="auth-tab">Accedi</Link>
+          <button type="button" className="auth-tab active">Registrati</button>
+        </div>
+
         <form onSubmit={handleSubmit(onSubmit)} className="auth-form">
           <div className="field">
             <label>Username</label>
@@ -79,7 +84,9 @@ export default function RegisterPage() {
         </form>
 
         <div className="auth-links">
-          <Link to="/login">Hai già un account? Accedi</Link>
+          <Link to="/login">Hai già un account?</Link>
+          <span>·</span>
+          <Link to="/login">Accedi</Link>
         </div>
       </div>
     </div>

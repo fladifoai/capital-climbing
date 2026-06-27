@@ -140,3 +140,91 @@
 
 .auth-links a { color: var(--accent-dark); text-decoration: none; font-weight: 700; }
 .auth-links a:hover { text-decoration: underline; }
+
+/* Tabs Accedi / Registrati */
+.auth-tabs {
+  display: flex;
+  gap: 4px;
+  background: rgba(29, 22, 17, 0.08);
+  border-radius: 14px;
+  padding: 4px;
+  margin-bottom: 24px;
+}
+
+.auth-tab {
+  flex: 1;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  background: transparent;
+  color: var(--text-muted);
+  text-decoration: none;
+  transition: background var(--t-fast) var(--ease), color var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease);
+}
+
+.auth-tab.active {
+  background: #FFFDF7;
+  color: var(--text);
+  box-shadow: 0 2px 8px rgba(23, 18, 14, 0.12);
+}
+
+.auth-tab:hover:not(.active) { color: var(--text); }
+
+/* Riga Ricordami + Password dimenticata */
+.auth-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.auth-remember {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 13px;
+  color: var(--text-muted);
+  cursor: pointer;
+  user-select: none;
+}
+
+.auth-remember input[type="checkbox"] {
+  width: 15px;
+  height: 15px;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+/* Link-style button */
+.auth-link-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 13px;
+  font-weight: 700;
+  font-family: inherit;
+  color: var(--accent-dark);
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.auth-link-btn:hover { text-decoration: underline; }
+
+.auth-link-btn--center { display: block; text-align: center; width: 100%; }
+
+/* Banner successo (es. email recupero inviata) */
+.auth-success {
+  font-size: 13px;
+  color: #2d6b35;
+  background: rgba(45, 107, 53, 0.10);
+  border: 1px solid rgba(45, 107, 53, 0.25);
+  border-radius: 12px;
+  padding: 12px 14px;
+  font-weight: 500;
+}
