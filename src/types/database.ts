@@ -230,7 +230,7 @@ export interface Attempt {
   session_id: string | null
   route_id: string
   attempt_number: number
-  result: 'send' | 'attempt' | 'top_rope' | null
+  result: 'send' | 'attempt' | 'repeat' | 'project' | null
   high_point: string | null
   fall_move: string | null
   beta_used: string | null
