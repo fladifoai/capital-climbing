@@ -3,20 +3,31 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useRouteSearch, type AscentFormValues, type RouteSearchResult } from './hooks'
-import {
-  ATTEMPT_SELECTOR_OPTIONS,
-  resolveAttemptFields,
-  type AttemptBucket,
-} from '../../analytics/calculations/attempt-buckets'
+import type { AttemptBucket } from '../../analytics/calculations/attempt-buckets'
 import '../../styles/admin.css'
 
-const STYLE_OPTIONS = [
-  { value: 'onsight',  label: 'On-sight' },
-  { value: 'flash',    label: 'Flash' },
-  { value: 'redpoint', label: 'Redpoint' },
-  { value: 'repeat',   label: 'Ripetizione' },
-  { value: 'unknown',  label: 'Non specificato' },
+const ATTEMPT_TYPE_OPTIONS = [
+  { value: 'onsight',   label: 'On-sight' },
+  { value: 'flash',     label: 'Flash' },
+  { value: 'second_go', label: '2° giro' },
+  { value: 'third_go',  label: '3° giro' },
+  { value: 'four_plus', label: '4+' },
 ]
+
+function mapAttemptType(type: string): {
+  ascent_style: string
+  attempt_count: number | null
+  attempt_bucket: AttemptBucket | null
+} {
+  switch (type) {
+    case 'onsight':   return { ascent_style: 'onsight',  attempt_count: 1, attempt_bucket: '1' }
+    case 'flash':     return { ascent_style: 'flash',    attempt_count: 1, attempt_bucket: '1' }
+    case 'second_go': return { ascent_style: 'redpoint', attempt_count: 2, attempt_bucket: '2' }
+    case 'third_go':  return { ascent_style: 'redpoint', attempt_count: 3, attempt_bucket: '3' }
+    case 'four_plus': return { ascent_style: 'redpoint', attempt_count: null, attempt_bucket: null }
+    default:          return { ascent_style: 'unknown',  attempt_count: null, attempt_bucket: null }
+  }
+}
 
 const optStr = z
   .union([z.string(), z.null(), z.undefined()])
@@ -31,8 +42,6 @@ const optNum = z
 
 const ascentSchema = z.object({
   date: z.string().min(1, 'Data richiesta'),
-  status: z.enum(['completed', 'attempted']),
-  grade_at_ascent: optStr,
   personal_grade: optStr,
   quality: optNum,
   kneepad_used: z.boolean().nullable().optional().transform(v => v ?? null),
@@ -42,8 +51,6 @@ const ascentSchema = z.object({
 })
 
 type AscentSchema = z.infer<typeof ascentSchema>
-
-const BUCKET_OPTIONS = ATTEMPT_SELECTOR_OPTIONS.filter(o => o.isBucket)
 
 interface Props {
   preselectedRoute?: RouteSearchResult
@@ -58,49 +65,41 @@ export default function AscentForm({ preselectedRoute, onSubmit, onCancel, isLoa
   const [showDropdown, setShowDropdown] = useState(false)
   const [quality, setQuality] = useState<number | null>(null)
   const [hoverStar, setHoverStar] = useState<number | null>(null)
-  const [ascentStyle, setAscentStyle] = useState<string>('onsight')
-  const [attemptRaw, setAttemptRaw] = useState<string | null>(null)
-  const [attemptExact, setAttemptExact] = useState<number | null>(null)
+  const [attemptType, setAttemptType] = useState('onsight')
+  const [isRepeat, setIsRepeat] = useState(false)
 
   const { data: results, isFetching } = useRouteSearch(preselectedRoute ? '' : query)
 
-  const { register, handleSubmit, watch, setValue, formState: { errors } } = useForm<AscentSchema>({
+  const { register, handleSubmit, formState: { errors } } = useForm<AscentSchema>({
     resolver: zodResolver(ascentSchema) as import('react-hook-form').Resolver<AscentSchema>,
     defaultValues: {
       date: new Date().toISOString().slice(0, 10),
-      status: 'completed',
       visibility: 'public',
-      grade_at_ascent: preselectedRoute?.official_grade ?? '',
     },
   })
-
-  const status = watch('status')
-  const isRedpoint = ascentStyle === 'redpoint'
-  const selectedBucketOpt = ATTEMPT_SELECTOR_OPTIONS.find(o => o.value === attemptRaw)
-  const isLargeBucket = selectedBucketOpt?.isBucket === true
 
   function handleRouteSelect(route: RouteSearchResult) {
     setSelectedRoute(route)
     setQuery(route.name)
     setShowDropdown(false)
-    setValue('grade_at_ascent', route.official_grade ?? '')
   }
 
   function handleFormSubmit(data: AscentSchema) {
     if (!selectedRoute) return
-    const { attempt_count, attempt_bucket } = resolveAttemptFields(
-      isRedpoint ? (attemptRaw ?? null) : null,
-      isRedpoint ? attemptExact : null
-    )
+
+    const mapped = isRepeat
+      ? { ascent_style: 'repeat', attempt_count: null as number | null, attempt_bucket: null as AttemptBucket | null }
+      : mapAttemptType(attemptType)
+
     onSubmit({
       route_id: selectedRoute.id,
       date: data.date,
-      status: data.status,
       attempt_type: null,
-      ascent_style: status === 'completed' ? ascentStyle : null,
-      attempt_count,
-      attempt_bucket: attempt_bucket as AttemptBucket | null,
-      grade_at_ascent: data.grade_at_ascent ?? selectedRoute.official_grade,
+      ascent_style: mapped.ascent_style,
+      attempt_count: mapped.attempt_count,
+      attempt_bucket: mapped.attempt_bucket,
+      is_repeat: isRepeat,
+      grade_at_ascent: selectedRoute.official_grade,
       grade_numeric_at_ascent: selectedRoute.grade_numeric,
       personal_grade: data.personal_grade ?? null,
       quality,
@@ -113,6 +112,7 @@ export default function AscentForm({ preselectedRoute, onSubmit, onCancel, isLoa
 
   return (
     <form onSubmit={handleSubmit(handleFormSubmit)} className="inline-form">
+      {/* Route selector */}
       {preselectedRoute ? (
         <div style={{ marginBottom: 16, padding: '10px 14px', background: 'rgba(232,93,53,0.10)', border: '1px solid rgba(232,93,53,0.22)', borderRadius: 10, fontSize: 13, color: 'var(--accent)', fontWeight: 600 }}>
           Via: {preselectedRoute.crag_name} › {preselectedRoute.sector_name} › {preselectedRoute.name}
@@ -158,6 +158,9 @@ export default function AscentForm({ preselectedRoute, onSubmit, onCancel, isLoa
           {selectedRoute && (
             <div style={{ marginTop: 6, fontSize: 12, color: 'var(--accent)', fontWeight: 600 }}>
               ✓ {selectedRoute.crag_name} › {selectedRoute.sector_name} › {selectedRoute.name}
+              {selectedRoute.official_grade && (
+                <span className="grade-badge" style={{ marginLeft: 8 }}>{selectedRoute.official_grade}</span>
+              )}
             </div>
           )}
         </div>
@@ -171,70 +174,17 @@ export default function AscentForm({ preselectedRoute, onSubmit, onCancel, isLoa
         </div>
 
         <div className="form-group">
-          <label>Stato</label>
-          <select {...register('status')}>
-            <option value="completed">Salita</option>
-            <option value="attempted">Tentativo</option>
+          <label>Tipo salita</label>
+          <select
+            value={attemptType}
+            onChange={e => setAttemptType(e.target.value)}
+            disabled={isRepeat}
+            style={isRepeat ? { opacity: 0.4 } : {}}
+          >
+            {ATTEMPT_TYPE_OPTIONS.map(o => (
+              <option key={o.value} value={o.value}>{o.label}</option>
+            ))}
           </select>
-        </div>
-
-        {status === 'completed' && (
-          <>
-            <div className="form-group">
-              <label>Modalità</label>
-              <select
-                value={ascentStyle}
-                onChange={e => { setAscentStyle(e.target.value); setAttemptRaw(null); setAttemptExact(null) }}
-              >
-                {STYLE_OPTIONS.map(o => (
-                  <option key={o.value} value={o.value}>{o.label}</option>
-                ))}
-              </select>
-            </div>
-
-            {isRedpoint && (
-              <div className="form-group">
-                <label>Numero di giri</label>
-                <select
-                  value={attemptRaw ?? ''}
-                  onChange={e => { setAttemptRaw(e.target.value || null); setAttemptExact(null) }}
-                >
-                  <option value="">— Seleziona —</option>
-                  {ATTEMPT_SELECTOR_OPTIONS.map(o => (
-                    <option key={o.value} value={o.value}>{o.label}</option>
-                  ))}
-                </select>
-              </div>
-            )}
-
-            {isRedpoint && isLargeBucket && (
-              <div className="form-group">
-                <label>
-                  Numero esatto <span style={{ fontWeight: 400, fontSize: 11, color: '#8a9a87', textTransform: 'none' }}>(opzionale)</span>
-                </label>
-                <input
-                  type="number"
-                  min={parseInt(attemptRaw?.split('_')[0] ?? '11')}
-                  placeholder="es. 14"
-                  value={attemptExact ?? ''}
-                  onChange={e => setAttemptExact(e.target.value ? parseInt(e.target.value) : null)}
-                />
-                <span style={{ fontSize: 11, color: '#8a9a87', marginTop: 2 }}>
-                  Fascia: {BUCKET_OPTIONS.find(o => o.value === attemptRaw)?.label}
-                </span>
-              </div>
-            )}
-          </>
-        )}
-
-        <div className="form-group">
-          <label>Grado al momento</label>
-          <input {...register('grade_at_ascent')} placeholder="es. 7a" />
-        </div>
-
-        <div className="form-group">
-          <label>Grado personale</label>
-          <input {...register('personal_grade')} placeholder="es. 7a+" />
         </div>
 
         <div className="form-group">
@@ -276,6 +226,19 @@ export default function AscentForm({ preselectedRoute, onSubmit, onCancel, isLoa
               </span>
             )}
           </div>
+        </div>
+
+        <div className="form-group" style={{ flexDirection: 'row', alignItems: 'center', gap: 8, paddingTop: 16 }}>
+          <input
+            type="checkbox"
+            id="repeat-chk"
+            checked={isRepeat}
+            onChange={e => setIsRepeat(e.target.checked)}
+            style={{ width: 'auto' }}
+          />
+          <label htmlFor="repeat-chk" style={{ textTransform: 'none', fontSize: 13, color: 'var(--text)', letterSpacing: 0 }}>
+            È una ripetizione
+          </label>
         </div>
 
         <div className="form-group" style={{ flexDirection: 'row', alignItems: 'center', gap: 8, paddingTop: 16 }}>

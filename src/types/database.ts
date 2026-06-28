@@ -163,6 +163,7 @@ export interface Ascent {
   attempt_bucket: string | null
   legacy_attempt_type: string | null
   needs_review: boolean
+  is_repeat: boolean
   route_name_snapshot: string | null
   crag_name_snapshot: string | null
   sector_name_snapshot: string | null

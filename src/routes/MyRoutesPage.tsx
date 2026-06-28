@@ -206,7 +206,7 @@ export default function MyRoutesPage() {
     let list = ascents ?? []
     if (statusFilter !== 'all') list = list.filter(a => a.status === statusFilter)
     if (yearFilter !== 'all') list = list.filter(a => a.date.startsWith(yearFilter))
-    if (typeFilter !== 'all') list = list.filter(a => a.attempt_type === typeFilter)
+    if (typeFilter !== 'all') list = list.filter(a => (a.ascent_style ?? a.attempt_type) === typeFilter)
     if (search.trim().length >= 2) {
       const q = search.toLowerCase()
       list = list.filter(a =>
@@ -282,9 +282,7 @@ export default function MyRoutesPage() {
           <option value="onsight">On-sight</option>
           <option value="flash">Flash</option>
           <option value="redpoint">Redpoint</option>
-          <option value="second">2° giro</option>
-          <option value="third">3° giro</option>
-          <option value="four_plus">4+</option>
+          <option value="repeat">Ripetizione</option>
         </select>
       </div>
 

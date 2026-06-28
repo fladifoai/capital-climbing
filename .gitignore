@@ -28,3 +28,10 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Database exports and secrets
+*.backup
+*.dump
+*.sql.gz
+supabase/.branches
+supabase/.temp

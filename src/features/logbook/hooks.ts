@@ -39,11 +39,11 @@ export function useMyAscents(userId: string) {
 export interface AscentFormValues {
   route_id: string
   date: string
-  status: 'completed' | 'attempted'
   attempt_type: AttemptType | null
   ascent_style: string | null
   attempt_count: number | null
   attempt_bucket: string | null
+  is_repeat: boolean
   grade_at_ascent: string | null
   grade_numeric_at_ascent: number | null
   personal_grade: string | null
@@ -63,6 +63,7 @@ export function useCreateAscent() {
         .insert({
           ...values,
           user_id: userId,
+          status: 'completed',
           score: null,
           needs_review: false,
         })
