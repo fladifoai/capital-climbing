@@ -24,7 +24,6 @@ import AdminPage from '../routes/AdminPage'
 import AdminCragPage from '../routes/AdminCragPage'
 import AdminImportPage from '../routes/AdminImportPage'
 import LandingPage from '../routes/LandingPage'
-import HomePage from '../routes/HomePage'
 
 const queryClient = new QueryClient()
 
@@ -46,7 +45,7 @@ export default function App() {
             {/* Pagine con layout */}
             <Route element={<Layout />}>
               {/* Pubbliche — accessibili senza account */}
-              <Route path="/home" element={<HomePage />} />
+              <Route path="/home" element={<Navigate to="/dashboard" replace />} />
               <Route path="/explore" element={<ExplorePage />} />
               <Route path="/regions/:regionId" element={<RegionPage />} />
               <Route path="/crags/:cragId" element={<CragDetailPage />} />

@@ -8,13 +8,13 @@ const publicNavItems = [
 ]
 
 const privateNavItems = [
-  { to: '/home', label: 'Home' },
+  { to: '/dashboard', label: 'Dashboard' },
   { to: '/explore', label: 'Esplora' },
   { to: '/sessions', label: 'Sessioni' },
   { to: '/projects', label: 'Progetti' },
-  { to: '/analytics', label: 'Analisi' },
   { to: '/my-routes', label: 'Le mie vie' },
-  { to: '/settings', label: 'Profilo' },
+  { to: '/settings', label: 'Il mio profilo' },
+  { to: '/analytics', label: 'Analisi' },
 ]
 
 const adminNavItems = [
@@ -35,13 +35,13 @@ export default function Layout() {
   const label = displayName ?? user?.email ?? ''
 
   const navItems = user
-    ? [...publicNavItems, ...privateNavItems, ...(isAdmin ? adminNavItems : [])]
+    ? [...privateNavItems, ...(isAdmin ? adminNavItems : [])]
     : publicNavItems
 
   return (
     <div className="layout">
       <aside className="sidebar">
-        <Link to={user ? '/home' : '/'} className="brand" style={{ textDecoration: 'none' }}>
+        <Link to={user ? '/dashboard' : '/'} className="brand" style={{ textDecoration: 'none' }} aria-label={user ? 'Vai alla dashboard' : 'Capital Climbing — home'}>
           <span className="brandmark">▲</span>
           <span className="brand-name">Capital Climbing</span>
         </Link>

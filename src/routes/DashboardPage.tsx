@@ -8,7 +8,7 @@ import { useAuth } from '../features/auth/AuthContext'
 import { useMyAscents } from '../features/logbook/hooks'
 import { useMyProjects } from '../features/projects/hooks'
 import { useMySessions } from '../features/sessions/hooks'
-import { computeKpis, computeCumulativeMax, filterAscents } from '../analytics/metrics/ascents'
+import { computeKpis, computeCumulativeMax, filterAscents, computeDataQuality } from '../analytics/metrics/ascents'
 import { DEFAULT_FILTERS } from '../analytics/types'
 import '../styles/analytics.css'
 import '../styles/logbook.css'
@@ -37,7 +37,7 @@ function styleColor(a: { ascent_style?: string | null; attempt_type?: string | n
 }
 
 export default function DashboardPage() {
-  const { user } = useAuth()
+  const { user, isAdmin } = useAuth()
   const { data: ascents = [], isLoading } = useMyAscents(user?.id ?? '')
   const { data: projects = [] } = useMyProjects(user?.id ?? '')
   const { data: sessions = [] } = useMySessions(user?.id ?? '')
@@ -67,9 +67,11 @@ export default function DashboardPage() {
   )
 
   const recentAscents = useMemo(
-    () => completed.slice(0, 6),
+    () => completed.slice(0, 5),
     [completed]
   )
+
+  const dataQuality = useMemo(() => computeDataQuality(ascents), [ascents])
 
   const activeProjects = useMemo(
     () => projects.filter(p => p.status === 'active').slice(0, 5),
@@ -162,7 +164,7 @@ export default function DashboardPage() {
             }}>
               + Aggiungi ascensione
             </Link>
-            <Link to="/projects" style={{
+            <Link to="/sessions" style={{
               display: 'inline-flex', alignItems: 'center', gap: 6,
               height: 40, padding: '0 16px', borderRadius: 999,
               border: '1px solid rgba(255,247,234,0.26)',
@@ -170,9 +172,9 @@ export default function DashboardPage() {
               color: 'var(--text-on-dark)', fontSize: 13, fontWeight: 600,
               textDecoration: 'none',
             }}>
-              Nuovo progetto
+              Nuova sessione
             </Link>
-            <Link to="/admin/import" style={{
+            <Link to="/explore" style={{
               display: 'inline-flex', alignItems: 'center', gap: 6,
               height: 40, padding: '0 16px', borderRadius: 999,
               border: '1px solid rgba(255,247,234,0.18)',
@@ -180,8 +182,30 @@ export default function DashboardPage() {
               color: 'var(--text-on-dark-muted)', fontSize: 13, fontWeight: 600,
               textDecoration: 'none',
             }}>
-              Importa dati
+              Cerca falesia
             </Link>
+            <Link to="/projects" style={{
+              display: 'inline-flex', alignItems: 'center', gap: 6,
+              height: 40, padding: '0 16px', borderRadius: 999,
+              border: '1px solid rgba(255,247,234,0.18)',
+              background: 'rgba(255,247,234,0.04)',
+              color: 'var(--text-on-dark-muted)', fontSize: 13, fontWeight: 600,
+              textDecoration: 'none',
+            }}>
+              Nuovo progetto
+            </Link>
+            {isAdmin && (
+              <Link to="/admin/import" style={{
+                display: 'inline-flex', alignItems: 'center', gap: 6,
+                height: 40, padding: '0 16px', borderRadius: 999,
+                border: '1px solid rgba(255,247,234,0.14)',
+                background: 'transparent',
+                color: 'var(--text-on-dark-muted)', fontSize: 13, fontWeight: 600,
+                textDecoration: 'none',
+              }}>
+                Importa dati
+              </Link>
+            )}
           </div>
         </div>
       </div>
@@ -354,12 +378,40 @@ export default function DashboardPage() {
           → Analisi complete
         </Link>
         <Link to="/explore" style={{ fontSize: 13, color: 'var(--accent)', fontWeight: 600, textDecoration: 'none' }}>
-          → Esplora falesie
+          → Catalogo falesie
         </Link>
         <Link to="/sessions" style={{ fontSize: 13, color: 'var(--accent)', fontWeight: 600, textDecoration: 'none' }}>
           → Sessioni
         </Link>
       </div>
+
+      {/* 7. Qualità dati */}
+      {ascents.length > 0 && (dataQuality.needsReview > 0 || dataQuality.missingAttemptInfo > 0) && (
+        <div className="chart-section" style={{
+          marginTop: 16,
+          borderColor: 'rgba(224,100,85,0.30)',
+          background: 'rgba(224,100,85,0.06)',
+        }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12, flexWrap: 'wrap' }}>
+            <div>
+              <h2 style={{ margin: '0 0 8px', color: '#FFB0A5', fontSize: 15 }}>Dati da controllare</h2>
+              {dataQuality.needsReview > 0 && (
+                <p style={{ margin: '0 0 4px', fontSize: 13, color: 'var(--text-muted)' }}>
+                  {dataQuality.needsReview} {dataQuality.needsReview === 1 ? 'ascensione da revisionare' : 'ascensioni da revisionare'} — numero esatto di giri non noto.
+                </p>
+              )}
+              {dataQuality.missingAttemptInfo > 0 && (
+                <p style={{ margin: '0 0 4px', fontSize: 13, color: 'var(--text-muted)' }}>
+                  {dataQuality.missingAttemptInfo} {dataQuality.missingAttemptInfo === 1 ? 'ascensione senza info' : 'ascensioni senza info'} sul numero di tentativi.
+                </p>
+              )}
+            </div>
+            <Link to="/analytics" style={{ fontSize: 13, color: '#FFB0A5', fontWeight: 600, textDecoration: 'none', whiteSpace: 'nowrap' }}>
+              Vai a Qualità dati →
+            </Link>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
