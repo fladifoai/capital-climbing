@@ -11,7 +11,7 @@ type Mode = 'login' | 'forgot'
 export default function LoginPage() {
   const navigate = useNavigate()
   const [mode, setMode] = useState<Mode>('login')
-  const [rememberMe, setRememberMe] = useState(true)
+  const [rememberMe, setRememberMe] = useState(false)
   const [loginError, setLoginError] = useState('')
   const [loginLoading, setLoginLoading] = useState(false)
   const [forgotSent, setForgotSent] = useState(false)

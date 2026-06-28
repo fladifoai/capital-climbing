@@ -131,6 +131,54 @@
   border-radius: 2px;
 }
 
+/* ── Mobile nav overlay ──────────────────────────────────────────────────────── */
+.landing-mobile-nav {
+  display: none;
+  position: fixed;
+  top: 64px;
+  left: 0; right: 0;
+  z-index: 99;
+  background: rgba(14,17,23,0.97);
+  backdrop-filter: blur(14px);
+  border-bottom: 1px solid rgba(255,247,234,0.10);
+  padding: 20px 20px 28px;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.landing-mobile-nav-link {
+  display: block;
+  padding: 13px 10px;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-on-dark-muted);
+  text-decoration: none;
+  border-radius: 10px;
+  transition: color 0.15s, background 0.15s;
+}
+.landing-mobile-nav-link:hover {
+  color: var(--text-on-dark);
+  background: rgba(255,247,234,0.06);
+}
+
+.landing-mobile-nav-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(255,247,234,0.10);
+}
+
+/* Hamburger open state — X shape */
+.landing-hamburger.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+.landing-hamburger.open span:nth-child(2) { opacity: 0; }
+.landing-hamburger.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+.landing-hamburger span { transition: transform 0.2s, opacity 0.2s; }
+
+@media (max-width: 600px) {
+  .landing-mobile-nav { display: flex; }
+}
+
 /* ── Sections common ────────────────────────────────────────────────────────── */
 .landing-section {
   max-width: 1080px;

@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../features/auth/AuthContext'
 import '../styles/landing.css'
@@ -50,9 +51,12 @@ const STEPS = [
 
 export default function LandingPage() {
   const { user } = useAuth()
+  const [menuOpen, setMenuOpen] = useState(false)
 
   const ctaTo = user ? '/home' : '/register'
   const ctaLabel = user ? 'Vai alla Home →' : 'Inizia ora — è gratis'
+
+  function closeMenu() { setMenuOpen(false) }
 
   return (
     <div className="landing-page">
@@ -75,10 +79,30 @@ export default function LandingPage() {
           <Link to={ctaTo} className="btn-landing-cta">{user ? 'Dashboard' : 'Inizia ora'}</Link>
         </div>
 
-        <button className="landing-hamburger" aria-label="Menu">
+        <button
+          className={`landing-hamburger${menuOpen ? ' open' : ''}`}
+          aria-label="Menu"
+          aria-expanded={menuOpen}
+          onClick={() => setMenuOpen(v => !v)}
+        >
           <span /><span /><span />
         </button>
       </header>
+
+      {/* Mobile nav overlay */}
+      {menuOpen && (
+        <div className="landing-mobile-nav" onClick={closeMenu}>
+          <Link to="/explore" className="landing-mobile-nav-link" onClick={closeMenu}>Esplora</Link>
+          <a href="#funzionalita" className="landing-mobile-nav-link" onClick={closeMenu}>Funzionalità</a>
+          <a href="#come-funziona" className="landing-mobile-nav-link" onClick={closeMenu}>Come funziona</a>
+          <a href="#privacy" className="landing-mobile-nav-link" onClick={closeMenu}>Privacy</a>
+          <div className="landing-mobile-nav-actions">
+            <Link to="/login" className="btn-landing-login" onClick={closeMenu}>Accedi</Link>
+            <Link to={ctaTo} className="btn-landing-cta" onClick={closeMenu}>{user ? 'Dashboard' : 'Inizia ora'}</Link>
+          </div>
+        </div>
+      )}
+
 
       {/* Hero */}
       <section className="landing-hero">
