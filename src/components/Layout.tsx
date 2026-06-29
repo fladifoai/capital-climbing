@@ -9,6 +9,7 @@ const publicNavItems = [
 
 const privateNavItems = [
   { to: '/dashboard', label: 'Dashboard' },
+  { to: '/log/new', label: '+ Nuova salita' },
   { to: '/explore', label: 'Esplora' },
   { to: '/sessions', label: 'Sessioni' },
   { to: '/projects', label: 'Progetti' },

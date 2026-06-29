@@ -15,10 +15,13 @@ import {
 } from '../features/routes/hooks'
 import {
   useCreateAscent,
+  useMyRouteNotes,
+  useUpsertRouteNotes,
   type AscentFormValues,
   type RouteSearchResult,
 } from '../features/logbook/hooks'
 import AscentForm from '../features/logbook/AscentForm'
+import RouteNotesForm, { hasAnyData, toPayload, type RouteNotesValues } from '../features/logbook/RouteNotesForm'
 import SpoilerGuard from '../features/routes/SpoilerGuard'
 import { numToGrade, GRADE_SCALE, GRADE_TO_NUM } from '../analytics/normalizers/grades'
 import type { Ascent } from '../types/database'
@@ -26,6 +29,7 @@ import '../styles/catalog.css'
 import '../styles/admin.css'
 import '../styles/logbook.css'
 import '../styles/route-detail.css'
+import '../styles/log-new.css'
 
 // ─── Label maps ──────────────────────────────────────────────────────────────
 
@@ -492,11 +496,21 @@ export default function RouteDetailPage() {
   const { data: personalHistory } = useRoutePersonalHistory(routeId, user?.id ?? '')
   const { data: myRatingRaw } = useMyRouteRating(routeId, user?.id ?? '')
   const { data: publicAscents } = useRoutePublicAscents(routeId, user?.id ?? null)
+  const { data: myRouteNotes } = useMyRouteNotes(routeId, user?.id ?? '')
   const createAscent = useCreateAscent()
+  const upsertNotes = useUpsertRouteNotes()
 
   const [showForm, setShowForm] = useState(false)
   const [formDone, setFormDone] = useState(false)
   const [formError, setFormError] = useState('')
+  const [showNotesForm, setShowNotesForm] = useState(false)
+  const [notesValues, setNotesValues] = useState<RouteNotesValues>({
+    hold_profile: {}, movement_profile: {}, style_profile: {},
+    crux: '', rests: '', main_beta: '', alternative_beta: '',
+    kneepad_used: false, kneepad_data: {}, equipment_data: {}, safety_notes: '',
+  })
+  const [notesSaved, setNotesSaved] = useState(false)
+  const [notesError, setNotesError] = useState('')
 
   if (isLoading) return <div className="loading-state">Caricamento via…</div>
   if (error || !route) return <div className="error-state">Via non trovata.</div>
@@ -524,6 +538,19 @@ export default function RouteDetailPage() {
     } catch (e) {
       console.error('[RouteDetailPage] handleSubmit error', e)
       setFormError((e as Error).message || String(e))
+    }
+  }
+
+  async function handleSaveNotes() {
+    if (!user) return
+    setNotesError('')
+    try {
+      const payload = toPayload(notesValues, user.id, routeId, 'private')
+      await upsertNotes.mutateAsync(payload)
+      setShowNotesForm(false)
+      setNotesSaved(true)
+    } catch (e) {
+      setNotesError((e as Error).message)
     }
   }
 
@@ -729,6 +756,90 @@ export default function RouteDetailPage() {
           ascents={personalHistory ?? []}
           onAddClick={() => { setShowForm(true); setFormDone(false); window.scrollTo({ top: 0, behavior: 'smooth' }) }}
         />
+      )}
+
+      {/* ── I miei dati tecnici ── */}
+      {user && (
+        <div className="route-section">
+          <div className="personal-history-header">
+            <h2 className="route-section-title">I miei dati tecnici</h2>
+            {!showNotesForm && (
+              <button
+                className="btn-primary btn-sm"
+                onClick={() => { setShowNotesForm(true); setNotesSaved(false) }}
+              >
+                {myRouteNotes ? 'Modifica' : '+ Aggiungi'}
+              </button>
+            )}
+          </div>
+
+          {notesSaved && (
+            <div className="form-success" style={{ marginBottom: 12 }}>
+              ✓ Dati tecnici salvati!{' '}
+              <button className="link-btn" onClick={() => setNotesSaved(false)}>ok</button>
+            </div>
+          )}
+
+          {!showNotesForm && !myRouteNotes && (
+            <p className="route-empty-hint">
+              Non hai ancora inserito dati tecnici personali per questa via.
+            </p>
+          )}
+
+          {!showNotesForm && myRouteNotes && (
+            <div className="route-notes-display">
+              {myRouteNotes.main_beta && (
+                <div className="route-notes-item">
+                  <span className="route-notes-item-label">Beta principale</span>
+                  <span className="route-notes-item-value">{myRouteNotes.main_beta}</span>
+                </div>
+              )}
+              {myRouteNotes.crux && (
+                <div className="route-notes-item">
+                  <span className="route-notes-item-label">Crux</span>
+                  <span className="route-notes-item-value">{myRouteNotes.crux}</span>
+                </div>
+              )}
+              {myRouteNotes.safety_notes && (
+                <div className="route-notes-item">
+                  <span className="route-notes-item-label">Note sicurezza</span>
+                  <span className="route-notes-item-value">{myRouteNotes.safety_notes}</span>
+                </div>
+              )}
+              {myRouteNotes.alternative_beta && (
+                <div className="route-notes-item">
+                  <span className="route-notes-item-label">Beta alternativa</span>
+                  <span className="route-notes-item-value">{myRouteNotes.alternative_beta}</span>
+                </div>
+              )}
+            </div>
+          )}
+
+          {showNotesForm && (
+            <div className="route-notes-panel">
+              <RouteNotesForm
+                initialNote={myRouteNotes ?? null}
+                onChange={setNotesValues}
+              />
+              {notesError && <div className="admin-error" style={{ marginTop: 12 }}>{notesError}</div>}
+              <div className="log-nav-btns" style={{ borderTop: 'none', paddingTop: 12 }}>
+                <button
+                  className="btn-secondary"
+                  onClick={() => { setShowNotesForm(false); setNotesError('') }}
+                >
+                  Annulla
+                </button>
+                <button
+                  className="btn-primary"
+                  onClick={handleSaveNotes}
+                  disabled={upsertNotes.isPending || !hasAnyData(notesValues)}
+                >
+                  {upsertNotes.isPending ? 'Salvataggio…' : 'Salva dati tecnici'}
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
       )}
 
       {/* ── Chi ha salito questa via ── */}

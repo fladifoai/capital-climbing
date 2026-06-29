@@ -1,0 +1,650 @@
+import { useState, useEffect } from 'react'
+import { useSearchParams, Link } from 'react-router-dom'
+import { useAuth } from '../features/auth/AuthContext'
+import {
+  useCreateAscent,
+  useUpsertRouteNotes,
+  useRouteSearch,
+  type AscentFormValues,
+  type RouteSearchResult,
+} from '../features/logbook/hooks'
+import RouteNotesForm, {
+  hasAnyData,
+  toPayload,
+  type RouteNotesValues,
+} from '../features/logbook/RouteNotesForm'
+import { GRADE_ORDER } from '../analytics/normalizers/grades'
+import type { AttemptBucket } from '../analytics/calculations/attempt-buckets'
+import '../styles/log-new.css'
+import '../styles/admin.css'
+import '../styles/logbook.css'
+
+// ─── Constants ────────────────────────────────────────────────────────────────
+
+const ATTEMPT_OPTIONS = [
+  { value: 'onsight', label: 'On-sight' },
+  { value: 'flash', label: 'Flash' },
+  { value: 'second_go', label: '2° giro' },
+  { value: 'third_go', label: '3° giro' },
+  { value: 'four_plus', label: '4+' },
+]
+
+const DIFFICULTY_FEEL_OPTIONS = [
+  { value: 'soft', label: 'Soft' },
+  { value: 'fair', label: 'Giusta' },
+  { value: 'hard', label: 'Hard' },
+  { value: 'very_hard', label: 'Molto hard' },
+]
+
+const STYLE_FEEL_OPTIONS = [
+  { value: 'my_style', label: 'Mio stile' },
+  { value: 'neutral', label: 'Neutro' },
+  { value: 'anti_style', label: 'Anti-stile' },
+]
+
+const STEPS = [
+  { id: 1, label: '1 Via & Salita' },
+  { id: 2, label: '2 Stile & Prese' },
+  { id: 3, label: '3 Movimenti & Beta' },
+  { id: 4, label: '4 Kneepad & Equip.' },
+  { id: 5, label: '5 Sicurezza & Val.' },
+  { id: 6, label: '6 Visibilità' },
+]
+
+function mapAttemptType(type: string): {
+  ascent_style: string
+  attempt_count: number | null
+  attempt_bucket: AttemptBucket | null
+} {
+  switch (type) {
+    case 'onsight':   return { ascent_style: 'onsight',  attempt_count: 1, attempt_bucket: '1' }
+    case 'flash':     return { ascent_style: 'flash',    attempt_count: 1, attempt_bucket: '1' }
+    case 'second_go': return { ascent_style: 'redpoint', attempt_count: 2, attempt_bucket: '2' }
+    case 'third_go':  return { ascent_style: 'redpoint', attempt_count: 3, attempt_bucket: '3' }
+    case 'four_plus': return { ascent_style: 'redpoint', attempt_count: null, attempt_bucket: null }
+    default:          return { ascent_style: 'unknown',  attempt_count: null, attempt_bucket: null }
+  }
+}
+
+// ─── Main page ────────────────────────────────────────────────────────────────
+
+export default function LogNewPage() {
+  const { user } = useAuth()
+  const [searchParams] = useSearchParams()
+  const preRouteId = searchParams.get('routeId')
+
+  const createAscent = useCreateAscent()
+  const upsertNotes = useUpsertRouteNotes()
+
+  // ── Route search state ──
+  const [routeQuery, setRouteQuery] = useState('')
+  const [selectedRoute, setSelectedRoute] = useState<RouteSearchResult | null>(null)
+  const [showDropdown, setShowDropdown] = useState(false)
+  const { data: searchResults, isFetching: searchFetching } = useRouteSearch(
+    selectedRoute ? '' : routeQuery
+  )
+
+  // ── Ascent fields ──
+  const [date, setDate] = useState(new Date().toISOString().slice(0, 10))
+  const [attemptType, setAttemptType] = useState('onsight')
+  const [isRepeat, setIsRepeat] = useState(false)
+  const [effort, setEffort] = useState<number | ''>('')
+  const [quality, setQuality] = useState<number | null>(null)
+  const [hoverStar, setHoverStar] = useState<number | null>(null)
+  const [personalGrade, setPersonalGrade] = useState('')
+  const [proposedGrade, setProposedGrade] = useState('')
+  const [difficultyFeel, setDifficultyFeel] = useState('')
+  const [styleFeel, setStyleFeel] = useState('')
+  const [wantRepeat, setWantRepeat] = useState<boolean | null>(null)
+
+  // ── Notes (route technical data) ──
+  const [notesValues, setNotesValues] = useState<RouteNotesValues>({
+    hold_profile: {},
+    movement_profile: {},
+    style_profile: {},
+    crux: '',
+    rests: '',
+    main_beta: '',
+    alternative_beta: '',
+    kneepad_used: false,
+    kneepad_data: {},
+    equipment_data: {},
+    safety_notes: '',
+  })
+
+  // ── Form state ──
+  const [visibility, setVisibility] = useState<'public' | 'private'>('public')
+  const [notes, setNotes] = useState('')
+  const [step, setStep] = useState(1)
+  const [saved, setSaved] = useState(false)
+  const [error, setError] = useState('')
+
+  // Pre-load route from query param
+  useEffect(() => {
+    if (preRouteId && !selectedRoute) {
+      // Fetch route info - we use the route from the URL via a temporary search
+      setRouteQuery(preRouteId)
+    }
+  }, [preRouteId])
+
+  function selectRoute(r: RouteSearchResult) {
+    setSelectedRoute(r)
+    setRouteQuery(r.name)
+    setShowDropdown(false)
+  }
+
+  async function saveBase() {
+    if (!user || !selectedRoute) return
+    setError('')
+    const mapped = isRepeat
+      ? { ascent_style: 'repeat', attempt_count: null as number | null, attempt_bucket: null as AttemptBucket | null }
+      : mapAttemptType(attemptType)
+
+    const values: AscentFormValues = {
+      route_id: selectedRoute.id,
+      session_id: null,
+      date,
+      attempt_type: null,
+      ascent_style: mapped.ascent_style,
+      attempt_count: mapped.attempt_count,
+      attempt_bucket: mapped.attempt_bucket,
+      is_repeat: isRepeat,
+      grade_at_ascent: selectedRoute.official_grade,
+      grade_numeric_at_ascent: selectedRoute.grade_numeric,
+      personal_grade: personalGrade || null,
+      quality,
+      difficulty_feel: difficultyFeel || null,
+      style_feel: styleFeel || null,
+      proposed_grade: proposedGrade || null,
+      want_repeat: wantRepeat,
+      kneepad_used: notesValues.kneepad_used || null,
+      effort: effort !== '' ? Number(effort) : null,
+      notes: notes || null,
+      visibility,
+    }
+
+    try {
+      await createAscent.mutateAsync({ userId: user.id, values, routeId: selectedRoute.id })
+      setSaved(true)
+    } catch (e) {
+      setError((e as Error).message)
+    }
+  }
+
+  async function saveAll() {
+    if (!user || !selectedRoute) return
+    setError('')
+    const mapped = isRepeat
+      ? { ascent_style: 'repeat', attempt_count: null as number | null, attempt_bucket: null as AttemptBucket | null }
+      : mapAttemptType(attemptType)
+
+    const values: AscentFormValues = {
+      route_id: selectedRoute.id,
+      session_id: null,
+      date,
+      attempt_type: null,
+      ascent_style: mapped.ascent_style,
+      attempt_count: mapped.attempt_count,
+      attempt_bucket: mapped.attempt_bucket,
+      is_repeat: isRepeat,
+      grade_at_ascent: selectedRoute.official_grade,
+      grade_numeric_at_ascent: selectedRoute.grade_numeric,
+      personal_grade: personalGrade || null,
+      quality,
+      difficulty_feel: difficultyFeel || null,
+      style_feel: styleFeel || null,
+      proposed_grade: proposedGrade || null,
+      want_repeat: wantRepeat,
+      kneepad_used: notesValues.kneepad_used || null,
+      effort: effort !== '' ? Number(effort) : null,
+      notes: notes || null,
+      visibility,
+    }
+
+    try {
+      await createAscent.mutateAsync({ userId: user.id, values, routeId: selectedRoute.id })
+      if (hasAnyData(notesValues)) {
+        const payload = toPayload(notesValues, user.id, selectedRoute.id, visibility)
+        await upsertNotes.mutateAsync(payload)
+      }
+      setSaved(true)
+    } catch (e) {
+      setError((e as Error).message)
+    }
+  }
+
+  const isPending = createAscent.isPending || upsertNotes.isPending
+
+  // ── Success screen ────────────────────────────────────────────────────────
+  if (saved) {
+    return (
+      <div className="log-new-page">
+        <div className="log-step-card">
+          <div className="log-success">
+            <div className="log-success-icon">✓</div>
+            <h2>Ascensione registrata!</h2>
+            {hasAnyData(notesValues) && (
+              <p>Anche i dati tecnici della via sono stati salvati nel tuo profilo.</p>
+            )}
+            <div className="log-success-btns">
+              {selectedRoute && (
+                <Link to={`/routes/${selectedRoute.id}`} className="btn-primary" style={{ textDecoration: 'none' }}>
+                  Vai alla via
+                </Link>
+              )}
+              <Link to="/profile" className="btn-secondary" style={{ textDecoration: 'none' }}>
+                Il mio profilo
+              </Link>
+              <button className="btn-secondary" onClick={() => {
+                setSaved(false)
+                setSelectedRoute(null)
+                setRouteQuery('')
+                setStep(1)
+                setNotes('')
+                setQuality(null)
+                setPersonalGrade('')
+                setProposedGrade('')
+                setDifficultyFeel('')
+                setStyleFeel('')
+                setWantRepeat(null)
+                setEffort('')
+                setIsRepeat(false)
+                setAttemptType('onsight')
+                setNotesValues({
+                  hold_profile: {},
+                  movement_profile: {},
+                  style_profile: {},
+                  crux: '', rests: '', main_beta: '', alternative_beta: '',
+                  kneepad_used: false, kneepad_data: {}, equipment_data: {}, safety_notes: '',
+                })
+              }}>
+                Aggiungi un'altra
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="log-new-page">
+      <div className="log-new-header">
+        <h1>Nuova salita</h1>
+      </div>
+
+      {/* ── Step tabs ── */}
+      <div className="log-step-tabs">
+        {STEPS.map(s => (
+          <button
+            key={s.id}
+            className={`log-step-tab${step === s.id ? ' active' : ''}${step > s.id ? ' done' : ''}`}
+            onClick={() => { if (s.id < step || selectedRoute) setStep(s.id) }}
+          >
+            {step > s.id ? '✓ ' : ''}{s.label}
+          </button>
+        ))}
+      </div>
+
+      {/* ── Step card ── */}
+      <div className="log-step-card">
+
+        {/* ═══════════ STEP 1 ═══════════ */}
+        {step === 1 && (
+          <>
+            <h2>Via e salita</h2>
+
+            {/* Route selector */}
+            {selectedRoute ? (
+              <div className="log-route-preview">
+                <div style={{ flex: 1 }}>
+                  <div className="log-route-preview-name">{selectedRoute.name}</div>
+                  <div className="log-route-preview-sub">
+                    {selectedRoute.crag_name} › {selectedRoute.sector_name}
+                    {selectedRoute.official_grade && (
+                      <span className="grade-badge" style={{ marginLeft: 8 }}>{selectedRoute.official_grade}</span>
+                    )}
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  className="btn-secondary"
+                  style={{ fontSize: 11, padding: '4px 10px' }}
+                  onClick={() => { setSelectedRoute(null); setRouteQuery('') }}
+                >
+                  Cambia
+                </button>
+              </div>
+            ) : (
+              <div className="form-group" style={{ position: 'relative', marginBottom: 20 }}>
+                <label>Via * <span style={{ fontWeight: 400, fontSize: 11, color: 'var(--text-muted)', textTransform: 'none' }}>(cerca per nome)</span></label>
+                <input
+                  value={routeQuery}
+                  onChange={e => { setRouteQuery(e.target.value); setShowDropdown(true) }}
+                  onFocus={() => routeQuery.length >= 2 && setShowDropdown(true)}
+                  placeholder="es. Spigolo giallo…"
+                  autoComplete="off"
+                />
+                {searchFetching && <span style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>Ricerca…</span>}
+                {showDropdown && searchResults && searchResults.length > 0 && (
+                  <div style={{
+                    position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 100,
+                    background: '#2A3240', border: '1px solid rgba(247,243,234,0.14)',
+                    borderRadius: 10, boxShadow: '0 8px 24px rgba(0,0,0,0.40)',
+                    maxHeight: 260, overflowY: 'auto',
+                  }}>
+                    {searchResults.map(r => (
+                      <div
+                        key={r.id}
+                        onClick={() => selectRoute(r)}
+                        style={{ padding: '10px 14px', cursor: 'pointer', borderBottom: '1px solid rgba(247,243,234,0.08)', fontSize: 13 }}
+                        onMouseEnter={e => (e.currentTarget.style.background = 'rgba(232,93,53,0.08)')}
+                        onMouseLeave={e => (e.currentTarget.style.background = '')}
+                      >
+                        <div style={{ fontWeight: 600, color: 'var(--text)' }}>{r.name}</div>
+                        <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>
+                          {r.crag_name} › {r.sector_name}
+                          {r.official_grade && <span className="grade-badge" style={{ marginLeft: 8 }}>{r.official_grade}</span>}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {showDropdown && routeQuery.length >= 2 && searchResults?.length === 0 && !searchFetching && (
+                  <div style={{ marginTop: 4, fontSize: 12, color: 'var(--text-muted)' }}>Nessuna via trovata.</div>
+                )}
+              </div>
+            )}
+
+            <div className="form-grid">
+              <div className="form-group">
+                <label>Data *</label>
+                <input type="date" value={date} onChange={e => setDate(e.target.value)} />
+              </div>
+
+              <div className="form-group">
+                <label>Tipo salita</label>
+                <select
+                  className="logbook-select"
+                  value={attemptType}
+                  onChange={e => setAttemptType(e.target.value)}
+                  disabled={isRepeat}
+                  style={isRepeat ? { opacity: 0.4 } : {}}
+                >
+                  {ATTEMPT_OPTIONS.map(o => (
+                    <option key={o.value} value={o.value}>{o.label}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="form-group">
+                <label>Sforzo (1–10)</label>
+                <input
+                  type="number" min={1} max={10}
+                  value={effort}
+                  onChange={e => setEffort(e.target.value ? Number(e.target.value) : '')}
+                  placeholder="8"
+                />
+              </div>
+
+              <div className="form-group" style={{ flexDirection: 'row', alignItems: 'center', gap: 8, paddingTop: 16 }}>
+                <input
+                  type="checkbox" id="repeat-chk"
+                  checked={isRepeat}
+                  onChange={e => setIsRepeat(e.target.checked)}
+                  style={{ width: 'auto' }}
+                />
+                <label htmlFor="repeat-chk" style={{ textTransform: 'none', fontSize: 13, letterSpacing: 0 }}>
+                  È una ripetizione
+                </label>
+              </div>
+            </div>
+
+            {/* ── Nav buttons ── */}
+            <div className="log-nav-btns">
+              <button
+                type="button"
+                className="btn-secondary"
+                disabled={isPending || !selectedRoute || !date}
+                onClick={saveBase}
+                title="Salva solo i dati base senza informazioni tecniche"
+              >
+                {isPending ? 'Salvataggio…' : 'Salva base →'}
+              </button>
+              <div className="log-nav-btns-right">
+                <button
+                  type="button"
+                  className="btn-primary"
+                  disabled={!selectedRoute}
+                  onClick={() => setStep(2)}
+                >
+                  Continua →
+                </button>
+              </div>
+            </div>
+          </>
+        )}
+
+        {/* ═══════════ STEP 2 ═══════════ */}
+        {step === 2 && (
+          <>
+            <h2>Stile & Prese</h2>
+            <RouteNotesForm
+              sections={['stile', 'prese']}
+              onChange={setNotesValues}
+            />
+            <div className="log-nav-btns">
+              <button type="button" className="btn-secondary" onClick={() => setStep(1)}>← Indietro</button>
+              <button type="button" className="btn-primary" onClick={() => setStep(3)}>Avanti →</button>
+            </div>
+          </>
+        )}
+
+        {/* ═══════════ STEP 3 ═══════════ */}
+        {step === 3 && (
+          <>
+            <h2>Movimenti & Beta</h2>
+            <RouteNotesForm
+              sections={['movimenti', 'beta']}
+              onChange={setNotesValues}
+            />
+            <div className="log-nav-btns">
+              <button type="button" className="btn-secondary" onClick={() => setStep(2)}>← Indietro</button>
+              <button type="button" className="btn-primary" onClick={() => setStep(4)}>Avanti →</button>
+            </div>
+          </>
+        )}
+
+        {/* ═══════════ STEP 4 ═══════════ */}
+        {step === 4 && (
+          <>
+            <h2>Kneepad & Attrezzatura</h2>
+            <RouteNotesForm
+              sections={['kneepad', 'equipment']}
+              onChange={setNotesValues}
+            />
+            <div className="log-nav-btns">
+              <button type="button" className="btn-secondary" onClick={() => setStep(3)}>← Indietro</button>
+              <button type="button" className="btn-primary" onClick={() => setStep(5)}>Avanti →</button>
+            </div>
+          </>
+        )}
+
+        {/* ═══════════ STEP 5 ═══════════ */}
+        {step === 5 && (
+          <>
+            <h2>Sicurezza & Valutazione</h2>
+
+            <RouteNotesForm
+              sections={['safety']}
+              onChange={setNotesValues}
+            />
+
+            <div className="log-section-title" style={{ marginTop: 20 }}>Valutazione personale</div>
+            <div className="log-feel-row">
+              <div className="form-group">
+                <label>Bellezza</label>
+                <div style={{ display: 'flex', gap: 4, paddingTop: 4 }}>
+                  {[1, 2, 3, 4, 5].map(n => (
+                    <button
+                      key={n}
+                      type="button"
+                      onClick={() => setQuality(quality === n ? null : n)}
+                      onMouseEnter={() => setHoverStar(n)}
+                      onMouseLeave={() => setHoverStar(null)}
+                      style={{
+                        background: 'none', border: 'none', cursor: 'pointer', padding: 0,
+                        fontSize: 24, lineHeight: 1,
+                        color: n <= (hoverStar ?? quality ?? 0) ? '#f5a623' : '#d0d0c8',
+                        transition: 'color 0.1s',
+                      }}
+                    >★</button>
+                  ))}
+                  {quality && <span style={{ fontSize: 11, color: 'var(--text-muted)', alignSelf: 'center', marginLeft: 4 }}>{quality}/5</span>}
+                </div>
+              </div>
+
+              <div className="form-group">
+                <label>Difficoltà percepita</label>
+                <select
+                  className="logbook-select"
+                  value={difficultyFeel}
+                  onChange={e => setDifficultyFeel(e.target.value)}
+                >
+                  <option value="">— Non specificato —</option>
+                  {DIFFICULTY_FEEL_OPTIONS.map(o => (
+                    <option key={o.value} value={o.value}>{o.label}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="form-group">
+                <label>Stile</label>
+                <select
+                  className="logbook-select"
+                  value={styleFeel}
+                  onChange={e => setStyleFeel(e.target.value)}
+                >
+                  <option value="">— Non specificato —</option>
+                  {STYLE_FEEL_OPTIONS.map(o => (
+                    <option key={o.value} value={o.value}>{o.label}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="form-group">
+                <label>Grado percepito</label>
+                <select
+                  className="logbook-select"
+                  value={personalGrade}
+                  onChange={e => setPersonalGrade(e.target.value)}
+                >
+                  <option value="">— Non specificato —</option>
+                  {GRADE_ORDER.map(g => (
+                    <option key={g} value={g}>{g}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="form-group">
+                <label>Grado proposto</label>
+                <select
+                  className="logbook-select"
+                  value={proposedGrade}
+                  onChange={e => setProposedGrade(e.target.value)}
+                >
+                  <option value="">— Non specificato —</option>
+                  {GRADE_ORDER.map(g => (
+                    <option key={g} value={g}>{g}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="form-group" style={{ flexDirection: 'row', alignItems: 'center', gap: 8, paddingTop: 16 }}>
+                <input
+                  type="checkbox"
+                  id="want-repeat"
+                  checked={wantRepeat === true}
+                  onChange={e => setWantRepeat(e.target.checked ? true : null)}
+                  style={{ width: 'auto' }}
+                />
+                <label htmlFor="want-repeat" style={{ textTransform: 'none', fontSize: 13, letterSpacing: 0 }}>
+                  Voglio ripeterla
+                </label>
+              </div>
+            </div>
+
+            <div className="log-nav-btns">
+              <button type="button" className="btn-secondary" onClick={() => setStep(4)}>← Indietro</button>
+              <button type="button" className="btn-primary" onClick={() => setStep(6)}>Avanti →</button>
+            </div>
+          </>
+        )}
+
+        {/* ═══════════ STEP 6 ═══════════ */}
+        {step === 6 && (
+          <>
+            <h2>Visibilità & Salvataggio</h2>
+
+            <div className="form-grid">
+              <div className="form-group">
+                <label>Visibilità</label>
+                <select
+                  className="logbook-select"
+                  value={visibility}
+                  onChange={e => setVisibility(e.target.value as 'public' | 'private')}
+                >
+                  <option value="public">Pubblica</option>
+                  <option value="private">Privata</option>
+                </select>
+              </div>
+
+              <div className="form-group form-full">
+                <label>Note</label>
+                <textarea
+                  value={notes}
+                  onChange={e => setNotes(e.target.value)}
+                  placeholder="Note sulla salita, condizioni, sensazioni…"
+                  rows={3}
+                />
+              </div>
+            </div>
+
+            {/* Summary */}
+            {selectedRoute && (
+              <div className="log-route-preview" style={{ marginBottom: 16 }}>
+                <div>
+                  <div className="log-route-preview-name">{selectedRoute.name}</div>
+                  <div className="log-route-preview-sub">
+                    {selectedRoute.crag_name} · {date} ·{' '}
+                    {isRepeat ? 'Ripetizione' : ATTEMPT_OPTIONS.find(o => o.value === attemptType)?.label}
+                    {hasAnyData(notesValues) && ' · Con dati tecnici'}
+                  </div>
+                </div>
+                {selectedRoute.official_grade && (
+                  <span className="grade-badge">{selectedRoute.official_grade}</span>
+                )}
+              </div>
+            )}
+
+            {error && <div className="admin-error" style={{ marginBottom: 16 }}>{error}</div>}
+
+            <div className="log-nav-btns">
+              <button type="button" className="btn-secondary" onClick={() => setStep(5)}>← Indietro</button>
+              <div className="log-nav-btns-right">
+                <button
+                  type="button"
+                  className="btn-primary"
+                  disabled={isPending || !selectedRoute || !date}
+                  onClick={saveAll}
+                >
+                  {isPending ? 'Salvataggio…' : '✓ Salva salita'}
+                </button>
+              </div>
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  )
+}

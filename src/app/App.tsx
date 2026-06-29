@@ -24,6 +24,7 @@ import AdminPage from '../routes/AdminPage'
 import AdminCragPage from '../routes/AdminCragPage'
 import AdminImportPage from '../routes/AdminImportPage'
 import LandingPage from '../routes/LandingPage'
+import LogNewPage from '../routes/LogNewPage'
 
 const queryClient = new QueryClient()
 
@@ -62,6 +63,7 @@ export default function App() {
                 <Route path="/projects" element={<ProjectsPage />} />
                 <Route path="/analytics" element={<AnalyticsPage />} />
                 <Route path="/settings" element={<SettingsPage />} />
+                <Route path="/log/new" element={<LogNewPage />} />
               </Route>
 
               {/* Admin — richiedono ruolo admin */}

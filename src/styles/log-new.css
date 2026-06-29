@@ -1,0 +1,271 @@
+/* ── Log New Ascent page ── */
+.log-new-page {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 28px 20px 60px;
+}
+
+.log-new-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 28px;
+}
+
+.log-new-header h1 {
+  font-family: "Sora", "Inter", system-ui, sans-serif;
+  font-size: 26px;
+  font-weight: 800;
+  color: var(--text);
+  margin: 0;
+  letter-spacing: -0.03em;
+}
+
+/* ── Step indicator ── */
+.log-step-tabs {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 24px;
+}
+
+.log-step-tab {
+  padding: 6px 14px;
+  border-radius: var(--r-pill);
+  font-size: 12px;
+  font-weight: 600;
+  background: rgba(247, 243, 234, 0.07);
+  color: var(--text-muted);
+  border: 1px solid rgba(247, 243, 234, 0.10);
+  cursor: pointer;
+  transition: all var(--t-fast) var(--ease);
+  white-space: nowrap;
+}
+
+.log-step-tab:hover {
+  background: rgba(247, 243, 234, 0.12);
+  color: var(--text-2);
+}
+
+.log-step-tab.active {
+  background: var(--surface);
+  color: var(--accent);
+  border-color: rgba(200, 95, 58, 0.40);
+  box-shadow: 0 0 0 2px rgba(200, 95, 58, 0.12);
+}
+
+.log-step-tab.done {
+  color: var(--text-2);
+  border-color: rgba(247, 243, 234, 0.18);
+}
+
+/* ── Step card ── */
+.log-step-card {
+  background: linear-gradient(180deg, rgba(255,255,255,0.045), rgba(255,255,255,0.015)), #181E27;
+  border: 1px solid rgba(247, 243, 234, 0.10);
+  border-radius: var(--r-xl);
+  padding: 24px;
+  box-shadow: var(--shadow-md);
+}
+
+.log-step-card h2 {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0 0 20px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(247, 243, 234, 0.08);
+  letter-spacing: -0.01em;
+}
+
+/* ── Profile grid (prese/movimenti/stile) ── */
+.profile-edit-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 8px 16px;
+  margin-bottom: 16px;
+}
+
+.profile-edit-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.profile-edit-label {
+  font-size: 12px;
+  color: var(--text-2);
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.profile-edit-select {
+  font-size: 11px;
+  font-family: inherit;
+  padding: 3px 6px;
+  border-radius: var(--r-sm);
+  border: 1px solid rgba(247, 243, 234, 0.14);
+  background: var(--surface-muted);
+  color: var(--text);
+  cursor: pointer;
+  outline: none;
+  min-width: 100px;
+  transition: border-color var(--t-fast) var(--ease);
+}
+
+.profile-edit-select:focus { border-color: var(--accent); }
+
+.profile-edit-select.has-value {
+  border-color: rgba(200, 95, 58, 0.35);
+  color: var(--text);
+}
+
+/* ── Section label ── */
+.log-section-title {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--text-muted);
+  margin: 20px 0 10px;
+}
+
+.log-section-title:first-child { margin-top: 0; }
+
+/* ── Kneepad / equipment row ── */
+.log-check-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  font-size: 13px;
+  color: var(--text-2);
+}
+
+.log-check-row input[type="checkbox"] {
+  width: auto;
+  accent-color: var(--accent);
+}
+
+/* ── Feel selects row ── */
+.log-feel-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 12px 16px;
+  margin-bottom: 16px;
+}
+
+/* ── Navigation buttons ── */
+.log-nav-btns {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(247, 243, 234, 0.08);
+}
+
+.log-nav-btns-right {
+  display: flex;
+  gap: 10px;
+}
+
+/* ── Route preview block ── */
+.log-route-preview {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: rgba(200, 95, 58, 0.08);
+  border: 1px solid rgba(200, 95, 58, 0.22);
+  border-radius: var(--r-md);
+  margin-bottom: 20px;
+}
+
+.log-route-preview-name {
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--text);
+}
+
+.log-route-preview-sub {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+/* ── Success state ── */
+.log-success {
+  text-align: center;
+  padding: 40px 24px;
+}
+
+.log-success-icon {
+  font-size: 48px;
+  margin-bottom: 12px;
+}
+
+.log-success h2 {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0 0 8px;
+}
+
+.log-success p {
+  font-size: 14px;
+  color: var(--text-muted);
+  margin: 0 0 24px;
+}
+
+.log-success-btns {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+/* ── Route notes panel (RouteDetailPage) ── */
+.route-notes-panel {
+  background: var(--surface-muted);
+  border-radius: var(--r-md);
+  padding: 16px;
+  margin-top: 12px;
+}
+
+.route-notes-display {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 10px 16px;
+  margin-bottom: 12px;
+}
+
+.route-notes-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.route-notes-item-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+}
+
+.route-notes-item-value {
+  font-size: 13px;
+  color: var(--text-2);
+}
+
+.route-notes-empty {
+  font-size: 13px;
+  color: var(--text-muted);
+  font-style: italic;
+}

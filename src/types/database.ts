@@ -174,6 +174,10 @@ export interface Ascent {
   score: number | null
   quality: number | null
   personal_grade: string | null
+  difficulty_feel: string | null
+  style_feel: string | null
+  proposed_grade: string | null
+  want_repeat: boolean | null
   kneepad_used: boolean | null
   effort: number | null
   notes: string | null

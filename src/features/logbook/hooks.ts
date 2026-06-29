@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '../../lib/supabase'
-import type { Ascent, Route, Sector, Crag } from '../../types/database'
+import type { Ascent, Route, Sector, Crag, UserRouteNote } from '../../types/database'
 import type { AttemptType, Visibility } from '../../types/database'
 
 export interface AscentWithRoute extends Ascent {
@@ -49,6 +49,10 @@ export interface AscentFormValues {
   grade_numeric_at_ascent: number | null
   personal_grade: string | null
   quality: number | null
+  difficulty_feel: string | null
+  style_feel: string | null
+  proposed_grade: string | null
+  want_repeat: boolean | null
   kneepad_used: boolean | null
   effort: number | null
   notes: string | null
@@ -144,5 +148,55 @@ export function useRouteSearch(query: string) {
       })
     },
     enabled: query.length >= 2,
+  })
+}
+
+// ── Personal route notes (technical data per user+route) ───────────────────
+
+export function useMyRouteNotes(routeId: string, userId: string) {
+  return useQuery({
+    queryKey: ['my-route-notes', routeId, userId],
+    queryFn: async (): Promise<UserRouteNote | null> => {
+      const { data, error } = await supabase
+        .from('user_route_notes')
+        .select('*')
+        .eq('route_id', routeId)
+        .eq('user_id', userId)
+        .maybeSingle()
+      if (error) throw error
+      return data as UserRouteNote | null
+    },
+    enabled: !!routeId && !!userId,
+  })
+}
+
+export type RouteNotesPayload = {
+  user_id: string
+  route_id: string
+  hold_profile?: Record<string, string>
+  movement_profile?: Record<string, string>
+  style_profile?: Record<string, string>
+  crux?: string | null
+  rests?: string | null
+  main_beta?: string | null
+  alternative_beta?: string | null
+  kneepad_data?: Record<string, unknown>
+  equipment_data?: Record<string, unknown>
+  safety_notes?: string | null
+  visibility?: Visibility
+}
+
+export function useUpsertRouteNotes() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async (payload: RouteNotesPayload) => {
+      const { error } = await supabase
+        .from('user_route_notes')
+        .upsert(payload, { onConflict: 'user_id,route_id' })
+      if (error) throw new Error(error.message + (error.details ? ` — ${error.details}` : ''))
+    },
+    onSuccess: (_, payload) => {
+      qc.invalidateQueries({ queryKey: ['my-route-notes', payload.route_id, payload.user_id] })
+    },
   })
 }
