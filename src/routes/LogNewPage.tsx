@@ -57,7 +57,8 @@ const STYLE_FEEL_OPTIONS = [
 const STEPS = [
   { id: 1, label: 'Via & Salita' },
   { id: 2, label: 'Tecnica' },
-  { id: 3, label: 'Beta & Salva' },
+  { id: 3, label: 'Beta' },
+  { id: 4, label: 'Attrezzatura' },
 ]
 
 function formatMode(opt: string, repeat: boolean): string {
@@ -571,11 +572,26 @@ export default function LogNewPage() {
           </>
         )}
 
-        {/* ═══════════ STEP 3 — Beta, Sicurezza & Salva ═══════════ */}
+        {/* ═══════════ STEP 3 — Beta & Sicurezza ═══════════ */}
         {step === 3 && (
           <>
             <RouteNotesForm
-              sections={['beta', 'kneepad', 'equipment', 'safety']}
+              sections={['beta', 'kneepad', 'safety']}
+              initialValues={notesValues}
+              onChange={setNotesValues}
+            />
+            <div className="log-nav-btns">
+              <button type="button" className="btn-secondary" onClick={() => setStep(2)}>← Indietro</button>
+              <button type="button" className="btn-primary" onClick={() => setStep(4)}>Avanti →</button>
+            </div>
+          </>
+        )}
+
+        {/* ═══════════ STEP 4 — Attrezzatura & Salva ═══════════ */}
+        {step === 4 && (
+          <>
+            <RouteNotesForm
+              sections={['equipment']}
               initialValues={notesValues}
               onChange={setNotesValues}
             />
@@ -615,7 +631,7 @@ export default function LogNewPage() {
             {error && <div className="admin-error" style={{ marginBottom: 16 }}>{error}</div>}
 
             <div className="log-nav-btns">
-              <button type="button" className="btn-secondary" onClick={() => setStep(2)}>← Indietro</button>
+              <button type="button" className="btn-secondary" onClick={() => setStep(3)}>← Indietro</button>
               <div className="log-nav-btns-right">
                 <button type="button" className="btn-primary"
                   disabled={isPending || !selectedRoute || !date}

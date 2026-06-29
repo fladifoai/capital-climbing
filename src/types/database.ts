@@ -167,6 +167,7 @@ export interface Route {
   length_m: number | null
   pitches: number
   bolts: number | null
+  community_quickdraws: number | null
   angle: string | null
   route_type: string
   rock_type: string | null

@@ -83,6 +83,9 @@ function RouteRows({
             </td>
             <td>{route.length_m ? `${route.length_m} m` : '—'}</td>
             <td>{route.bolts ?? '—'}</td>
+            <td>{route.community_quickdraws != null
+              ? <span className="grade-badge grade-badge--community" title="Rinvii consigliati dalla community (valore più frequente)">{route.community_quickdraws}</span>
+              : '—'}</td>
             {showStatus && <td><RouteStatusBadge status={st} /></td>}
           </tr>
         )
@@ -275,6 +278,7 @@ export default function CragDetailPage() {
                     <th>Grado</th>
                     <th>Lunghezza</th>
                     <th>Spit</th>
+                    <th>Rinvii</th>
                     {showStatus && <th>Stato</th>}
                   </tr>
                 </thead>
