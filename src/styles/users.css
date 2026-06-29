@@ -350,3 +350,72 @@
   font-weight: 700;
   margin-top: 12px;
 }
+
+/* ── Settings v2: tabs + sections ── */
+.settings-page.settings-wide { max-width: 920px; }
+.settings-sub { font-size: 13px; color: var(--text-muted); margin: 0 0 20px; }
+.settings-link { color: var(--accent); text-decoration: none; }
+
+.settings-layout { display: grid; grid-template-columns: 200px 1fr; gap: 20px; align-items: start; }
+
+.settings-tabs { display: flex; flex-direction: column; gap: 4px; position: sticky; top: 16px; }
+.settings-tab {
+  text-align: left;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  padding: 9px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: background .15s, color .15s;
+}
+.settings-tab:hover { background: rgba(247, 243, 234, 0.06); color: var(--text); }
+.settings-tab.active { background: rgba(200, 95, 58, 0.16); border-color: rgba(200, 95, 58, 0.4); color: var(--text); }
+.settings-tab.danger { color: #E58C7A; }
+.settings-tab.danger.active { background: rgba(217, 75, 56, 0.16); border-color: rgba(217, 75, 56, 0.45); }
+
+.settings-content { min-width: 0; }
+.settings-hint { font-size: 12.5px; color: var(--text-muted); margin: -6px 0 16px; line-height: 1.5; }
+.settings-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 14px; }
+
+.settings-toggle { display: flex; align-items: center; gap: 10px; padding: 8px 0; font-size: 13px; color: var(--text); cursor: pointer; }
+.settings-toggle input { width: 16px; height: 16px; accent-color: var(--accent); }
+
+.settings-avatar-preview { display: block; width: 72px; height: 72px; border-radius: 50%; object-fit: cover; margin-top: 8px; border: 1px solid rgba(247,243,234,0.15); }
+
+.btn-danger {
+  background: #D94B38; color: #fff; border: none; border-radius: 10px;
+  padding: 10px 18px; font-size: 13px; font-weight: 700; cursor: pointer;
+}
+.btn-danger:hover { background: #c23e2d; }
+.btn-danger:disabled { opacity: .5; cursor: not-allowed; }
+.btn-danger-outline {
+  background: transparent; color: #E58C7A; border: 1px solid rgba(217,75,56,0.5);
+  border-radius: 8px; padding: 5px 12px; font-size: 12px; font-weight: 600; cursor: pointer;
+}
+.btn-secondary {
+  display: inline-flex; align-items: center;
+  background: rgba(247,243,234,0.08); color: var(--text); border: 1px solid rgba(247,243,234,0.15);
+  border-radius: 10px; padding: 10px 18px; font-size: 13px; font-weight: 600; cursor: pointer; text-decoration: none;
+}
+.btn-secondary:hover { background: rgba(247,243,234,0.14); }
+
+.settings-danger { border-color: rgba(217,75,56,0.35); }
+.settings-danger h2 { color: #E58C7A; border-bottom-color: rgba(217,75,56,0.25); }
+.danger-confirm { background: rgba(217,75,56,0.08); border: 1px solid rgba(217,75,56,0.3); border-radius: 12px; padding: 16px; }
+.danger-confirm p { font-size: 13px; line-height: 1.55; margin: 0 0 12px; color: var(--text); }
+.danger-confirm code { background: rgba(0,0,0,0.3); padding: 1px 6px; border-radius: 4px; font-weight: 700; }
+.danger-confirm input { width: 100%; margin-bottom: 12px; }
+
+.injury-list { list-style: none; padding: 0; margin: 0 0 16px; display: flex; flex-direction: column; gap: 8px; }
+.injury-item { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; background: rgba(247,243,234,0.05); border: 1px solid rgba(247,243,234,0.1); border-radius: 10px; padding: 10px 14px; }
+.injury-dates { display: block; font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+.injury-notes { font-size: 12.5px; color: var(--text-muted); margin: 6px 0 0; }
+.injury-form { border-top: 1px solid rgba(247,243,234,0.1); padding-top: 16px; }
+
+@media (max-width: 720px) {
+  .settings-layout { grid-template-columns: 1fr; }
+  .settings-tabs { flex-direction: row; flex-wrap: wrap; position: static; }
+}

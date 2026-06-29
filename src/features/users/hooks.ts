@@ -186,12 +186,21 @@ export function useOwnProfile(userId: string) {
 }
 
 export interface ProfileUpdateValues {
+  username?: string
   display_name?: string
+  avatar_url?: string | null
   bio?: string | null
   city?: string | null
   country?: string | null
   climbing_since?: number | null
   preferred_style?: string | null
+  is_public?: boolean
+  show_ascents?: boolean
+  show_projects?: boolean
+  show_stats?: boolean
+  show_charts?: boolean
+  show_visited_crags?: boolean
+  show_max_grade?: boolean
 }
 
 export function useUpdateProfile() {

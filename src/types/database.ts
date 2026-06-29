@@ -17,6 +17,41 @@ export interface Profile {
   city: string | null
   climbing_since: number | null
   preferred_style: string | null
+  is_public: boolean
+  show_ascents: boolean
+  show_projects: boolean
+  show_stats: boolean
+  show_charts: boolean
+  show_visited_crags: boolean
+  show_max_grade: boolean
+  is_deleted: boolean
+  deleted_at: string | null
+  delete_requested_at: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface UserPrivateSettings {
+  id: string
+  user_id: string
+  height_cm: number | null
+  weight_kg: number | null
+  ape_index_cm: number | null
+  dominant_hand: 'left' | 'right' | 'ambi' | null
+  main_shoes: string | null
+  uses_kneepad: boolean | null
+  private_training_notes: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface InjuryPeriod {
+  id: string
+  user_id: string
+  start_date: string
+  end_date: string | null
+  label: string | null
+  notes: string | null
   created_at: string
   updated_at: string
 }
