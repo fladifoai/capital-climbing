@@ -12,7 +12,11 @@ export async function parseCragFile(file: File): Promise<ParseResult> {
     const text = await file.text()
     return parseMarkdownTable(text)
   }
-  // CSV/XLSX/PDF: riusa il lettore del logbook
+  if (name.endsWith('.pdf')) {
+    const { parseCragPdf } = await import('./pdf')
+    return parseCragPdf(file)
+  }
+  // CSV/XLSX: riusa il lettore del logbook
   return parseLogbookFile(file)
 }
 
