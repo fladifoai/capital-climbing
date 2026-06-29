@@ -19,7 +19,7 @@ import {
 } from '../features/logbook/hooks'
 import RouteNotesForm, { hasAnyData, toPayload, type RouteNotesValues } from '../features/logbook/RouteNotesForm'
 import SpoilerGuard from '../features/routes/SpoilerGuard'
-import { numToGrade, GRADE_SCALE, GRADE_TO_NUM } from '../analytics/normalizers/grades'
+import { numToGradeDecimal, GRADE_SCALE, GRADE_TO_NUM } from '../analytics/normalizers/grades'
 import type { Ascent } from '../types/database'
 import '../styles/catalog.css'
 import '../styles/admin.css'
@@ -253,7 +253,7 @@ function RouteCommunityGrade({
 
   const communityGradeLabel =
     rating?.avg_grade_numeric != null
-      ? numToGrade(Math.round(rating.avg_grade_numeric))
+      ? numToGradeDecimal(rating.avg_grade_numeric)
       : null
 
   return (

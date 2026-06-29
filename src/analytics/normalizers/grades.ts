@@ -35,6 +35,16 @@ export function numToGrade(n: number): string {
   return GRADE_SCALE[n] ?? String(n)
 }
 
+// Decimal community grade: 12.8 → "6b.8", 13.0 → "6b+".
+// Frazione (.1–.9) = quanto è spostato verso il grado successivo.
+export function numToGradeDecimal(n: number): string {
+  let floor = Math.floor(n)
+  let frac = Math.round((n - floor) * 10)
+  if (frac >= 10) { floor += 1; frac = 0 }
+  const base = GRADE_SCALE[floor] ?? String(floor)
+  return frac === 0 ? base : `${base}.${frac}`
+}
+
 export function gradeToNum(g: string): number | null {
   return GRADE_TO_NUM[g] ?? null
 }

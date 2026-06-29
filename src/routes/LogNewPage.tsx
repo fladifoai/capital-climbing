@@ -14,7 +14,8 @@ import RouteNotesForm, {
   toPayload,
   type RouteNotesValues,
 } from '../features/logbook/RouteNotesForm'
-import { GRADE_ORDER } from '../analytics/normalizers/grades'
+import { GRADE_ORDER, gradeToNum } from '../analytics/normalizers/grades'
+import { useVoteRoute } from '../features/routes/hooks'
 import type { AttemptBucket } from '../analytics/calculations/attempt-buckets'
 import '../styles/log-new.css'
 import '../styles/admin.css'
@@ -28,6 +29,9 @@ const QUICK_MODES = [
 ]
 
 const EXACT_TRIES = ['2','3','4','5','6','7','8','9','10']
+
+// Decimale del grado proposto: .1–.9 (raffina il grado community)
+const GRADE_DECIMALS = ['1','2','3','4','5','6','7','8','9']
 
 const BUCKET_OPTIONS = [
   { value: '11_20',   label: '11-20' },
@@ -114,6 +118,7 @@ export default function LogNewPage() {
 
   const createAscent = useCreateAscent()
   const upsertNotes = useUpsertRouteNotes()
+  const voteRoute = useVoteRoute()
 
   const { data: preRoute, isLoading: preRouteLoading } = useRoute(preRouteId ?? '')
 
@@ -135,7 +140,16 @@ export default function LogNewPage() {
   // ── Evaluation ──
   const [quality, setQuality] = useState<number | null>(null)
   const [hoverStar, setHoverStar] = useState<number | null>(null)
-  const [proposedGrade, setProposedGrade] = useState('')
+  const [proposedBase, setProposedBase] = useState('')
+  const [proposedDec, setProposedDec] = useState('')
+
+  // Grado proposto = base + decimale (.1–.9), es. 6b + .8 → "6b.8"
+  const proposedLabel = proposedBase
+    ? (proposedDec && proposedDec !== '0' ? `${proposedBase}.${proposedDec}` : proposedBase)
+    : ''
+  const proposedNum = proposedBase
+    ? (gradeToNum(proposedBase) ?? 0) + (proposedDec ? Number(proposedDec) : 0) / 10
+    : null
   const [difficultyFeel, setDifficultyFeel] = useState('')
   const [styleFeel, setStyleFeel] = useState('')
   const [wantRepeat, setWantRepeat] = useState<boolean | null>(null)
@@ -162,6 +176,7 @@ export default function LogNewPage() {
         crag_name: preRoute.sector?.crag?.name ?? '',
       })
       setRouteQuery(preRoute.name)
+      if (!proposedBase && preRoute.official_grade) setProposedBase(preRoute.official_grade)
     }
   }, [preRoute])
 
@@ -169,6 +184,7 @@ export default function LogNewPage() {
     setSelectedRoute(r)
     setRouteQuery(r.name)
     setShowDropdown(false)
+    if (r.official_grade) setProposedBase(r.official_grade)
   }
 
   function buildValues(): AscentFormValues {
@@ -188,7 +204,7 @@ export default function LogNewPage() {
       quality,
       difficulty_feel: difficultyFeel || null,
       style_feel: styleFeel || null,
-      proposed_grade: proposedGrade || null,
+      proposed_grade: proposedLabel || null,
       want_repeat: wantRepeat,
       kneepad_used: notesValues.kneepad_used || null,
       effort: effort !== '' ? Number(effort) : null,
@@ -197,11 +213,25 @@ export default function LogNewPage() {
     }
   }
 
+  // Il grado proposto alimenta il voto community dell'utente (1 per utente,
+  // upsert): più persone salgono la via, più la media community si affina.
+  async function castGradeVote() {
+    if (!user || !selectedRoute || !proposedBase || proposedNum == null) return
+    await voteRoute.mutateAsync({
+      routeId: selectedRoute.id,
+      userId: user.id,
+      perceived_grade: proposedLabel,
+      grade_numeric: proposedNum,
+      beauty: quality,
+    })
+  }
+
   async function saveBase() {
     if (!user || !selectedRoute) return
     setError('')
     try {
       await createAscent.mutateAsync({ userId: user.id, values: buildValues(), routeId: selectedRoute.id })
+      await castGradeVote()
       setSaved(true)
     } catch (e) {
       setError((e as Error).message)
@@ -213,6 +243,7 @@ export default function LogNewPage() {
     setError('')
     try {
       await createAscent.mutateAsync({ userId: user.id, values: buildValues(), routeId: selectedRoute.id })
+      await castGradeVote()
       if (hasAnyData(notesValues)) {
         await upsertNotes.mutateAsync(toPayload(notesValues, user.id, selectedRoute.id, visibility))
       }
@@ -222,7 +253,7 @@ export default function LogNewPage() {
     }
   }
 
-  const isPending = createAscent.isPending || upsertNotes.isPending
+  const isPending = createAscent.isPending || upsertNotes.isPending || voteRoute.isPending
 
   // ── Success screen ─────────────────────────────────────────────────────────
   if (saved) {
@@ -246,7 +277,7 @@ export default function LogNewPage() {
               </Link>
               <button className="btn-secondary" onClick={() => {
                 setSaved(false); setSelectedRoute(null); setRouteQuery(''); setStep(1)
-                setNotes(''); setQuality(null); setProposedGrade('')
+                setNotes(''); setQuality(null); setProposedBase(''); setProposedDec('')
                 setDifficultyFeel(''); setStyleFeel(''); setWantRepeat(null); setEffort('')
                 setIsRepeat(false); setSelectedOption('onsight')
                 setNotesValues(EMPTY_NOTES)
@@ -463,13 +494,29 @@ export default function LogNewPage() {
               </div>
             </div>
 
-            <div className="form-grid" style={{ marginTop: 14, marginBottom: 14 }}>
-              <div className="form-group form-full">
-                <label>Grado proposto</label>
-                <select className="logbook-select" value={proposedGrade} onChange={e => setProposedGrade(e.target.value)}>
-                  <option value="">— Non specificato —</option>
+            <div className="form-group form-full" style={{ marginTop: 14, marginBottom: 14 }}>
+              <label>
+                Grado proposto{' '}
+                <span style={{ fontWeight: 400, fontSize: 11, color: 'var(--text-muted)', textTransform: 'none', letterSpacing: 0 }}>
+                  (grado + decimale: affina il grado community)
+                </span>
+              </label>
+              <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                <select className="logbook-select" style={{ flex: '0 0 110px' }}
+                  value={proposedBase} onChange={e => setProposedBase(e.target.value)}>
+                  <option value="">— Grado —</option>
                   {GRADE_ORDER.map(g => <option key={g} value={g}>{g}</option>)}
                 </select>
+                <select className="logbook-select" style={{ flex: '0 0 90px' }}
+                  value={proposedDec}
+                  onChange={e => setProposedDec(e.target.value)}
+                  disabled={!proposedBase}>
+                  <option value="">.0</option>
+                  {GRADE_DECIMALS.map(d => <option key={d} value={d}>.{d}</option>)}
+                </select>
+                {proposedLabel && (
+                  <span className="grade-badge grade-badge--lg" style={{ marginLeft: 4 }}>{proposedLabel}</span>
+                )}
               </div>
             </div>
 
