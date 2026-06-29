@@ -66,6 +66,7 @@ const LEVEL_LABEL: Record<ProfileLevel, string> = {
 const ATTEMPT_LABEL: Record<string, string> = {
   onsight: 'On-sight', flash: 'Flash', second: '2° giro',
   third: '3° giro', four_plus: '4+ giro', redpoint: 'Redpoint',
+  repeat: 'Ripetizione',
 }
 
 const SAFETY_STATUS_LABEL: Record<string, string> = {
@@ -406,7 +407,7 @@ function RoutePersonalHistory({
       {best && (
         <div className="personal-best">
           <span className="personal-best-label">Completata</span>
-          <span className="attempt-badge">{ATTEMPT_LABEL[best.attempt_type ?? ''] ?? best.attempt_type ?? '—'}</span>
+          <span className="attempt-badge">{ATTEMPT_LABEL[best.ascent_style ?? best.attempt_type ?? ''] ?? best.ascent_style ?? best.attempt_type ?? '—'}</span>
           {best.grade_at_ascent && <span className="grade-badge">{best.grade_at_ascent}</span>}
           <span className="personal-best-date">{new Date(best.date).toLocaleDateString('it-IT')}</span>
         </div>
@@ -420,7 +421,7 @@ function RoutePersonalHistory({
               <span className="history-date">{new Date(a.date).toLocaleDateString('it-IT')}</span>
               <span className={`attempt-badge${a.status !== 'completed' ? ' attempted' : ''}`}>
                 {a.status === 'completed'
-                  ? (ATTEMPT_LABEL[a.attempt_type ?? ''] ?? a.attempt_type ?? 'Salita')
+                  ? (ATTEMPT_LABEL[a.ascent_style ?? a.attempt_type ?? ''] ?? a.ascent_style ?? a.attempt_type ?? 'Salita')
                   : 'Tentativo'}
               </span>
               {a.grade_at_ascent && <span className="grade-badge">{a.grade_at_ascent}</span>}
