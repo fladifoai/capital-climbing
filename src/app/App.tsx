@@ -24,6 +24,7 @@ import AdminPage from '../routes/AdminPage'
 import AdminCragPage from '../routes/AdminCragPage'
 import AdminImportPage from '../routes/AdminImportPage'
 import AdminRequestsPage from '../routes/AdminRequestsPage'
+import AdminCragImportPage from '../routes/AdminCragImportPage'
 import LandingPage from '../routes/LandingPage'
 import LogNewPage from '../routes/LogNewPage'
 import LogbookImportPage from '../routes/LogbookImportPage'
@@ -77,6 +78,7 @@ export default function App() {
                 <Route path="/admin/crags/:cragId" element={<AdminCragPage />} />
                 <Route path="/admin/import" element={<AdminImportPage />} />
                 <Route path="/admin/requests" element={<AdminRequestsPage />} />
+                <Route path="/admin/import-crag" element={<AdminCragImportPage />} />
               </Route>
             </Route>
 

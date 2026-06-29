@@ -39,6 +39,7 @@ export default function AdminPage() {
       <div className="admin-header">
         <h1 className="admin-title">Amministrazione</h1>
         <div className="actions">
+          <button className="btn-secondary" onClick={() => navigate('/admin/import-crag')}>Importa falesia</button>
           <button className="btn-secondary" onClick={() => navigate('/admin/import')}>Import catalogo CSV</button>
           <button className="btn-secondary" onClick={() => navigate('/admin/requests')}>Richieste falesia</button>
         </div>
