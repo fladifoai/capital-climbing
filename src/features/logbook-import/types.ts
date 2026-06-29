@@ -1,4 +1,4 @@
-import type { AttemptType } from '../../types/database'
+import type { AttemptBucket } from '../../analytics/calculations/attempt-buckets'
 
 // Campi logbook personale (ascensioni), distinti dai campi catalogo dell'import admin.
 export const LOGBOOK_REQUIRED_FIELDS = ['date', 'crag', 'route'] as const
@@ -32,8 +32,9 @@ export interface ParsedLogbookRow {
   route_name: string
   grade: string | null             // grado ufficiale normalizzato (es. 7a+)
   proposed_grade: string | null    // grado proposto/personale
-  attempt_type: AttemptType | null
+  ascent_style: string | null      // onsight | flash | redpoint | null
   attempt_count: number | null     // numero giri se noto (es. 7° giro → 7)
+  attempt_bucket: AttemptBucket | null
   quality: number | null           // bellezza 1-5 (da "****" o numero)
   notes: string | null
   // chiavi normalizzate per dedup / match

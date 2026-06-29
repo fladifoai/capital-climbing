@@ -1,4 +1,4 @@
-import type { AttemptType } from '../../types/database'
+import { getAttemptBucket, type AttemptBucket } from '../../analytics/calculations/attempt-buckets'
 import { normalizeKey } from '../import/utils'
 
 export { normalizeKey }
@@ -53,38 +53,37 @@ export function normalizeGrade(raw: string): string | null {
 }
 
 // ── Modalità di salita ────────────────────────────────────────────────────
-// Mappa input liberi → enum DB. Ritorna { type, count, ambiguous }.
-// enum reale: 'onsight' | 'flash' | 'second' | 'third' | 'four_plus' | 'redpoint'
+// Allineato al modello app: ascent_style + attempt_count + attempt_bucket.
+// ascent_style: 'onsight' | 'flash' | 'redpoint' | null
+// Giri 1-10 = bucket esatto, 11-20/21-30/.../50_plus = bucket aggregato.
 export interface AttemptResult {
-  type: AttemptType | null
-  count: number | null
-  ambiguous: boolean   // es. "4+" senza numero reale di giri → review
+  ascent_style: string | null
+  attempt_count: number | null
+  attempt_bucket: AttemptBucket | null
+  ambiguous: boolean   // es. "4+"/"redpoint" senza numero reale di giri → review
 }
 
 export function normalizeAttempt(raw: string): AttemptResult {
   const s = (raw ?? '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').trim()
-  if (!s || s === 'n.d.' || s === 'nd' || s === 'unknown' || s === 'sconosciuto') {
-    return { type: null, count: null, ambiguous: false }
-  }
+  const none = { ascent_style: null, attempt_count: null, attempt_bucket: null, ambiguous: false }
+  if (!s || s === 'n.d.' || s === 'nd' || s === 'unknown' || s === 'sconosciuto') return none
 
-  if (/(on[\s-]?sight|^os$|flash[\s-]?on)/.test(s)) return { type: 'onsight', count: null, ambiguous: false }
-  if (/(^|\b)(flash|fl)(\b|$)/.test(s)) return { type: 'flash', count: null, ambiguous: false }
-  if (/(red[\s-]?point|rotpunkt|^rp$)/.test(s)) return { type: 'redpoint', count: null, ambiguous: false }
+  if (/(on[\s-]?sight|^os$|flash[\s-]?on)/.test(s))
+    return { ascent_style: 'onsight', attempt_count: 1, attempt_bucket: '1', ambiguous: false }
+  if (/(^|\b)(flash|fl)(\b|$)/.test(s))
+    return { ascent_style: 'flash', attempt_count: 1, attempt_bucket: '1', ambiguous: false }
 
-  // estrai numero giri da "2° giro", "2nd go", "3rd", "7° giro", "5"
+  // numero giri da "2° giro", "2nd go", "3rd", "15° giro", "5"
   const num = s.match(/(\d+)\s*(?:°|st|nd|rd|th|giro|go)?/)
   if (num) {
     const n = parseInt(num[1], 10)
-    if (n === 1) return { type: 'flash', count: 1, ambiguous: false }   // 1° giro = flash effettivo
-    if (n === 2) return { type: 'second', count: 2, ambiguous: false }
-    if (n === 3) return { type: 'third', count: 3, ambiguous: false }
-    if (n >= 4) return { type: 'four_plus', count: n, ambiguous: false }
+    if (n === 1) return { ascent_style: 'flash', attempt_count: 1, attempt_bucket: '1', ambiguous: false }
+    if (n >= 2) return { ascent_style: 'redpoint', attempt_count: n, attempt_bucket: getAttemptBucket(n), ambiguous: false }
   }
 
-  // "4+" o "four_plus" senza numero reale → ambiguo, review
-  if (/(4\+|four[\s_-]?plus)/.test(s)) return { type: 'four_plus', count: null, ambiguous: true }
-  if (/second/.test(s)) return { type: 'second', count: 2, ambiguous: false }
-  if (/third/.test(s)) return { type: 'third', count: 3, ambiguous: false }
+  // redpoint / "4+" senza numero reale → stile noto ma giri ignoti → review
+  if (/(red[\s-]?point|rotpunkt|^rp$|4\+|four[\s_-]?plus)/.test(s))
+    return { ascent_style: 'redpoint', attempt_count: null, attempt_bucket: null, ambiguous: true }
 
-  return { type: null, count: null, ambiguous: false }
+  return none
 }

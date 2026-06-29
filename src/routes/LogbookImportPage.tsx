@@ -206,7 +206,7 @@ function StepPreview({
               <td>{row.route_name || '—'}</td>
               <td>{row.grade ? <span className="grade-badge">{row.grade}</span> : '—'}</td>
               <td style={{ fontSize: 12 }}>
-                {row.attempt_type ?? '—'}{row.attempt_count ? ` (${row.attempt_count}°)` : ''}
+                {row.ascent_style ?? '—'}{row.attempt_count ? ` (${row.attempt_count}°)` : ''}
               </td>
               <td className="row-errors-cell">{[...row.errors, ...row.warnings].join(', ') || '✓'}</td>
             </tr>

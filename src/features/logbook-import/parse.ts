@@ -108,8 +108,8 @@ export function parseLogbookRow(
 
   // revisione (non bloccanti)
   if (!grade) warnings.push('Grado mancante')
-  if (!attempt.type) warnings.push('Modalità mancante o sconosciuta')
-  if (attempt.ambiguous) warnings.push('Modalità "4+" senza numero reale di giri')
+  if (!attempt.ascent_style) warnings.push('Modalità mancante o sconosciuta')
+  if (attempt.ambiguous) warnings.push('Redpoint/"4+" senza numero reale di giri')
 
   const errorsBlock = errors.length > 0
   const needsReview = !errorsBlock && warnings.length > 0
@@ -120,8 +120,9 @@ export function parseLogbookRow(
     date,
     crag_name, sector_name, route_name,
     grade, proposed_grade,
-    attempt_type: attempt.type,
-    attempt_count: attempt.count,
+    ascent_style: attempt.ascent_style,
+    attempt_count: attempt.attempt_count,
+    attempt_bucket: attempt.attempt_bucket,
     quality,
     notes,
     normalized_crag: normalizeKey(crag_name),
