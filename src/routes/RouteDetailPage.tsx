@@ -14,13 +14,9 @@ import {
   type PublicAscent,
 } from '../features/routes/hooks'
 import {
-  useCreateAscent,
   useMyRouteNotes,
   useUpsertRouteNotes,
-  type AscentFormValues,
-  type RouteSearchResult,
 } from '../features/logbook/hooks'
-import AscentForm from '../features/logbook/AscentForm'
 import RouteNotesForm, { hasAnyData, toPayload, type RouteNotesValues } from '../features/logbook/RouteNotesForm'
 import SpoilerGuard from '../features/routes/SpoilerGuard'
 import { numToGrade, GRADE_SCALE, GRADE_TO_NUM } from '../analytics/normalizers/grades'
@@ -396,19 +392,19 @@ function KneepadSection({ kneepad }: { kneepad: RouteFeatures['kneepad_data'] })
 
 function RoutePersonalHistory({
   ascents,
-  onAddClick,
+  routeId,
 }: {
   ascents: Ascent[]
-  onAddClick: () => void
+  routeId: string
 }) {
   const best = ascents.find(a => a.status === 'completed')
   return (
     <div className="route-section">
       <div className="personal-history-header">
         <h2 className="route-section-title">La mia storia</h2>
-        <button className="btn-primary btn-sm" onClick={onAddClick}>
-          + Registra ascensione
-        </button>
+        <Link to={`/log/new?routeId=${routeId}`} className="btn-primary btn-sm" style={{ textDecoration: 'none' }}>
+          + Registra
+        </Link>
       </div>
       {best && (
         <div className="personal-best">
@@ -497,12 +493,8 @@ export default function RouteDetailPage() {
   const { data: myRatingRaw } = useMyRouteRating(routeId, user?.id ?? '')
   const { data: publicAscents } = useRoutePublicAscents(routeId, user?.id ?? null)
   const { data: myRouteNotes } = useMyRouteNotes(routeId, user?.id ?? '')
-  const createAscent = useCreateAscent()
   const upsertNotes = useUpsertRouteNotes()
 
-  const [showForm, setShowForm] = useState(false)
-  const [formDone, setFormDone] = useState(false)
-  const [formError, setFormError] = useState('')
   const [showNotesForm, setShowNotesForm] = useState(false)
   const [notesValues, setNotesValues] = useState<RouteNotesValues>({
     hold_profile: {}, movement_profile: {}, style_profile: {},
@@ -516,30 +508,6 @@ export default function RouteDetailPage() {
   if (error || !route) return <div className="error-state">Via non trovata.</div>
 
   const myRating: MyRatingRow | null = myRatingRaw as MyRatingRow | null
-
-  const preselected: RouteSearchResult = {
-    id: route.id,
-    name: route.name,
-    official_grade: route.official_grade,
-    grade_numeric: route.grade_numeric,
-    route_type: route.route_type,
-    sector_name: route.sector?.name ?? '',
-    crag_name: route.sector?.crag?.name ?? '',
-  }
-
-  async function handleSubmit(values: AscentFormValues) {
-    if (!user) return
-    setFormError('')
-    console.log('[RouteDetailPage] handleSubmit called', { routeId, userId: user.id })
-    try {
-      await createAscent.mutateAsync({ userId: user.id, values, routeId })
-      setShowForm(false)
-      setFormDone(true)
-    } catch (e) {
-      console.error('[RouteDetailPage] handleSubmit error', e)
-      setFormError((e as Error).message || String(e))
-    }
-  }
 
   async function handleSaveNotes() {
     if (!user) return
@@ -614,13 +582,14 @@ export default function RouteDetailPage() {
         </div>
 
         <div className="route-action-btns">
-          {user && !formDone && (
-            <button
+          {user && (
+            <Link
+              to={`/log/new?routeId=${routeId}`}
               className="btn-primary"
-              onClick={() => { setShowForm(f => !f); setFormError('') }}
+              style={{ textDecoration: 'none', display: 'inline-block' }}
             >
-              {showForm ? '✕ Annulla' : '+ Registra ascensione'}
-            </button>
+              + Registra ascensione
+            </Link>
           )}
           {!user && (
             <Link to="/login" className="btn-primary" style={{ textDecoration: 'none', display: 'inline-block' }}>
@@ -629,28 +598,7 @@ export default function RouteDetailPage() {
           )}
         </div>
 
-        {formDone && (
-          <div className="form-success">
-            ✓ Ascensione registrata!{' '}
-            <button className="link-btn" onClick={() => setFormDone(false)}>
-              Aggiungine un'altra
-            </button>
-          </div>
-        )}
       </div>
-
-      {/* ── Log ascent form ── */}
-      {showForm && (
-        <div className="route-form-section">
-          {formError && <div className="admin-error">{formError}</div>}
-          <AscentForm
-            preselectedRoute={preselected}
-            onSubmit={handleSubmit}
-            onCancel={() => { setShowForm(false); setFormError('') }}
-            isLoading={createAscent.isPending}
-          />
-        </div>
-      )}
 
       {/* ── Quick facts ── */}
       <div className="quick-facts-grid">
@@ -754,7 +702,7 @@ export default function RouteDetailPage() {
       {user && (
         <RoutePersonalHistory
           ascents={personalHistory ?? []}
-          onAddClick={() => { setShowForm(true); setFormDone(false); window.scrollTo({ top: 0, behavior: 'smooth' }) }}
+          routeId={routeId}
         />
       )}
 
