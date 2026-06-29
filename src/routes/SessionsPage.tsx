@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, Fragment } from 'react'
 import { Link } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -10,6 +10,8 @@ import {
   useCragSearch,
   type CragSearchResult, type SessionWithCrag,
 } from '../features/sessions/hooks'
+import { useCreateAscent, type AscentFormValues } from '../features/logbook/hooks'
+import AscentForm from '../features/logbook/AscentForm'
 import '../styles/sessions.css'
 import '../styles/admin.css'
 
@@ -63,9 +65,10 @@ interface SessionCardProps {
   confirmDelete: string | null
   setConfirmDelete: (id: string | null) => void
   onDelete: (id: string) => void
+  onAddAscent: () => void
 }
 
-function SessionCard({ session, confirmDelete, setConfirmDelete, onDelete }: SessionCardProps) {
+function SessionCard({ session, confirmDelete, setConfirmDelete, onDelete, onAddAscent }: SessionCardProps) {
   const [showNotes, setShowNotes] = useState(false)
   const routeCount = session.ascents?.length ?? 0
   const closedCount = session.ascents?.filter(a =>
@@ -225,6 +228,17 @@ function SessionCard({ session, confirmDelete, setConfirmDelete, onDelete }: Ses
           })}
         </div>
       )}
+
+      {/* Add ascent to session */}
+      <div style={{ padding: '10px 18px', borderTop: '1px solid rgba(247,243,234,0.08)' }}>
+        <button
+          className="btn-secondary"
+          style={{ fontSize: 12, padding: '5px 14px' }}
+          onClick={onAddAscent}
+        >
+          + Aggiungi via
+        </button>
+      </div>
     </div>
   )
 }
@@ -239,6 +253,21 @@ export default function SessionsPage() {
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null)
   const [saveError, setSaveError] = useState('')
   const [formSection, setFormSection] = useState<'info' | 'conditions' | 'personal' | 'notes'>('info')
+
+  const createAscent = useCreateAscent()
+  const [addingAscentTo, setAddingAscentTo] = useState<string | null>(null)
+  const [ascentSaveError, setAscentSaveError] = useState('')
+
+  async function handleCreateAscent(values: AscentFormValues) {
+    if (!user) return
+    setAscentSaveError('')
+    try {
+      await createAscent.mutateAsync({ userId: user.id, values })
+      setAddingAscentTo(null)
+    } catch (e) {
+      setAscentSaveError((e as Error).message)
+    }
+  }
 
   const [cragQuery, setCragQuery] = useState('')
   const [selectedCrag, setSelectedCrag] = useState<CragSearchResult | null>(null)
@@ -508,13 +537,34 @@ export default function SessionsPage() {
       {!isLoading && (sessions?.length ?? 0) > 0 && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginTop: adding ? 20 : 0 }}>
           {sessions!.map(s => (
-            <SessionCard
-              key={s.id}
-              session={s}
-              confirmDelete={confirmDelete}
-              setConfirmDelete={setConfirmDelete}
-              onDelete={handleDelete}
-            />
+            <Fragment key={s.id}>
+              <SessionCard
+                session={s}
+                confirmDelete={confirmDelete}
+                setConfirmDelete={setConfirmDelete}
+                onDelete={handleDelete}
+                onAddAscent={() => { setAddingAscentTo(s.id); setAscentSaveError('') }}
+              />
+              {addingAscentTo === s.id && (
+                <div className="new-session-form" style={{ marginTop: -4 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
+                    <h3 style={{ margin: 0, fontSize: 15 }}>
+                      Aggiungi via — {formatDate(s.date)}
+                    </h3>
+                  </div>
+                  {ascentSaveError && (
+                    <div className="admin-error" style={{ marginBottom: 10 }}>{ascentSaveError}</div>
+                  )}
+                  <AscentForm
+                    defaultDate={s.date}
+                    sessionId={s.id}
+                    onSubmit={handleCreateAscent}
+                    onCancel={() => { setAddingAscentTo(null); setAscentSaveError('') }}
+                    isLoading={createAscent.isPending}
+                  />
+                </div>
+              )}
+            </Fragment>
           ))}
         </div>
       )}

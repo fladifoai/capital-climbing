@@ -38,6 +38,7 @@ export function useMyAscents(userId: string) {
 
 export interface AscentFormValues {
   route_id: string
+  session_id: string | null
   date: string
   attempt_type: AttemptType | null
   ascent_style: string | null
@@ -74,6 +75,7 @@ export function useCreateAscent() {
     },
     onSuccess: (_, { userId }) => {
       qc.invalidateQueries({ queryKey: ['my-ascents', userId] })
+      qc.invalidateQueries({ queryKey: ['my-sessions', userId] })
     },
   })
 }

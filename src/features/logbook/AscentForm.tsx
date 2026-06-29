@@ -54,12 +54,14 @@ type AscentSchema = z.infer<typeof ascentSchema>
 
 interface Props {
   preselectedRoute?: RouteSearchResult
+  defaultDate?: string
+  sessionId?: string | null
   onSubmit: (values: AscentFormValues) => void
   onCancel: () => void
   isLoading?: boolean
 }
 
-export default function AscentForm({ preselectedRoute, onSubmit, onCancel, isLoading }: Props) {
+export default function AscentForm({ preselectedRoute, defaultDate, sessionId, onSubmit, onCancel, isLoading }: Props) {
   const [query, setQuery] = useState(preselectedRoute?.name ?? '')
   const [selectedRoute, setSelectedRoute] = useState<RouteSearchResult | null>(preselectedRoute ?? null)
   const [showDropdown, setShowDropdown] = useState(false)
@@ -73,7 +75,7 @@ export default function AscentForm({ preselectedRoute, onSubmit, onCancel, isLoa
   const { register, handleSubmit, formState: { errors } } = useForm<AscentSchema>({
     resolver: zodResolver(ascentSchema) as import('react-hook-form').Resolver<AscentSchema>,
     defaultValues: {
-      date: new Date().toISOString().slice(0, 10),
+      date: defaultDate ?? new Date().toISOString().slice(0, 10),
       visibility: 'public',
     },
   })
@@ -93,6 +95,7 @@ export default function AscentForm({ preselectedRoute, onSubmit, onCancel, isLoa
 
     onSubmit({
       route_id: selectedRoute.id,
+      session_id: sessionId ?? null,
       date: data.date,
       attempt_type: null,
       ascent_style: mapped.ascent_style,
