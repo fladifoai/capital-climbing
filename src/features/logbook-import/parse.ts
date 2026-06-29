@@ -58,7 +58,8 @@ const FIELD_ALIASES: Record<LogbookField, string[]> = {
   route: ['route', 'via', 'nome_via', 'nome via', 'nome', 'name', 'percorso'],
   grade: ['grade', 'grado', 'difficolta', 'livello', 'grado_ufficiale'],
   proposed_grade: ['proposed_grade', 'grado_proposto', 'grado proposto', 'personal_grade', 'suggested'],
-  attempt_type: ['attempt_type', 'modalita', 'modalità', 'stile', 'style', 'tentativo', 'tentativo', 'tipo', 'go', 'ascent'],
+  attempt_type: ['attempt_type', 'modalita', 'modalità', 'stile', 'style', 'tentativi', 'tentativo', 'tipo', 'go', 'ascent'],
+  beauty: ['beauty', 'bellezza', 'stelle', 'stars', 'quality', 'qualita', 'qualità', 'rating'],
   notes: ['notes', 'note', 'commento', 'comment', 'descrizione', 'info'],
 }
 
@@ -96,6 +97,7 @@ export function parseLogbookRow(
   const grade = normalizeGrade(raw_grade)
   const proposed_grade = normalizeGrade(get('proposed_grade'))
   const attempt = normalizeAttempt(raw_attempt)
+  const quality = normalizeBeauty(get('beauty'))
   const notes = get('notes') || null
 
   // bloccanti
@@ -120,6 +122,7 @@ export function parseLogbookRow(
     grade, proposed_grade,
     attempt_type: attempt.type,
     attempt_count: attempt.count,
+    quality,
     notes,
     normalized_crag: normalizeKey(crag_name),
     normalized_sector: normalizeKey(sector_name),
@@ -138,7 +141,20 @@ export const LOGBOOK_FIELD_LABELS: Record<LogbookField, string> = {
   grade: 'Grado',
   proposed_grade: 'Grado proposto',
   attempt_type: 'Modalità',
+  beauty: 'Bellezza',
   notes: 'Note',
+}
+
+// "****" → 4 ; "3" → 3 ; clamp 1-5 ; vuoto → null
+function normalizeBeauty(raw: string): number | null {
+  const s = (raw ?? '').trim()
+  if (!s) return null
+  const stars = (s.match(/[*★]/g) ?? []).length
+  let n = stars > 0 ? stars : parseInt(s, 10)
+  if (!n || isNaN(n)) return null
+  if (n < 1) n = 1
+  if (n > 5) n = 5
+  return n
 }
 
 export { LOGBOOK_ALL_FIELDS, LOGBOOK_REQUIRED_FIELDS }

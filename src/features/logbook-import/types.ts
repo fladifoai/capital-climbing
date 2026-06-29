@@ -4,7 +4,7 @@ import type { AttemptType } from '../../types/database'
 export const LOGBOOK_REQUIRED_FIELDS = ['date', 'crag', 'route'] as const
 export const LOGBOOK_ALL_FIELDS = [
   'date', 'crag', 'sector', 'route',
-  'grade', 'proposed_grade', 'attempt_type', 'notes',
+  'grade', 'proposed_grade', 'attempt_type', 'beauty', 'notes',
 ] as const
 
 export type LogbookRequiredField = (typeof LOGBOOK_REQUIRED_FIELDS)[number]
@@ -34,6 +34,7 @@ export interface ParsedLogbookRow {
   proposed_grade: string | null    // grado proposto/personale
   attempt_type: AttemptType | null
   attempt_count: number | null     // numero giri se noto (es. 7° giro → 7)
+  quality: number | null           // bellezza 1-5 (da "****" o numero)
   notes: string | null
   // chiavi normalizzate per dedup / match
   normalized_crag: string

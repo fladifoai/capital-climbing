@@ -114,6 +114,7 @@ export function useExecuteLogbookImport(userId: string) {
           grade_at_ascent: r.grade,
           grade_snapshot: r.grade,
           proposed_grade: r.proposed_grade,
+          quality: r.quality,
           route_name_snapshot: r.route_name,
           crag_name_snapshot: r.crag_name,
           sector_name_snapshot: r.sector_name || null,
@@ -178,6 +179,7 @@ export function useExecuteLogbookImport(userId: string) {
           proposed_grade: r.proposed_grade,
           attempt_type: r.attempt_type,
           attempt_count: r.attempt_count,
+          quality: r.quality,
           notes: r.notes,
           crag_request_id: requestIdByKey.get(reqKey(r)) ?? null,
         }))
