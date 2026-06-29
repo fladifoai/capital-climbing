@@ -29,22 +29,25 @@ function mapAttemptType(type: string): {
   }
 }
 
-const optStr = z
-  .union([z.string(), z.null(), z.undefined()])
-  .transform((v): string | null => (v == null || v === '' ? null : v))
+const optStr = z.preprocess(
+  (v) => (v === '' || v == null ? null : String(v)),
+  z.string().nullable()
+)
 
-const optNum = z
-  .union([z.number(), z.nan(), z.null(), z.undefined()])
-  .transform((v): number | null => {
-    if (v == null || (typeof v === 'number' && isNaN(v))) return null
-    return v
-  })
+const optNum = z.preprocess(
+  (v) => {
+    if (v === '' || v == null) return null
+    const n = Number(v)
+    return isNaN(n) ? null : n
+  },
+  z.number().nullable()
+)
 
 const ascentSchema = z.object({
   date: z.string().min(1, 'Data richiesta'),
   personal_grade: optStr,
   quality: optNum,
-  kneepad_used: z.boolean().nullable().optional().transform(v => v ?? null),
+  kneepad_used: z.preprocess((v) => v ?? null, z.boolean().nullable()),
   effort: optNum,
   notes: optStr,
   visibility: z.enum(['public', 'private']),
