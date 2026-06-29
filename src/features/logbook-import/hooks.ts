@@ -50,22 +50,30 @@ export function useResolveLogbook(userId: string) {
       const cragIds = [...new Set(valid.map(r => cragMap.get(r.normalized_crag)).filter(Boolean) as string[])]
       const routeMap = new Map<string, string>() // `${cragId}:${normalizeKey(name)}` → routeId
       if (cragIds.length > 0) {
-        // settori delle falesie → mappa sectorId → cragId
-        const { data: sectors } = await supabase
-          .from('sectors')
-          .select('id, crag_id')
-          .in('crag_id', cragIds)
-        const sectorToCrag = new Map((sectors ?? []).map(s => [s.id as string, s.crag_id as string]))
-        const sectorIds = [...sectorToCrag.keys()]
-
+        // Le vie hanno quasi sempre crag_id diretto (backfill migration 012):
+        // un solo passaggio paginato per crag_id copre tutto.
         const byCrag = await fetchAllRoutes('crag_id', cragIds)
-        const bySector = await fetchAllRoutes('sector_id', sectorIds)
+        for (const r of byCrag) {
+          if (!r.crag_id) continue
+          const key = `${r.crag_id}:${normalizeKey(r.name)}`
+          if (!routeMap.has(key)) routeMap.set(key, r.id)
+        }
 
-        for (const r of [...byCrag, ...bySector]) {
-          const cragId = (r.crag_id as string | null) ?? (r.sector_id ? sectorToCrag.get(r.sector_id as string) : undefined)
-          if (!cragId) continue
-          const key = `${cragId}:${normalizeKey(r.name as string)}`
-          if (!routeMap.has(key)) routeMap.set(key, r.id as string)
+        // Fallback solo per le falesie che non hanno restituito vie via crag_id
+        // (vie collegate solo tramite settore).
+        const covered = new Set(byCrag.map(r => r.crag_id).filter(Boolean) as string[])
+        const missing = cragIds.filter(id => !covered.has(id))
+        if (missing.length > 0) {
+          const { data: sectors } = await supabase
+            .from('sectors').select('id, crag_id').in('crag_id', missing)
+          const sectorToCrag = new Map((sectors ?? []).map(s => [s.id as string, s.crag_id as string]))
+          const bySector = await fetchAllRoutes('sector_id', [...sectorToCrag.keys()])
+          for (const r of bySector) {
+            const cragId = r.crag_id ?? (r.sector_id ? sectorToCrag.get(r.sector_id) : undefined)
+            if (!cragId) continue
+            const key = `${cragId}:${normalizeKey(r.name)}`
+            if (!routeMap.has(key)) routeMap.set(key, r.id)
+          }
         }
       }
 
