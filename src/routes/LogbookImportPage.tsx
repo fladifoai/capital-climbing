@@ -1,11 +1,14 @@
 import { Fragment, useRef, useState } from 'react'
+import { useAuth } from '../features/auth/AuthContext'
 import {
   LOGBOOK_ALL_FIELDS, LOGBOOK_REQUIRED_FIELDS,
-  type LogbookColumnMap, type LogbookField, type LogbookWizardStep, type ParsedLogbookRow, type RawLogbookRow,
+  type LogbookColumnMap, type LogbookField, type LogbookImportReport, type LogbookWizardStep,
+  type ParsedLogbookRow, type RawLogbookRow, type ResolvedLogbookRow,
 } from '../features/logbook-import/types'
 import {
   LOGBOOK_FIELD_LABELS, autoDetectLogbookColumns, parseLogbookFile, parseLogbookRow,
 } from '../features/logbook-import/parse'
+import { useExecuteLogbookImport, useResolveLogbook } from '../features/logbook-import/hooks'
 import '../styles/admin.css'
 import '../styles/import.css'
 
@@ -78,11 +81,11 @@ function StepUpload({
       >
         <div className="upload-zone-icon">📒</div>
         <div className="upload-zone-title">Trascina il tuo logbook o clicca per selezionarlo</div>
-        <div className="upload-zone-sub">Formati: CSV, Excel (.xlsx). PDF in arrivo.</div>
+        <div className="upload-zone-sub">Formati: CSV, Excel (.xlsx), PDF (best-effort).</div>
         <input
           ref={inputRef}
           type="file"
-          accept=".csv,.xlsx,.xls"
+          accept=".csv,.xlsx,.xls,.pdf"
           onChange={e => { const f = e.target.files?.[0]; if (f) handleFile(f) }}
         />
       </div>
@@ -158,10 +161,12 @@ function StepMapping({
 
 // ── Step 3: Preview ───────────────────────────────────────────────────────
 function StepPreview({
-  rows, onBack,
+  rows, onBack, onNext, isLoading,
 }: {
   rows: ParsedLogbookRow[]
   onBack: () => void
+  onNext: () => void
+  isLoading: boolean
 }) {
   const valid = rows.filter(r => r.isValid).length
   const review = rows.filter(r => r.needsReview).length
@@ -211,24 +216,143 @@ function StepPreview({
 
       <div className="import-actions">
         <button className="btn-secondary" onClick={onBack}>← Indietro</button>
-        <button className="btn-primary" disabled title="Abbinamento vie + salvataggio: Fase 2">
-          Salva ascensioni → (Fase 2)
+        <button className="btn-primary" onClick={onNext} disabled={valid === 0 || isLoading}>
+          {isLoading ? 'Abbinamento…' : `Abbina al catalogo (${valid}) →`}
         </button>
       </div>
-      <p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 8 }}>
-        Anteprima parsing. Abbinamento al catalogo e salvataggio arrivano nella prossima fase.
-      </p>
+    </div>
+  )
+}
+
+// ── Step 4: Confirm ─────────────────────────────────────────────────────────
+function StepConfirm({
+  rows, onBack, onConfirm, isLoading,
+}: {
+  rows: ResolvedLogbookRow[]
+  onBack: () => void
+  onConfirm: () => void
+  isLoading: boolean
+}) {
+  const matched = rows.filter(r => r.matchStatus === 'matched' && r.action === 'import').length
+  const unmatched = rows.filter(r => r.matchStatus === 'unmatched' && r.action === 'import').length
+  const dups = rows.filter(r => r.matchStatus === 'duplicate').length
+
+  return (
+    <div>
+      <div className="validation-summary">
+        <div className="validation-stat">
+          <div className="validation-stat-num ok">{matched}</div>
+          <div className="validation-stat-label">Salvabili</div>
+        </div>
+        <div className="validation-stat">
+          <div className="validation-stat-num dup">{unmatched}</div>
+          <div className="validation-stat-label">Via mancante → coda</div>
+        </div>
+        <div className="validation-stat">
+          <div className="validation-stat-num" style={{ color: '#8a9a87' }}>{dups}</div>
+          <div className="validation-stat-label">Duplicati (saltati)</div>
+        </div>
+      </div>
+
+      {unmatched > 0 && (
+        <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 12 }}>
+          Le vie non ancora in catalogo vengono messe in coda e segnalate all'admin.
+          Verranno importate automaticamente quando la falesia sarà aggiunta.
+        </p>
+      )}
+
+      <table className="import-table">
+        <thead>
+          <tr><th>#</th><th>Data</th><th>Falesia</th><th>Via</th><th>Grado</th><th>Stato</th></tr>
+        </thead>
+        <tbody>
+          {rows.filter(r => r.isValid).map(row => (
+            <tr key={row.rowNum} className={row.matchStatus === 'duplicate' ? 'row-dup' : ''}>
+              <td style={{ color: '#8a9a87' }}>{row.rowNum}</td>
+              <td>{row.date}</td>
+              <td>{row.crag_name}</td>
+              <td>{row.route_name}</td>
+              <td>{row.grade ? <span className="grade-badge">{row.grade}</span> : '—'}</td>
+              <td style={{ fontSize: 11, color: 'var(--text-muted)' }}>
+                {row.matchStatus === 'matched' ? '✦ in catalogo'
+                  : row.matchStatus === 'duplicate' ? '≈ già presente'
+                  : '✉ via mancante → coda'}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+
+      <div className="import-actions">
+        <button className="btn-secondary" onClick={onBack} disabled={isLoading}>← Indietro</button>
+        <button className="btn-primary" onClick={onConfirm} disabled={isLoading || (matched + unmatched === 0)}>
+          {isLoading ? 'Importazione…' : `Conferma (${matched + unmatched})`}
+        </button>
+      </div>
+    </div>
+  )
+}
+
+// ── Step 5: Done ──────────────────────────────────────────────────────────
+function StepDone({ report, onReset }: { report: LogbookImportReport; onReset: () => void }) {
+  return (
+    <div className="import-report">
+      <div className="import-report-icon">{report.errors.length === 0 ? '✅' : '⚠️'}</div>
+      <div className="import-report-title">
+        {report.errors.length === 0 ? 'Import completato' : 'Import completato con errori'}
+      </div>
+      <div className="import-report-stats">
+        <div className="report-stat">
+          <div className="report-stat-num ok">{report.imported}</div>
+          <div className="report-stat-label">Ascensioni salvate</div>
+        </div>
+        <div className="report-stat">
+          <div className="report-stat-num upd">{report.queued}</div>
+          <div className="report-stat-label">In coda</div>
+        </div>
+        <div className="report-stat">
+          <div className="report-stat-num skip">{report.skipped}</div>
+          <div className="report-stat-label">Saltate</div>
+        </div>
+        <div className="report-stat">
+          <div className="report-stat-num upd">{report.cragRequests}</div>
+          <div className="report-stat-label">Richieste falesia</div>
+        </div>
+      </div>
+
+      {report.errors.length > 0 && (
+        <table className="import-table" style={{ width: '100%' }}>
+          <thead><tr><th>#</th><th>Errore</th></tr></thead>
+          <tbody>
+            {report.errors.map((e, i) => (
+              <tr key={i} className="row-error">
+                <td>{e.rowNum || '—'}</td>
+                <td className="row-errors-cell">{e.message}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+
+      <button className="btn-primary" onClick={onReset}>Nuovo import</button>
     </div>
   )
 }
 
 // ── Main ────────────────────────────────────────────────────────────────────
 export default function LogbookImportPage() {
+  const { user } = useAuth()
+  const userId = user?.id ?? ''
   const [step, setStep] = useState<LogbookWizardStep>('upload')
   const [headers, setHeaders] = useState<string[]>([])
   const [rawRows, setRawRows] = useState<RawLogbookRow[]>([])
   const [map, setMap] = useState<LogbookColumnMap>({})
   const [rows, setRows] = useState<ParsedLogbookRow[]>([])
+  const [resolved, setResolved] = useState<ResolvedLogbookRow[]>([])
+  const [report, setReport] = useState<LogbookImportReport | null>(null)
+
+  const resolveLogbook = useResolveLogbook(userId)
+  const executeImport = useExecuteLogbookImport(userId)
 
   function handleParsed(h: string[], data: RawLogbookRow[]) {
     setHeaders(h)
@@ -242,6 +366,23 @@ export default function LogbookImportPage() {
     setStep('preview')
   }
 
+  async function handlePreview() {
+    const r = await resolveLogbook.mutateAsync(rows)
+    setResolved(r)
+    setStep('confirm')
+  }
+
+  async function handleConfirm() {
+    const rep = await executeImport.mutateAsync(resolved)
+    setReport(rep)
+    setStep('done')
+  }
+
+  function handleReset() {
+    setStep('upload'); setHeaders([]); setRawRows([]); setMap({})
+    setRows([]); setResolved([]); setReport(null)
+  }
+
   return (
     <div className="admin-page import-page">
       <div className="admin-header">
@@ -253,15 +394,28 @@ export default function LogbookImportPage() {
       {step === 'upload' && <StepUpload onParsed={(h, d) => handleParsed(h, d)} />}
       {step === 'mapping' && (
         <StepMapping
-          headers={headers}
-          map={map}
-          onChange={setMap}
-          onBack={() => setStep('upload')}
-          onNext={handleMapping}
+          headers={headers} map={map} onChange={setMap}
+          onBack={() => setStep('upload')} onNext={handleMapping}
         />
       )}
       {step === 'preview' && (
-        <StepPreview rows={rows} onBack={() => setStep('mapping')} />
+        <StepPreview
+          rows={rows} onBack={() => setStep('mapping')}
+          onNext={handlePreview} isLoading={resolveLogbook.isPending}
+        />
+      )}
+      {step === 'confirm' && (
+        <StepConfirm
+          rows={resolved} onBack={() => setStep('preview')}
+          onConfirm={handleConfirm} isLoading={executeImport.isPending}
+        />
+      )}
+      {step === 'done' && report && <StepDone report={report} onReset={handleReset} />}
+
+      {(resolveLogbook.isError || executeImport.isError) && (
+        <div className="admin-error" style={{ marginTop: 16 }}>
+          {((resolveLogbook.error || executeImport.error) as Error)?.message}
+        </div>
       )}
     </div>
   )

@@ -16,7 +16,11 @@ export async function parseLogbookFile(file: File): Promise<ParseResult> {
   const name = file.name.toLowerCase()
   if (name.endsWith('.csv')) return parseCsv(file)
   if (name.endsWith('.xlsx') || name.endsWith('.xls')) return parseXlsx(file)
-  throw new Error('Formato non supportato. Usa .csv o .xlsx (PDF in arrivo).')
+  if (name.endsWith('.pdf')) {
+    const { parsePdf } = await import('./pdf')
+    return parsePdf(file)
+  }
+  throw new Error('Formato non supportato. Usa .csv, .xlsx o .pdf.')
 }
 
 function parseCsv(file: File): Promise<ParseResult> {

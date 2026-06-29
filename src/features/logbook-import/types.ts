@@ -45,3 +45,21 @@ export interface ParsedLogbookRow {
   needsReview: boolean
   isValid: boolean
 }
+
+// Riga dopo l'abbinamento al catalogo (Fase 2/3).
+export type MatchStatus = 'matched' | 'duplicate' | 'unmatched'
+
+export interface ResolvedLogbookRow extends ParsedLogbookRow {
+  matchStatus: MatchStatus
+  routeId: string | null
+  action: 'import' | 'skip'   // import: salva (ascensione o coda); skip: ignora
+}
+
+export interface LogbookImportReport {
+  total: number
+  imported: number      // ascensioni salvate subito (via in catalogo)
+  queued: number        // ascensioni in coda (via mancante)
+  skipped: number       // duplicati o saltate
+  cragRequests: number  // richieste falesia create
+  errors: { rowNum: number; message: string }[]
+}
