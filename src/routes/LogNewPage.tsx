@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useSearchParams, Link } from 'react-router-dom'
 import { useAuth } from '../features/auth/AuthContext'
+import { useRoute } from '../features/catalog/hooks'
 import {
   useCreateAscent,
   useUpsertRouteNotes,
@@ -94,6 +95,9 @@ export default function LogNewPage() {
   const createAscent = useCreateAscent()
   const upsertNotes = useUpsertRouteNotes()
 
+  // ── Pre-load route from URL param ──
+  const { data: preRoute } = useRoute(preRouteId ?? '')
+
   // ── Route search state ──
   const [routeQuery, setRouteQuery] = useState('')
   const [selectedRoute, setSelectedRoute] = useState<RouteSearchResult | null>(null)
@@ -139,13 +143,21 @@ export default function LogNewPage() {
   const [saved, setSaved] = useState(false)
   const [error, setError] = useState('')
 
-  // Pre-load route from query param
+  // Pre-select route when loaded from URL param
   useEffect(() => {
-    if (preRouteId && !selectedRoute) {
-      // Fetch route info - we use the route from the URL via a temporary search
-      setRouteQuery(preRouteId)
+    if (preRoute && !selectedRoute) {
+      setSelectedRoute({
+        id: preRoute.id,
+        name: preRoute.name,
+        official_grade: preRoute.official_grade,
+        grade_numeric: preRoute.grade_numeric,
+        route_type: preRoute.route_type,
+        sector_name: preRoute.sector?.name ?? '',
+        crag_name: preRoute.sector?.crag?.name ?? '',
+      })
+      setRouteQuery(preRoute.name)
     }
-  }, [preRouteId])
+  }, [preRoute])
 
   function selectRoute(r: RouteSearchResult) {
     setSelectedRoute(r)
