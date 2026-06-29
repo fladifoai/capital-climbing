@@ -300,3 +300,49 @@
   color: var(--text);
   margin: 0 0 14px;
 }
+
+/* ── Stato personale via (evidenziazione vie scalate) ── */
+.route-status-badge {
+  display: inline-block;
+  border-radius: 999px;
+  padding: 2px 9px;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.route-status-badge.sent     { background: rgba(40,180,135,0.16); color: #7EE0BE; border: 1px solid rgba(40,180,135,0.30); }
+.route-status-badge.repeated { background: rgba(167,139,250,0.16); color: #C9B8FF; border: 1px solid rgba(167,139,250,0.30); }
+.route-status-badge.project  { background: rgba(200,95,58,0.18);  color: #F5A788; border: 1px solid rgba(200,95,58,0.34); }
+.route-status-badge.attempted{ background: rgba(224,178,79,0.16); color: #FFD08A; border: 1px solid rgba(224,178,79,0.30); }
+
+.route-table tr.row-sent td:first-child,
+.route-table tr.row-repeated td:first-child { box-shadow: inset 3px 0 0 #28B487; }
+.route-table tr.row-project td:first-child  { box-shadow: inset 3px 0 0 #C85F3A; }
+.route-table tr.row-attempted td:first-child{ box-shadow: inset 3px 0 0 #E0B24F; }
+
+.route-status-cell { white-space: nowrap; }
+.route-status-date { font-size: 11px; color: var(--text-muted); margin-left: 6px; }
+
+/* ── Filtro vie nella falesia ── */
+.route-filter-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0 0 18px;
+}
+.route-filter-tab {
+  background: var(--surface-muted);
+  border: 1px solid rgba(247,243,234,0.12);
+  color: var(--text-2);
+  border-radius: 999px;
+  padding: 6px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.route-filter-tab:hover { border-color: rgba(247,243,234,0.28); }
+.route-filter-tab.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}

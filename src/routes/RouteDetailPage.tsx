@@ -8,8 +8,10 @@ import {
   useCommunityRating,
   useMyRouteRating,
   useVoteRoute,
+  useRoutePublicAscents,
   type RouteFeatures,
   type ProfileLevel,
+  type PublicAscent,
 } from '../features/routes/hooks'
 import {
   useCreateAscent,
@@ -439,6 +441,45 @@ function RoutePersonalHistory({
   )
 }
 
+function RouteClimbersSection({ ascents }: { ascents: PublicAscent[] }) {
+  return (
+    <div className="route-section">
+      <h2 className="route-section-title">
+        Chi ha salito questa via
+        {ascents.length > 0 && (
+          <span style={{ fontSize: 13, fontWeight: 400, color: 'var(--text-muted)', marginLeft: 8 }}>
+            {ascents.length}
+          </span>
+        )}
+      </h2>
+      {ascents.length === 0 ? (
+        <p className="route-empty-hint">Ancora nessuna ascensione pubblica registrata.</p>
+      ) : (
+        <div className="climbers-list">
+          {ascents.map(a => (
+            <div key={a.ascent_id} className="climber-row">
+              <Link to={`/u/${a.username}`} className="climber-name">
+                {a.display_name}
+                {a.is_own && <span className="climber-you">tu</span>}
+                {a.is_own && a.is_private && <span className="climber-private">privata</span>}
+              </Link>
+              <span className="climber-date">{new Date(a.date).toLocaleDateString('it-IT')}</span>
+              {a.attempt_type && (
+                <span className="attempt-badge">{ATTEMPT_LABEL[a.attempt_type] ?? a.attempt_type}</span>
+              )}
+              {a.ascent_count > 1 && (
+                <span className="climber-repeat">×{a.ascent_count}</span>
+              )}
+              {a.grade_at_ascent && <span className="grade-badge">{a.grade_at_ascent}</span>}
+              {a.public_note && <span className="climber-note">{a.public_note}</span>}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
 // ─── Main page ────────────────────────────────────────────────────────────────
 
 export default function RouteDetailPage() {
@@ -450,6 +491,7 @@ export default function RouteDetailPage() {
   const { data: communityRating } = useCommunityRating(routeId)
   const { data: personalHistory } = useRoutePersonalHistory(routeId, user?.id ?? '')
   const { data: myRatingRaw } = useMyRouteRating(routeId, user?.id ?? '')
+  const { data: publicAscents } = useRoutePublicAscents(routeId, user?.id ?? null)
   const createAscent = useCreateAscent()
 
   const [showForm, setShowForm] = useState(false)
@@ -688,6 +730,9 @@ export default function RouteDetailPage() {
           onAddClick={() => { setShowForm(true); setFormDone(false); window.scrollTo({ top: 0, behavior: 'smooth' }) }}
         />
       )}
+
+      {/* ── Chi ha salito questa via ── */}
+      <RouteClimbersSection ascents={publicAscents ?? []} />
 
     </div>
   )

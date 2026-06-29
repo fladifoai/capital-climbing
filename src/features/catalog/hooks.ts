@@ -229,6 +229,99 @@ export function useRoute(routeId: string) {
   })
 }
 
+// ─── Stato personale vie in una falesia ──────────────────────
+// Priorità: sent/repeated > project > attempted > not_tried
+
+export type RouteUserStatusKind =
+  | 'not_tried' | 'attempted' | 'project' | 'sent' | 'repeated'
+
+export interface RouteUserStatus {
+  status: RouteUserStatusKind
+  ascent_count: number
+  first_ascent_date: string | null
+  best_attempt_type: string | null
+  active_project_id: string | null
+}
+
+// Ordine "migliore" stile (più basso = meglio) per scegliere best_attempt_type
+const ATTEMPT_RANK: Record<string, number> = {
+  onsight: 0, flash: 1, second: 2, third: 3, four_plus: 4, redpoint: 5,
+}
+
+export function useRouteUserStatuses(routeIds: string[], userId: string) {
+  const sortedIds = [...routeIds].sort()
+  return useQuery({
+    queryKey: ['route-user-statuses', userId, sortedIds],
+    queryFn: async (): Promise<Map<string, RouteUserStatus>> => {
+      const map = new Map<string, RouteUserStatus>()
+      if (routeIds.length === 0 || !userId) return map
+
+      const [ascentsRes, projectsRes, attemptsRes] = await Promise.all([
+        supabase.from('ascents')
+          .select('route_id, date, status, attempt_type')
+          .eq('user_id', userId)
+          .in('route_id', routeIds),
+        supabase.from('projects')
+          .select('id, route_id')
+          .eq('user_id', userId)
+          .eq('status', 'active')
+          .in('route_id', routeIds),
+        supabase.from('attempts')
+          .select('route_id')
+          .eq('user_id', userId)
+          .in('route_id', routeIds),
+      ])
+      if (ascentsRes.error) throw ascentsRes.error
+      if (projectsRes.error) throw projectsRes.error
+      if (attemptsRes.error) throw attemptsRes.error
+
+      const ensure = (rid: string): RouteUserStatus => {
+        let s = map.get(rid)
+        if (!s) {
+          s = { status: 'not_tried', ascent_count: 0, first_ascent_date: null, best_attempt_type: null, active_project_id: null }
+          map.set(rid, s)
+        }
+        return s
+      }
+
+      const hasAttempt = new Set<string>()
+
+      ;(ascentsRes.data ?? []).forEach(a => {
+        const s = ensure(a.route_id)
+        if (a.status === 'completed') {
+          s.ascent_count++
+          if (!s.first_ascent_date || a.date < s.first_ascent_date) s.first_ascent_date = a.date
+          if (a.attempt_type) {
+            const rank = ATTEMPT_RANK[a.attempt_type] ?? 99
+            const curRank = s.best_attempt_type ? (ATTEMPT_RANK[s.best_attempt_type] ?? 99) : 99
+            if (rank < curRank) s.best_attempt_type = a.attempt_type
+          }
+        } else {
+          hasAttempt.add(a.route_id)
+        }
+      })
+      ;(attemptsRes.data ?? []).forEach(t => hasAttempt.add(t.route_id))
+      ;(projectsRes.data ?? []).forEach(p => { ensure(p.route_id).active_project_id = p.id })
+
+      // Risolvi stato finale per priorità
+      const allIds = new Set<string>([
+        ...map.keys(), ...hasAttempt,
+      ])
+      allIds.forEach(rid => {
+        const s = ensure(rid)
+        if (s.ascent_count > 1) s.status = 'repeated'
+        else if (s.ascent_count === 1) s.status = 'sent'
+        else if (s.active_project_id) s.status = 'project'
+        else if (hasAttempt.has(rid)) s.status = 'attempted'
+        else s.status = 'not_tried'
+      })
+
+      return map
+    },
+    enabled: !!userId && routeIds.length > 0,
+  })
+}
+
 export function useItalyStats() {
   return useQuery({
     queryKey: ['italy-stats'],

@@ -1,17 +1,142 @@
+import { useMemo, useState } from 'react'
 import { Link, useParams, useNavigate } from 'react-router-dom'
-import { useCrag, useSectorsWithRoutes } from '../features/catalog/hooks'
+import { useAuth } from '../features/auth/AuthContext'
+import {
+  useCrag, useSectorsWithRoutes, useRouteUserStatuses,
+  type SectorWithRoutes, type RouteUserStatus,
+} from '../features/catalog/hooks'
+import type { Route } from '../types/database'
 import '../styles/catalog.css'
+
+const ATTEMPT_SHORT: Record<string, string> = {
+  onsight: 'OS', flash: 'FL', second: 'RP', third: 'RP', four_plus: 'RP', redpoint: 'RP',
+}
+
+type RouteFilter = 'all' | 'done' | 'todo' | 'project' | 'attempted'
+
+const FILTER_TABS: { key: RouteFilter; label: string }[] = [
+  { key: 'all', label: 'Tutte' },
+  { key: 'done', label: 'Scalate' },
+  { key: 'todo', label: 'Da fare' },
+  { key: 'project', label: 'Progetti' },
+  { key: 'attempted', label: 'Provate' },
+]
+
+function matchesFilter(status: RouteUserStatus | undefined, filter: RouteFilter): boolean {
+  const kind = status?.status ?? 'not_tried'
+  switch (filter) {
+    case 'all': return true
+    case 'done': return kind === 'sent' || kind === 'repeated'
+    case 'todo': return kind === 'not_tried'
+    case 'project': return kind === 'project'
+    case 'attempted': return kind === 'attempted'
+  }
+}
+
+function RouteStatusBadge({ status }: { status: RouteUserStatus | undefined }) {
+  if (!status || status.status === 'not_tried') return <span style={{ color: 'var(--text-muted)' }}>—</span>
+  const { status: kind } = status
+  if (kind === 'repeated') {
+    return <span className="route-status-badge repeated">Ripetuta ×{status.ascent_count}</span>
+  }
+  if (kind === 'project') {
+    return <span className="route-status-badge project">Progetto</span>
+  }
+  if (kind === 'attempted') {
+    return <span className="route-status-badge attempted">Provata</span>
+  }
+  // sent
+  const style = status.best_attempt_type ? ATTEMPT_SHORT[status.best_attempt_type] : null
+  return (
+    <span className="route-status-cell">
+      <span className="route-status-badge sent">Scalata{style ? ` ${style}` : ''}</span>
+      {status.first_ascent_date && (
+        <span className="route-status-date">
+          {new Date(status.first_ascent_date).toLocaleDateString('it-IT')}
+        </span>
+      )}
+    </span>
+  )
+}
+
+function RouteRows({
+  routes, statuses, showStatus, onOpen,
+}: {
+  routes: Route[]
+  statuses: Map<string, RouteUserStatus>
+  showStatus: boolean
+  onOpen: (id: string) => void
+}) {
+  return (
+    <>
+      {routes.map((route, i) => {
+        const st = statuses.get(route.id)
+        const rowClass = showStatus && st ? `row-${st.status}` : ''
+        return (
+          <tr key={route.id} className={rowClass} onClick={() => onOpen(route.id)}>
+            <td style={{ color: '#8a9a87' }}>{route.line_order ?? i + 1}</td>
+            <td><strong>{route.name}</strong></td>
+            <td>
+              {route.official_grade
+                ? <span className="grade-badge">{route.official_grade}</span>
+                : <span style={{ color: '#ccc' }}>—</span>}
+            </td>
+            <td>{route.length_m ? `${route.length_m} m` : '—'}</td>
+            <td>{route.bolts ?? '—'}</td>
+            {showStatus && <td><RouteStatusBadge status={st} /></td>}
+          </tr>
+        )
+      })}
+    </>
+  )
+}
 
 export default function CragDetailPage() {
   const { cragId = '' } = useParams()
   const navigate = useNavigate()
+  const { user } = useAuth()
   const { data: crag, isLoading: loadingCrag, error: cragError } = useCrag(cragId)
   const { data: sectors, isLoading: loadingSectors } = useSectorsWithRoutes(cragId)
+
+  const [filter, setFilter] = useState<RouteFilter>('all')
+
+  // Tutti i routeId della falesia (settori + sottosettori)
+  const allRouteIds = useMemo(() => {
+    if (!sectors) return []
+    const ids: string[] = []
+    sectors.forEach(s => {
+      s.routes.forEach(r => ids.push(r.id))
+      s.subsectors?.forEach(sub => sub.routes.forEach(r => ids.push(r.id)))
+    })
+    return ids
+  }, [sectors])
+
+  const { data: statusMap } = useRouteUserStatuses(allRouteIds, user?.id ?? '')
+  const statuses = statusMap ?? new Map<string, RouteUserStatus>()
+  const showStatus = !!user
 
   if (loadingCrag) return <div className="loading-state">Caricamento falesia…</div>
   if (cragError || !crag) return <div className="error-state">Falesia non trovata.</div>
 
   const totalRoutes = sectors?.reduce((sum, s) => sum + s.routes.length, 0) ?? 0
+
+  // Conteggi per i tab filtro
+  const filterCounts: Record<RouteFilter, number> = { all: 0, done: 0, todo: 0, project: 0, attempted: 0 }
+  if (showStatus) {
+    allRouteIds.forEach(id => {
+      const st = statuses.get(id)
+      filterCounts.all++
+      if (matchesFilter(st, 'done')) filterCounts.done++
+      if (matchesFilter(st, 'todo')) filterCounts.todo++
+      if (matchesFilter(st, 'project')) filterCounts.project++
+      if (matchesFilter(st, 'attempted')) filterCounts.attempted++
+    })
+  }
+
+  const filterRoutes = (routes: Route[]) =>
+    showStatus && filter !== 'all'
+      ? routes.filter(r => matchesFilter(statuses.get(r.id), filter))
+      : routes
 
   return (
     <div className="catalog-page">
@@ -69,16 +194,36 @@ export default function CragDetailPage() {
             <span className="stat-number">{totalRoutes}</span>
             <span className="stat-label">Vie</span>
           </div>
+          {showStatus && filterCounts.done > 0 && (
+            <div className="stat-item">
+              <span className="stat-number">{filterCounts.done}</span>
+              <span className="stat-label">Scalate</span>
+            </div>
+          )}
         </div>
       </div>
 
       {loadingSectors && <div className="loading-state">Caricamento settori…</div>}
 
+      {showStatus && totalRoutes > 0 && (
+        <div className="route-filter-tabs">
+          {FILTER_TABS.map(tab => (
+            <button
+              key={tab.key}
+              className={`route-filter-tab${filter === tab.key ? ' active' : ''}`}
+              onClick={() => setFilter(tab.key)}
+            >
+              {tab.label} <span style={{ opacity: 0.7 }}>({filterCounts[tab.key]})</span>
+            </button>
+          ))}
+        </div>
+      )}
+
       {sectors && sectors.length === 0 && (
         <div className="empty-state">Nessun settore ancora inserito.</div>
       )}
 
-      {sectors && sectors.map(sector => {
+      {sectors && sectors.map((sector: SectorWithRoutes) => {
         const routesWithGrade = sector.routes.filter(r => r.grade_numeric != null)
         const minRoute = routesWithGrade.length
           ? routesWithGrade.reduce((a, b) => (a.grade_numeric! < b.grade_numeric! ? a : b))
@@ -89,6 +234,16 @@ export default function CragDetailPage() {
         const gradeRange = minRoute && maxRoute && minRoute.id !== maxRoute.id
           ? `${minRoute.official_grade} – ${maxRoute.official_grade}`
           : (minRoute ? minRoute.official_grade : null)
+
+        const visibleRoutes = filterRoutes(sector.routes)
+        const visibleSubs = (sector.subsectors ?? [])
+          .map(sub => ({ sub, routes: filterRoutes(sub.routes) }))
+          .filter(x => x.routes.length > 0)
+
+        // Nasconde interamente il settore se il filtro non lascia vie
+        if (showStatus && filter !== 'all' && visibleRoutes.length === 0 && visibleSubs.length === 0) {
+          return null
+        }
 
         return (
           <div key={sector.id} className="sector-block">
@@ -109,7 +264,7 @@ export default function CragDetailPage() {
               </div>
             </div>
 
-            {sector.routes.length === 0 ? (
+            {visibleRoutes.length === 0 ? (
               <div className="empty-state" style={{ padding: '20px' }}>Nessuna via.</div>
             ) : (
               <table className="route-table">
@@ -120,32 +275,23 @@ export default function CragDetailPage() {
                     <th>Grado</th>
                     <th>Lunghezza</th>
                     <th>Spit</th>
+                    {showStatus && <th>Stato</th>}
                   </tr>
                 </thead>
                 <tbody>
-                  {sector.routes.map((route, i) => (
-                    <tr
-                      key={route.id}
-                      onClick={() => navigate(`/routes/${route.id}`)}
-                    >
-                      <td style={{ color: '#8a9a87' }}>{route.line_order ?? i + 1}</td>
-                      <td><strong>{route.name}</strong></td>
-                      <td>
-                        {route.official_grade
-                          ? <span className="grade-badge">{route.official_grade}</span>
-                          : <span style={{ color: '#ccc' }}>—</span>}
-                      </td>
-                      <td>{route.length_m ? `${route.length_m} m` : '—'}</td>
-                      <td>{route.bolts ?? '—'}</td>
-                    </tr>
-                  ))}
+                  <RouteRows
+                    routes={visibleRoutes}
+                    statuses={statuses}
+                    showStatus={showStatus}
+                    onOpen={id => navigate(`/routes/${id}`)}
+                  />
                 </tbody>
               </table>
             )}
 
-            {sector.subsectors && sector.subsectors.length > 0 && (
+            {visibleSubs.length > 0 && (
               <div style={{ padding: '0 16px 16px' }}>
-                {sector.subsectors.map(sub => (
+                {visibleSubs.map(({ sub, routes }) => (
                   <div key={sub.id} style={{ marginTop: 12 }}>
                     <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-2)', padding: '8px 6px 4px' }}>
                       {sub.name}
@@ -153,25 +299,16 @@ export default function CragDetailPage() {
                         {sub.routes.length} vie
                       </span>
                     </div>
-                    {sub.routes.length > 0 && (
-                      <table className="route-table">
-                        <tbody>
-                          {sub.routes.map((route, i) => (
-                            <tr key={route.id} onClick={() => navigate(`/routes/${route.id}`)}>
-                              <td style={{ color: '#8a9a87' }}>{route.line_order ?? i + 1}</td>
-                              <td><strong>{route.name}</strong></td>
-                              <td>
-                                {route.official_grade
-                                  ? <span className="grade-badge">{route.official_grade}</span>
-                                  : <span style={{ color: '#ccc' }}>—</span>}
-                              </td>
-                              <td>{route.length_m ? `${route.length_m} m` : '—'}</td>
-                              <td>{route.bolts ?? '—'}</td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    )}
+                    <table className="route-table">
+                      <tbody>
+                        <RouteRows
+                          routes={routes}
+                          statuses={statuses}
+                          showStatus={showStatus}
+                          onOpen={id => navigate(`/routes/${id}`)}
+                        />
+                      </tbody>
+                    </table>
                   </div>
                 ))}
               </div>

@@ -137,6 +137,74 @@ export function useRoutePersonalHistory(routeId: string, userId: string) {
   })
 }
 
+// ─── Chi ha salito questa via (ascensioni pubbliche + proprie) ─
+
+export interface PublicAscent {
+  ascent_id: string
+  user_id: string
+  username: string
+  display_name: string
+  avatar_url: string | null
+  date: string
+  attempt_type: string | null
+  grade_at_ascent: string | null
+  is_own: boolean
+  is_private: boolean
+  ascent_count: number
+  public_note: string | null
+}
+
+export function useRoutePublicAscents(routeId: string, userId: string | null) {
+  return useQuery({
+    queryKey: ['route-public-ascents', routeId, userId ?? 'anon'],
+    queryFn: async (): Promise<PublicAscent[]> => {
+      // RLS restituisce solo ascensioni public OR proprie
+      const { data: ascents, error } = await supabase
+        .from('ascents')
+        .select('id, user_id, date, status, attempt_type, grade_at_ascent, visibility, notes')
+        .eq('route_id', routeId)
+        .eq('status', 'completed')
+        .order('date', { ascending: false })
+      if (error) throw error
+      const rows = ascents ?? []
+      if (rows.length === 0) return []
+
+      // Conteggio ascensioni per utente (per badge ripetizioni)
+      const countByUser = new Map<string, number>()
+      rows.forEach(a => countByUser.set(a.user_id, (countByUser.get(a.user_id) ?? 0) + 1))
+
+      // Carica profili pubblici (no FK diretto ascents→profiles, query separata)
+      const userIds = [...new Set(rows.map(a => a.user_id))]
+      const { data: profiles, error: pErr } = await supabase
+        .from('profiles')
+        .select('id, username, display_name, avatar_url')
+        .in('id', userIds)
+      if (pErr) throw pErr
+      const profMap = new Map((profiles ?? []).map(p => [p.id, p]))
+
+      return rows.map(a => {
+        const p = profMap.get(a.user_id)
+        const isOwn = userId != null && a.user_id === userId
+        return {
+          ascent_id: a.id,
+          user_id: a.user_id,
+          username: p?.username ?? 'utente',
+          display_name: p?.display_name || p?.username || 'Utente',
+          avatar_url: p?.avatar_url ?? null,
+          date: a.date,
+          attempt_type: a.attempt_type,
+          grade_at_ascent: a.grade_at_ascent,
+          is_own: isOwn,
+          is_private: a.visibility !== 'public',
+          ascent_count: countByUser.get(a.user_id) ?? 1,
+          public_note: a.visibility === 'public' ? (a.notes ?? null) : null,
+        }
+      })
+    },
+    enabled: !!routeId,
+  })
+}
+
 // ─── Community ratings ────────────────────────────────────────
 
 export function useCommunityRating(routeId: string) {
