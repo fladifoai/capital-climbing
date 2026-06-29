@@ -305,9 +305,10 @@
 .route-status-badge {
   display: inline-block;
   border-radius: 999px;
-  padding: 2px 9px;
-  font-size: 11px;
-  font-weight: 700;
+  padding: 3px 11px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.01em;
   white-space: nowrap;
 }
 .route-status-badge.sent     { background: rgba(40,180,135,0.16); color: #7EE0BE; border: 1px solid rgba(40,180,135,0.30); }
@@ -315,10 +316,28 @@
 .route-status-badge.project  { background: rgba(200,95,58,0.18);  color: #F5A788; border: 1px solid rgba(200,95,58,0.34); }
 .route-status-badge.attempted{ background: rgba(224,178,79,0.16); color: #FFD08A; border: 1px solid rgba(224,178,79,0.30); }
 
-.route-table tr.row-sent td:first-child,
-.route-table tr.row-repeated td:first-child { box-shadow: inset 3px 0 0 #28B487; }
-.route-table tr.row-project td:first-child  { box-shadow: inset 3px 0 0 #C85F3A; }
-.route-table tr.row-attempted td:first-child{ box-shadow: inset 3px 0 0 #E0B24F; }
+/* Sfondo riga pieno per stato */
+.route-table tr.row-sent td      { background: rgba(40,180,135,0.13); }
+.route-table tr.row-repeated td  { background: rgba(167,139,250,0.13); }
+.route-table tr.row-project td   { background: rgba(200,95,58,0.13); }
+.route-table tr.row-attempted td { background: rgba(224,178,79,0.11); }
+
+/* Barra colorata spessa a sinistra */
+.route-table tr.row-sent td:first-child      { box-shadow: inset 5px 0 0 #28B487; }
+.route-table tr.row-repeated td:first-child  { box-shadow: inset 5px 0 0 #A78BFA; }
+.route-table tr.row-project td:first-child   { box-shadow: inset 5px 0 0 #C85F3A; }
+.route-table tr.row-attempted td:first-child { box-shadow: inset 5px 0 0 #E0B24F; }
+
+/* Hover: tint più intenso, non azzera l'evidenziazione */
+.route-table tr.row-sent:hover td      { background: rgba(40,180,135,0.22); }
+.route-table tr.row-repeated:hover td  { background: rgba(167,139,250,0.22); }
+.route-table tr.row-project:hover td   { background: rgba(200,95,58,0.22); }
+.route-table tr.row-attempted:hover td { background: rgba(224,178,79,0.20); }
+
+/* Nome via scalata: colore accento verde + grassetto pieno */
+.route-table tr.row-sent td strong,
+.route-table tr.row-repeated td strong { color: #7EE0BE; }
+.route-table tr.row-project td strong  { color: #F5A788; }
 
 .route-status-cell { white-space: nowrap; }
 .route-status-date { font-size: 11px; color: var(--text-muted); margin-left: 6px; }

@@ -37,19 +37,19 @@ function RouteStatusBadge({ status }: { status: RouteUserStatus | undefined }) {
   if (!status || status.status === 'not_tried') return <span style={{ color: 'var(--text-muted)' }}>—</span>
   const { status: kind } = status
   if (kind === 'repeated') {
-    return <span className="route-status-badge repeated">Ripetuta ×{status.ascent_count}</span>
+    return <span className="route-status-badge repeated">↻ Ripetuta ×{status.ascent_count}</span>
   }
   if (kind === 'project') {
-    return <span className="route-status-badge project">Progetto</span>
+    return <span className="route-status-badge project">📌 Progetto</span>
   }
   if (kind === 'attempted') {
-    return <span className="route-status-badge attempted">Provata</span>
+    return <span className="route-status-badge attempted">● Provata</span>
   }
   // sent
   const style = status.best_attempt_type ? ATTEMPT_SHORT[status.best_attempt_type] : null
   return (
     <span className="route-status-cell">
-      <span className="route-status-badge sent">Scalata{style ? ` ${style}` : ''}</span>
+      <span className="route-status-badge sent">✓ Scalata{style ? ` ${style}` : ''}</span>
       {status.first_ascent_date && (
         <span className="route-status-date">
           {new Date(status.first_ascent_date).toLocaleDateString('it-IT')}
