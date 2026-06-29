@@ -23,9 +23,9 @@ import '../styles/logbook.css'
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 const ASCENT_MODES = [
-  { value: 'onsight', label: 'On-sight' },
-  { value: 'flash',   label: 'Flash' },
-  { value: 'redpoint', label: 'Redpoint' },
+  { value: 'onsight',  label: 'On-sight',  icon: '👁️' },
+  { value: 'flash',    label: 'Flash',     icon: '⚡' },
+  { value: 'redpoint', label: 'Redpoint',  icon: '🎯' },
 ]
 
 const DIFFICULTY_FEEL_OPTIONS = [
@@ -42,13 +42,18 @@ const STYLE_FEEL_OPTIONS = [
 ]
 
 const STEPS = [
-  { id: 1, label: '1 Via & Salita' },
-  { id: 2, label: '2 Stile & Prese' },
-  { id: 3, label: '3 Movimenti & Beta' },
-  { id: 4, label: '4 Kneepad & Equip.' },
-  { id: 5, label: '5 Sicurezza & Val.' },
-  { id: 6, label: '6 Visibilità' },
+  { id: 1, label: 'Via & Salita' },
+  { id: 2, label: 'Tecnica' },
+  { id: 3, label: 'Beta & Salva' },
 ]
+
+const EMPTY_NOTES: RouteNotesValues = {
+  hold_profile: {}, movement_profile: {}, style_profile: {},
+  crux: '', rests: '', main_beta: '', alternative_beta: '',
+  kneepad_used: false, kneepad_data: {}, equipment_data: {}, safety_notes: '',
+}
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function triesBucket(n: number): AttemptBucket | null {
   if (n <= 10) return String(n) as AttemptBucket
@@ -95,10 +100,9 @@ export default function LogNewPage() {
   const createAscent = useCreateAscent()
   const upsertNotes = useUpsertRouteNotes()
 
-  // ── Pre-load route from URL param ──
   const { data: preRoute, isLoading: preRouteLoading } = useRoute(preRouteId ?? '')
 
-  // ── Route search state ──
+  // ── Route search ──
   const [routeQuery, setRouteQuery] = useState('')
   const [selectedRoute, setSelectedRoute] = useState<RouteSearchResult | null>(null)
   const [showDropdown, setShowDropdown] = useState(false)
@@ -113,6 +117,8 @@ export default function LogNewPage() {
   const [isRepeat, setIsRepeat] = useState(false)
   const [effort, setEffort] = useState<number | ''>('')
   const dateShortcuts = getDateShortcuts()
+
+  // ── Evaluation ──
   const [quality, setQuality] = useState<number | null>(null)
   const [hoverStar, setHoverStar] = useState<number | null>(null)
   const [personalGrade, setPersonalGrade] = useState('')
@@ -121,29 +127,16 @@ export default function LogNewPage() {
   const [styleFeel, setStyleFeel] = useState('')
   const [wantRepeat, setWantRepeat] = useState<boolean | null>(null)
 
-  // ── Notes (route technical data) ──
-  const [notesValues, setNotesValues] = useState<RouteNotesValues>({
-    hold_profile: {},
-    movement_profile: {},
-    style_profile: {},
-    crux: '',
-    rests: '',
-    main_beta: '',
-    alternative_beta: '',
-    kneepad_used: false,
-    kneepad_data: {},
-    equipment_data: {},
-    safety_notes: '',
-  })
+  // ── Technical notes ──
+  const [notesValues, setNotesValues] = useState<RouteNotesValues>(EMPTY_NOTES)
 
-  // ── Form state ──
+  // ── Meta ──
   const [visibility, setVisibility] = useState<'public' | 'private'>('public')
   const [notes, setNotes] = useState('')
   const [step, setStep] = useState(1)
   const [saved, setSaved] = useState(false)
   const [error, setError] = useState('')
 
-  // Pre-select route when loaded from URL param
   useEffect(() => {
     if (preRoute && !selectedRoute) {
       setSelectedRoute({
@@ -165,13 +158,10 @@ export default function LogNewPage() {
     setShowDropdown(false)
   }
 
-  async function saveBase() {
-    if (!user || !selectedRoute) return
-    setError('')
+  function buildValues(): AscentFormValues {
     const mapped = buildMapped(ascentMode, triesCount, isRepeat)
-
-    const values: AscentFormValues = {
-      route_id: selectedRoute.id,
+    return {
+      route_id: selectedRoute!.id,
       session_id: null,
       date,
       attempt_type: null,
@@ -179,8 +169,8 @@ export default function LogNewPage() {
       attempt_count: mapped.attempt_count,
       attempt_bucket: mapped.attempt_bucket,
       is_repeat: isRepeat,
-      grade_at_ascent: selectedRoute.official_grade,
-      grade_numeric_at_ascent: selectedRoute.grade_numeric,
+      grade_at_ascent: selectedRoute!.official_grade,
+      grade_numeric_at_ascent: selectedRoute!.grade_numeric,
       personal_grade: personalGrade || null,
       quality,
       difficulty_feel: difficultyFeel || null,
@@ -192,9 +182,13 @@ export default function LogNewPage() {
       notes: notes || null,
       visibility,
     }
+  }
 
+  async function saveBase() {
+    if (!user || !selectedRoute) return
+    setError('')
     try {
-      await createAscent.mutateAsync({ userId: user.id, values, routeId: selectedRoute.id })
+      await createAscent.mutateAsync({ userId: user.id, values: buildValues(), routeId: selectedRoute.id })
       setSaved(true)
     } catch (e) {
       setError((e as Error).message)
@@ -204,36 +198,10 @@ export default function LogNewPage() {
   async function saveAll() {
     if (!user || !selectedRoute) return
     setError('')
-    const mapped = buildMapped(ascentMode, triesCount, isRepeat)
-
-    const values: AscentFormValues = {
-      route_id: selectedRoute.id,
-      session_id: null,
-      date,
-      attempt_type: null,
-      ascent_style: mapped.ascent_style,
-      attempt_count: mapped.attempt_count,
-      attempt_bucket: mapped.attempt_bucket,
-      is_repeat: isRepeat,
-      grade_at_ascent: selectedRoute.official_grade,
-      grade_numeric_at_ascent: selectedRoute.grade_numeric,
-      personal_grade: personalGrade || null,
-      quality,
-      difficulty_feel: difficultyFeel || null,
-      style_feel: styleFeel || null,
-      proposed_grade: proposedGrade || null,
-      want_repeat: wantRepeat,
-      kneepad_used: notesValues.kneepad_used || null,
-      effort: effort !== '' ? Number(effort) : null,
-      notes: notes || null,
-      visibility,
-    }
-
     try {
-      await createAscent.mutateAsync({ userId: user.id, values, routeId: selectedRoute.id })
+      await createAscent.mutateAsync({ userId: user.id, values: buildValues(), routeId: selectedRoute.id })
       if (hasAnyData(notesValues)) {
-        const payload = toPayload(notesValues, user.id, selectedRoute.id, visibility)
-        await upsertNotes.mutateAsync(payload)
+        await upsertNotes.mutateAsync(toPayload(notesValues, user.id, selectedRoute.id, visibility))
       }
       setSaved(true)
     } catch (e) {
@@ -243,7 +211,7 @@ export default function LogNewPage() {
 
   const isPending = createAscent.isPending || upsertNotes.isPending
 
-  // ── Success screen ────────────────────────────────────────────────────────
+  // ── Success screen ─────────────────────────────────────────────────────────
   if (saved) {
     return (
       <div className="log-new-page">
@@ -264,28 +232,11 @@ export default function LogNewPage() {
                 Il mio profilo
               </Link>
               <button className="btn-secondary" onClick={() => {
-                setSaved(false)
-                setSelectedRoute(null)
-                setRouteQuery('')
-                setStep(1)
-                setNotes('')
-                setQuality(null)
-                setPersonalGrade('')
-                setProposedGrade('')
-                setDifficultyFeel('')
-                setStyleFeel('')
-                setWantRepeat(null)
-                setEffort('')
-                setIsRepeat(false)
-                setAscentMode('onsight')
-                setTriesCount(2)
-                setNotesValues({
-                  hold_profile: {},
-                  movement_profile: {},
-                  style_profile: {},
-                  crux: '', rests: '', main_beta: '', alternative_beta: '',
-                  kneepad_used: false, kneepad_data: {}, equipment_data: {}, safety_notes: '',
-                })
+                setSaved(false); setSelectedRoute(null); setRouteQuery(''); setStep(1)
+                setNotes(''); setQuality(null); setPersonalGrade(''); setProposedGrade('')
+                setDifficultyFeel(''); setStyleFeel(''); setWantRepeat(null); setEffort('')
+                setIsRepeat(false); setAscentMode('onsight'); setTriesCount(2)
+                setNotesValues(EMPTY_NOTES)
               }}>
                 Aggiungi un'altra
               </button>
@@ -315,13 +266,12 @@ export default function LogNewPage() {
         ))}
       </div>
 
-      {/* ── Step card ── */}
       <div className="log-step-card">
 
-        {/* ═══════════ STEP 1 ═══════════ */}
+        {/* ═══════════ STEP 1 — Via & Salita + Valutazione ═══════════ */}
         {step === 1 && (
           <>
-            {/* ── Route search ── */}
+            {/* Route search */}
             {selectedRoute ? (
               <div className="log-route-preview">
                 <div style={{ flex: 1 }}>
@@ -376,7 +326,7 @@ export default function LogNewPage() {
               </div>
             )}
 
-            {/* ── Quando? ── */}
+            {/* Date */}
             <div className="log-q">Quando hai salito?</div>
             <input type="date" value={date} onChange={e => setDate(e.target.value)}
               style={{ width: '100%', marginBottom: 4 }} />
@@ -390,23 +340,31 @@ export default function LogNewPage() {
               ))}
             </div>
 
-            {/* ── Come? ── */}
+            {/* Ascent style circles */}
             <div className="log-q">Come hai salito?</div>
             <div className="log-style-circles">
-              {ASCENT_MODES.map(m => (
-                <button key={m.value} type="button"
-                  className={`log-style-circle${ascentMode === m.value && !isRepeat ? ' active' : ''}`}
-                  style={isRepeat ? { opacity: 0.35, cursor: 'not-allowed' } : {}}
-                  onClick={() => { if (!isRepeat) { setAscentMode(m.value as typeof ascentMode); if (m.value !== 'redpoint') setTriesCount(2) } }}>
-                  <div className="log-style-circle-ring">
-                    <div className="log-style-circle-inner" />
-                  </div>
-                  <span className="log-style-circle-label">{m.label}</span>
-                </button>
-              ))}
+              {ASCENT_MODES.map(m => {
+                const active = ascentMode === m.value && !isRepeat
+                return (
+                  <button key={m.value} type="button"
+                    className={`log-style-circle${active ? ' active' : ''}`}
+                    data-mode={m.value}
+                    style={isRepeat ? { opacity: 0.35, cursor: 'not-allowed' } : {}}
+                    onClick={() => {
+                      if (!isRepeat) {
+                        setAscentMode(m.value as typeof ascentMode)
+                        if (m.value !== 'redpoint') setTriesCount(2)
+                      }
+                    }}>
+                    <div className="log-style-circle-ring">
+                      <span className="log-style-circle-icon">{m.icon}</span>
+                    </div>
+                    <span className="log-style-circle-label">{m.label}</span>
+                  </button>
+                )
+              })}
             </div>
 
-            {/* Tries stepper (solo redpoint) */}
             {ascentMode === 'redpoint' && !isRepeat && (
               <div className="log-tries-row">
                 <button type="button" className="log-tries-btn"
@@ -421,15 +379,14 @@ export default function LogNewPage() {
               </div>
             )}
 
-            {/* Repeat toggle */}
             <div className="log-repeat-row">
               <input type="checkbox" id="repeat-chk" checked={isRepeat}
                 onChange={e => setIsRepeat(e.target.checked)} />
               <label htmlFor="repeat-chk">È una ripetizione</label>
             </div>
 
-            {/* ── Sforzo ── */}
-            <div className="log-q" style={{ marginTop: 24 }}>Sforzo percepito <span style={{ fontWeight: 400, fontSize: 11, color: 'var(--text-muted)', textTransform: 'none', letterSpacing: 0 }}>(opzionale)</span></div>
+            {/* Sforzo */}
+            <div className="log-q">Sforzo percepito <span style={{ fontWeight: 400, fontSize: 11, color: 'var(--text-muted)', textTransform: 'none', letterSpacing: 0 }}>(opzionale)</span></div>
             <div className="log-pill-group" style={{ justifyContent: 'center' }}>
               {[1,2,3,4,5,6,7,8,9,10].map(n => (
                 <button key={n} type="button"
@@ -441,116 +398,31 @@ export default function LogNewPage() {
               ))}
             </div>
 
-            {/* ── Nav buttons ── */}
-            {preRouteId && preRouteLoading && !selectedRoute && (
-              <div style={{ fontSize: 12, color: 'var(--text-muted)', textAlign: 'center', marginBottom: 8 }}>
-                Caricamento via…
-              </div>
-            )}
-            {!selectedRoute && !preRouteLoading && (
-              <div style={{ fontSize: 12, color: 'var(--text-muted)', textAlign: 'center', marginBottom: 8 }}>
-                Cerca e seleziona una via per continuare
-              </div>
-            )}
-            <div className="log-nav-btns">
-              <button type="button" className="btn-secondary"
-                disabled={isPending || !selectedRoute || !date}
-                onClick={saveBase}
-                title="Salva solo i dati base senza informazioni tecniche">
-                {isPending ? 'Salvataggio…' : 'Salva base'}
-              </button>
-              <div className="log-nav-btns-right">
-                <button type="button" className="btn-primary"
-                  disabled={!selectedRoute || (!!preRouteId && preRouteLoading)}
-                  onClick={() => setStep(2)}>
-                  {preRouteId && preRouteLoading && !selectedRoute ? 'Caricamento…' : 'Continua →'}
-                </button>
-              </div>
-            </div>
-          </>
-        )}
+            {/* Valutazione */}
+            <div className="log-q">Valutazione</div>
 
-        {/* ═══════════ STEP 2 ═══════════ */}
-        {step === 2 && (
-          <>
-            <h2>Stile & Prese</h2>
-            <RouteNotesForm
-              sections={['stile', 'prese']}
-              onChange={setNotesValues}
-            />
-            <div className="log-nav-btns">
-              <button type="button" className="btn-secondary" onClick={() => setStep(1)}>← Indietro</button>
-              <button type="button" className="btn-primary" onClick={() => setStep(3)}>Avanti →</button>
-            </div>
-          </>
-        )}
-
-        {/* ═══════════ STEP 3 ═══════════ */}
-        {step === 3 && (
-          <>
-            <h2>Movimenti & Beta</h2>
-            <RouteNotesForm
-              sections={['movimenti', 'beta']}
-              onChange={setNotesValues}
-            />
-            <div className="log-nav-btns">
-              <button type="button" className="btn-secondary" onClick={() => setStep(2)}>← Indietro</button>
-              <button type="button" className="btn-primary" onClick={() => setStep(4)}>Avanti →</button>
-            </div>
-          </>
-        )}
-
-        {/* ═══════════ STEP 4 ═══════════ */}
-        {step === 4 && (
-          <>
-            <h2>Kneepad & Attrezzatura</h2>
-            <RouteNotesForm
-              sections={['kneepad', 'equipment']}
-              onChange={setNotesValues}
-            />
-            <div className="log-nav-btns">
-              <button type="button" className="btn-secondary" onClick={() => setStep(3)}>← Indietro</button>
-              <button type="button" className="btn-primary" onClick={() => setStep(5)}>Avanti →</button>
-            </div>
-          </>
-        )}
-
-        {/* ═══════════ STEP 5 ═══════════ */}
-        {step === 5 && (
-          <>
-            <h2>Sicurezza & Valutazione</h2>
-
-            <RouteNotesForm
-              sections={['safety']}
-              onChange={setNotesValues}
-            />
-
-            <div className="log-section-title" style={{ marginTop: 20 }}>Valutazione personale</div>
-
-            {/* Bellezza stelle */}
-            <div className="form-group" style={{ marginBottom: 16 }}>
-              <label>Bellezza</label>
-              <div style={{ display: 'flex', gap: 4, paddingTop: 4 }}>
-                {[1, 2, 3, 4, 5].map(n => (
+            <div className="log-eval-row">
+              <span className="log-eval-label">Bellezza</span>
+              <div style={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+                {[1,2,3,4,5].map(n => (
                   <button key={n} type="button"
                     onClick={() => setQuality(quality === n ? null : n)}
                     onMouseEnter={() => setHoverStar(n)}
                     onMouseLeave={() => setHoverStar(null)}
                     style={{
                       background: 'none', border: 'none', cursor: 'pointer', padding: 0,
-                      fontSize: 28, lineHeight: 1,
+                      fontSize: 26, lineHeight: 1,
                       color: n <= (hoverStar ?? quality ?? 0) ? '#f5a623' : 'rgba(247,243,234,0.18)',
                       transition: 'color 0.1s',
                     }}>★</button>
                 ))}
-                {quality && <span style={{ fontSize: 11, color: 'var(--text-muted)', alignSelf: 'center', marginLeft: 6 }}>{quality}/5</span>}
+                {quality && <span style={{ fontSize: 11, color: 'var(--text-muted)', marginLeft: 4 }}>{quality}/5</span>}
               </div>
             </div>
 
-            {/* Difficoltà percepita */}
-            <div className="form-group" style={{ marginBottom: 16 }}>
-              <label>Difficoltà percepita</label>
-              <div className="log-pill-group" style={{ marginTop: 8 }}>
+            <div className="log-eval-row">
+              <span className="log-eval-label">Difficoltà</span>
+              <div className="log-pill-group" style={{ margin: 0 }}>
                 {DIFFICULTY_FEEL_OPTIONS.map(o => (
                   <button key={o.value} type="button"
                     className={`log-pill${difficultyFeel === o.value ? ' active' : ''}`}
@@ -561,10 +433,9 @@ export default function LogNewPage() {
               </div>
             </div>
 
-            {/* Stile feel */}
-            <div className="form-group" style={{ marginBottom: 16 }}>
-              <label>Stile</label>
-              <div className="log-pill-group" style={{ marginTop: 8 }}>
+            <div className="log-eval-row">
+              <span className="log-eval-label">Stile</span>
+              <div className="log-pill-group" style={{ margin: 0 }}>
                 {STYLE_FEEL_OPTIONS.map(o => (
                   <button key={o.value} type="button"
                     className={`log-pill${styleFeel === o.value ? ' active' : ''}`}
@@ -575,8 +446,7 @@ export default function LogNewPage() {
               </div>
             </div>
 
-            {/* Gradi */}
-            <div className="form-grid">
+            <div className="form-grid" style={{ marginTop: 14, marginBottom: 14 }}>
               <div className="form-group">
                 <label>Grado percepito</label>
                 <select className="logbook-select" value={personalGrade} onChange={e => setPersonalGrade(e.target.value)}>
@@ -593,50 +463,83 @@ export default function LogNewPage() {
               </div>
             </div>
 
-            {/* Voglio ripeterla */}
-            <div className="log-repeat-row" style={{ justifyContent: 'flex-start', marginTop: 8 }}>
+            <div className="log-repeat-row" style={{ justifyContent: 'flex-start', marginBottom: 20 }}>
               <input type="checkbox" id="want-repeat" checked={wantRepeat === true}
                 onChange={e => setWantRepeat(e.target.checked ? true : null)} />
               <label htmlFor="want-repeat">Voglio ripeterla</label>
             </div>
 
+            {preRouteId && preRouteLoading && !selectedRoute && (
+              <div style={{ fontSize: 12, color: 'var(--text-muted)', textAlign: 'center', marginBottom: 8 }}>
+                Caricamento via…
+              </div>
+            )}
+            {!selectedRoute && !preRouteLoading && (
+              <div style={{ fontSize: 12, color: 'var(--text-muted)', textAlign: 'center', marginBottom: 8 }}>
+                Cerca e seleziona una via per continuare
+              </div>
+            )}
+            {error && <div className="admin-error" style={{ marginBottom: 12 }}>{error}</div>}
             <div className="log-nav-btns">
-              <button type="button" className="btn-secondary" onClick={() => setStep(4)}>← Indietro</button>
-              <button type="button" className="btn-primary" onClick={() => setStep(6)}>Avanti →</button>
+              <button type="button" className="btn-secondary"
+                disabled={isPending || !selectedRoute || !date}
+                onClick={saveBase}
+                title="Salva solo i dati base senza informazioni tecniche">
+                {isPending ? 'Salvataggio…' : 'Salva base'}
+              </button>
+              <div className="log-nav-btns-right">
+                <button type="button" className="btn-primary"
+                  disabled={!selectedRoute || (!!preRouteId && preRouteLoading)}
+                  onClick={() => setStep(2)}>
+                  {preRouteId && preRouteLoading && !selectedRoute ? 'Caricamento…' : 'Avanti →'}
+                </button>
+              </div>
             </div>
           </>
         )}
 
-        {/* ═══════════ STEP 6 ═══════════ */}
-        {step === 6 && (
+        {/* ═══════════ STEP 2 — Tecnica (icon cards) ═══════════ */}
+        {step === 2 && (
           <>
-            <h2>Visibilità & Salvataggio</h2>
+            <RouteNotesForm
+              sections={['stile', 'prese', 'movimenti']}
+              iconMode
+              initialValues={notesValues}
+              onChange={setNotesValues}
+            />
+            <div className="log-nav-btns">
+              <button type="button" className="btn-secondary" onClick={() => setStep(1)}>← Indietro</button>
+              <button type="button" className="btn-primary" onClick={() => setStep(3)}>Avanti →</button>
+            </div>
+          </>
+        )}
 
+        {/* ═══════════ STEP 3 — Beta, Sicurezza & Salva ═══════════ */}
+        {step === 3 && (
+          <>
+            <RouteNotesForm
+              sections={['beta', 'kneepad', 'equipment', 'safety']}
+              initialValues={notesValues}
+              onChange={setNotesValues}
+            />
+
+            <div className="log-section-title" style={{ marginTop: 20 }}>Visibilità & Note</div>
             <div className="form-grid">
               <div className="form-group">
                 <label>Visibilità</label>
-                <select
-                  className="logbook-select"
-                  value={visibility}
-                  onChange={e => setVisibility(e.target.value as 'public' | 'private')}
-                >
+                <select className="logbook-select" value={visibility}
+                  onChange={e => setVisibility(e.target.value as 'public' | 'private')}>
                   <option value="public">Pubblica</option>
                   <option value="private">Privata</option>
                 </select>
               </div>
-
               <div className="form-group form-full">
                 <label>Note</label>
-                <textarea
-                  value={notes}
-                  onChange={e => setNotes(e.target.value)}
-                  placeholder="Note sulla salita, condizioni, sensazioni…"
-                  rows={3}
-                />
+                <textarea value={notes} onChange={e => setNotes(e.target.value)}
+                  placeholder="Note sulla salita, condizioni, sensazioni…" rows={3} />
               </div>
             </div>
 
-            {/* Summary */}
             {selectedRoute && (
               <div className="log-route-preview" style={{ marginBottom: 16 }}>
                 <div>
@@ -656,14 +559,11 @@ export default function LogNewPage() {
             {error && <div className="admin-error" style={{ marginBottom: 16 }}>{error}</div>}
 
             <div className="log-nav-btns">
-              <button type="button" className="btn-secondary" onClick={() => setStep(5)}>← Indietro</button>
+              <button type="button" className="btn-secondary" onClick={() => setStep(2)}>← Indietro</button>
               <div className="log-nav-btns-right">
-                <button
-                  type="button"
-                  className="btn-primary"
+                <button type="button" className="btn-primary"
                   disabled={isPending || !selectedRoute || !date}
-                  onClick={saveAll}
-                >
+                  onClick={saveAll}>
                   {isPending ? 'Salvataggio…' : '✓ Salva salita'}
                 </button>
               </div>
