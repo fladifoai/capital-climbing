@@ -27,6 +27,7 @@ import AdminRequestsPage from '../routes/AdminRequestsPage'
 import LandingPage from '../routes/LandingPage'
 import LogNewPage from '../routes/LogNewPage'
 import LogbookImportPage from '../routes/LogbookImportPage'
+import LogbookReviewPage from '../routes/LogbookReviewPage'
 
 const queryClient = new QueryClient()
 
@@ -67,6 +68,7 @@ export default function App() {
                 <Route path="/settings" element={<SettingsPage />} />
                 <Route path="/log/new" element={<LogNewPage />} />
                 <Route path="/logbook/import" element={<LogbookImportPage />} />
+                <Route path="/logbook/review" element={<LogbookReviewPage />} />
               </Route>
 
               {/* Admin — richiedono ruolo admin */}

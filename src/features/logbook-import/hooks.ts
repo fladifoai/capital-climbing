@@ -32,7 +32,7 @@ export function useResolveLogbook(userId: string) {
     mutationFn: async (rows: ParsedLogbookRow[]): Promise<ResolvedLogbookRow[]> => {
       const valid = rows.filter(r => r.isValid)
       if (valid.length === 0) {
-        return rows.map(r => ({ ...r, matchStatus: 'unmatched' as const, routeId: null, action: 'skip' as const }))
+        return rows.map(r => ({ ...r, matchStatus: 'unmatched' as const, routeId: null, action: 'skip' as const, is_repeat: false }))
       }
 
       // 1. falesie: scarichiamo tutte e rinormalizziamo il NOME lato client.
@@ -90,30 +90,48 @@ export function useResolveLogbook(userId: string) {
           .filter(Boolean) as string[]
       )]
       const dupSet = new Set<string>()
+      const existingRouteIds = new Set<string>()   // vie già salite in passato (qualsiasi data)
       if (matchedRouteIds.length > 0) {
         const { data: existing } = await supabase
           .from('ascents')
           .select('route_id, date')
           .eq('user_id', userId)
           .in('route_id', matchedRouteIds)
-        ;(existing ?? []).forEach(a => dupSet.add(`${a.route_id}|${a.date}`))
+        ;(existing ?? []).forEach(a => {
+          dupSet.add(`${a.route_id}|${a.date}`)
+          existingRouteIds.add(a.route_id as string)
+        })
+      }
+
+      // data più vecchia per via dentro il file: la prima salita non è ripetizione
+      const batchMinDate = new Map<string, string>()
+      for (const r of valid) {
+        const cid = cragMap.get(r.normalized_crag)
+        const rid = cid ? routeMap.get(`${cid}:${r.normalized_route}`) : undefined
+        if (rid && r.date) {
+          const cur = batchMinDate.get(rid)
+          if (!cur || r.date < cur) batchMinDate.set(rid, r.date)
+        }
       }
 
       return rows.map(row => {
         if (!row.isValid) {
-          return { ...row, matchStatus: 'unmatched' as const, routeId: null, action: 'skip' as const }
+          return { ...row, matchStatus: 'unmatched' as const, routeId: null, is_repeat: false, action: 'skip' as const }
         }
         const cragId = cragMap.get(row.normalized_crag)
         const routeId = cragId ? routeMap.get(`${cragId}:${row.normalized_route}`) : undefined
 
         if (!routeId) {
-          return { ...row, matchStatus: 'unmatched' as const, routeId: null, action: 'import' as const }
+          return { ...row, matchStatus: 'unmatched' as const, routeId: null, is_repeat: false, action: 'import' as const }
         }
         const isDup = dupSet.has(`${routeId}|${row.date}`)
+        // ripetizione se la via era già salita prima, o c'è una salita più vecchia nel file
+        const isRepeat = existingRouteIds.has(routeId) || (batchMinDate.get(routeId) !== row.date)
         return {
           ...row,
           matchStatus: isDup ? ('duplicate' as const) : ('matched' as const),
           routeId,
+          is_repeat: isRepeat,
           action: isDup ? ('skip' as const) : ('import' as const),
         }
       })
@@ -144,6 +162,7 @@ export function useExecuteLogbookImport(userId: string) {
           attempt_count: r.attempt_count,
           attempt_bucket: r.attempt_bucket,
           needs_review: r.needsReview,
+          is_repeat: r.is_repeat,
           grade_at_ascent: r.grade,
           grade_numeric_at_ascent: r.grade_numeric,
           grade_snapshot: r.grade,

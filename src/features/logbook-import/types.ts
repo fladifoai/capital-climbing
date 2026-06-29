@@ -55,6 +55,7 @@ export type MatchStatus = 'matched' | 'duplicate' | 'unmatched'
 export interface ResolvedLogbookRow extends ParsedLogbookRow {
   matchStatus: MatchStatus
   routeId: string | null
+  is_repeat: boolean          // ripetizione: via già salita prima (in DB o nel file)
   action: 'import' | 'skip'   // import: salva (ascensione o coda); skip: ignora
 }
 

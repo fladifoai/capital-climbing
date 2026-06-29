@@ -10,7 +10,10 @@ export async function parsePdf(file: File): Promise<ParseResult> {
   pdfjs.GlobalWorkerOptions.workerSrc = workerUrl
 
   const buf = await file.arrayBuffer()
-  const doc = await pdfjs.getDocument({ data: buf }).promise
+  // isEvalSupported:false → evita eval() (bloccato dalla CSP del sito)
+  // (opzione valida a runtime ma rimossa dai tipi pdfjs recenti → cast)
+  const params = { data: buf, isEvalSupported: false } as Parameters<typeof pdfjs.getDocument>[0]
+  const doc = await pdfjs.getDocument(params).promise
 
   const lines: string[] = []
   for (let p = 1; p <= doc.numPages; p++) {

@@ -1,4 +1,5 @@
 import { Fragment, useRef, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { useAuth } from '../features/auth/AuthContext'
 import {
   LOGBOOK_ALL_FIELDS, LOGBOOK_REQUIRED_FIELDS,
@@ -215,7 +216,7 @@ function StepPreview({
       </table>
 
       <div className="import-actions">
-        <button className="btn-secondary" onClick={onBack}>← Indietro</button>
+        <button className="btn-secondary" onClick={onBack}>← Modifica colonne</button>
         <button className="btn-primary" onClick={onNext} disabled={valid === 0 || isLoading}>
           {isLoading ? 'Abbinamento…' : `Abbina al catalogo (${valid}) →`}
         </button>
@@ -334,7 +335,15 @@ function StepDone({ report, onReset }: { report: LogbookImportReport; onReset: (
         </table>
       )}
 
-      <button className="btn-primary" onClick={onReset}>Nuovo import</button>
+      <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', justifyContent: 'center' }}>
+        <button className="btn-primary" onClick={onReset}>Nuovo import</button>
+        <Link to="/logbook/review" className="btn-secondary" style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center' }}>
+          Rivedi ascensioni incomplete →
+        </Link>
+        <Link to="/profile" className="btn-secondary" style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center' }}>
+          Vai al profilo
+        </Link>
+      </div>
     </div>
   )
 }
@@ -355,10 +364,17 @@ export default function LogbookImportPage() {
   const executeImport = useExecuteLogbookImport(userId)
 
   function handleParsed(h: string[], data: RawLogbookRow[]) {
+    const m = autoDetectLogbookColumns(h)
     setHeaders(h)
     setRawRows(data)
-    setMap(autoDetectLogbookColumns(h))
-    setStep('mapping')
+    setMap(m)
+    // se tutte le colonne obbligatorie sono già auto-rilevate, salta lo step Colonne
+    if (LOGBOOK_REQUIRED_FIELDS.every(f => !!m[f])) {
+      setRows(data.map((row, i) => parseLogbookRow(i + 2, row, m)))
+      setStep('preview')
+    } else {
+      setStep('mapping')
+    }
   }
 
   function handleMapping() {

@@ -419,8 +419,8 @@ export default function DashboardPage() {
                 </p>
               )}
             </div>
-            <Link to="/analytics" style={{ fontSize: 13, color: '#FFB0A5', fontWeight: 600, textDecoration: 'none', whiteSpace: 'nowrap' }}>
-              Vai a Qualità dati →
+            <Link to="/logbook/review" style={{ fontSize: 13, color: '#FFB0A5', fontWeight: 600, textDecoration: 'none', whiteSpace: 'nowrap' }}>
+              Rivedi ascensioni →
             </Link>
           </div>
         </div>
