@@ -5,6 +5,7 @@ import {
   type LogbookColumnMap, type LogbookField, type ParsedLogbookRow, type RawLogbookRow,
 } from './types'
 import { cleanCragName, normalizeAttempt, normalizeDate, normalizeGrade, normalizeKey } from './normalize'
+import { gradeToNum } from '../../analytics/normalizers/grades'
 
 export interface ParseResult {
   headers: string[]
@@ -119,7 +120,9 @@ export function parseLogbookRow(
     raw_date, raw_grade, raw_attempt,
     date,
     crag_name, sector_name, route_name,
-    grade, proposed_grade,
+    grade,
+    grade_numeric: grade ? gradeToNum(grade) : null,
+    proposed_grade,
     ascent_style: attempt.ascent_style,
     attempt_count: attempt.attempt_count,
     attempt_bucket: attempt.attempt_bucket,

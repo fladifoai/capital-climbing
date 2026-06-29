@@ -31,6 +31,7 @@ export interface ParsedLogbookRow {
   sector_name: string
   route_name: string
   grade: string | null             // grado ufficiale normalizzato (es. 7a+)
+  grade_numeric: number | null     // grado convertito a numero per analisi
   proposed_grade: string | null    // grado proposto/personale
   ascent_style: string | null      // onsight | flash | redpoint | null
   attempt_count: number | null     // numero giri se noto (es. 7° giro → 7)

@@ -145,6 +145,7 @@ export function useExecuteLogbookImport(userId: string) {
           attempt_bucket: r.attempt_bucket,
           needs_review: r.needsReview,
           grade_at_ascent: r.grade,
+          grade_numeric_at_ascent: r.grade_numeric,
           grade_snapshot: r.grade,
           proposed_grade: r.proposed_grade,
           quality: r.quality,
