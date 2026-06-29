@@ -3,6 +3,12 @@ import { normalizeKey } from '../import/utils'
 
 export { normalizeKey }
 
+// Pulisce il nome falesia: toglie i settori tra parentesi e spazi extra.
+// Es. "Collepardo (Cueva, Cuevita)" → "Collepardo".
+export function cleanCragName(raw: string): string {
+  return (raw ?? '').replace(/\([^)]*\)/g, '').replace(/\s+/g, ' ').trim()
+}
+
 // ── Date ────────────────────────────────────────────────────────────────────
 // Accetta: DD-MM-YYYY, DD/MM/YYYY, YYYY-MM-DD, DD.MM.YYYY. Ritorna ISO o null.
 export function normalizeDate(raw: string): string | null {

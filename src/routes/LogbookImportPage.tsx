@@ -199,7 +199,7 @@ function StepPreview({
         <tbody>
           {rows.map(row => (
             <tr key={row.rowNum} className={!row.isValid ? 'row-error' : row.needsReview ? 'row-dup' : ''}>
-              <td style={{ color: '#8a9a87' }}>{row.rowNum}</td>
+              <td style={{ color: 'var(--text-muted)' }}>{row.rowNum}</td>
               <td>{row.date ?? <span style={{ color: '#FFB0A5' }}>{row.raw_date || '—'}</span>}</td>
               <td>{row.crag_name || '—'}</td>
               <td>{row.sector_name || '—'}</td>
@@ -249,7 +249,7 @@ function StepConfirm({
           <div className="validation-stat-label">Via mancante → coda</div>
         </div>
         <div className="validation-stat">
-          <div className="validation-stat-num" style={{ color: '#8a9a87' }}>{dups}</div>
+          <div className="validation-stat-num" style={{ color: 'var(--text-muted)' }}>{dups}</div>
           <div className="validation-stat-label">Duplicati (saltati)</div>
         </div>
       </div>
@@ -268,7 +268,7 @@ function StepConfirm({
         <tbody>
           {rows.filter(r => r.isValid).map(row => (
             <tr key={row.rowNum} className={row.matchStatus === 'duplicate' ? 'row-dup' : ''}>
-              <td style={{ color: '#8a9a87' }}>{row.rowNum}</td>
+              <td style={{ color: 'var(--text-muted)' }}>{row.rowNum}</td>
               <td>{row.date}</td>
               <td>{row.crag_name}</td>
               <td>{row.route_name}</td>

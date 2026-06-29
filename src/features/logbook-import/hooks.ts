@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '../../lib/supabase'
-import { slugFromNorm } from '../import/utils'
+import { normalizeKey } from './normalize'
 import type {
   LogbookImportReport, ParsedLogbookRow, ResolvedLogbookRow,
 } from './types'
@@ -14,23 +14,21 @@ export function useResolveLogbook(userId: string) {
         return rows.map(r => ({ ...r, matchStatus: 'unmatched' as const, routeId: null, action: 'skip' as const }))
       }
 
-      // 1. falesie esistenti per normalized_name (slug)
-      const cragSlugs = [...new Set(valid.map(r => slugFromNorm(r.normalized_crag)))]
-      const { data: crags } = await supabase
-        .from('crags')
-        .select('id, normalized_name')
-        .in('normalized_name', cragSlugs)
-      const cragMap = new Map((crags ?? []).map(c => [c.normalized_name, c.id as string]))
+      // 1. falesie: scarichiamo tutte e rinormalizziamo il NOME lato client.
+      //    Il campo normalized_name salvato è incoerente (trattini/spazi/apostrofi
+      //    misti), quindi non ci si può fidare: confrontiamo su normalizeKey(name).
+      const { data: crags } = await supabase.from('crags').select('id, name')
+      const cragMap = new Map<string, string>() // normalizeKey(name) → cragId
+      for (const c of crags ?? []) {
+        const k = normalizeKey(c.name as string)
+        if (!cragMap.has(k)) cragMap.set(k, c.id as string)
+      }
 
-      // 2. vie esistenti dentro quelle falesie, per normalized_name.
-      //    Le vie possono collegarsi alla falesia via crag_id diretto OPPURE
-      //    solo via sector_id (l'import catalogo usa sector_id), quindi cerchiamo
-      //    per entrambi i percorsi e mappiamo tutto su cragId.
-      const cragIds = [...cragMap.values()]
-      const routeMap = new Map<string, string>() // `${cragId}:${routeSlug}` → routeId
+      // 2. vie dentro le falesie abbinate. Collegamento via crag_id diretto
+      //    OPPURE solo via sector_id. Rinormalizziamo anche qui il nome.
+      const cragIds = [...new Set(valid.map(r => cragMap.get(r.normalized_crag)).filter(Boolean) as string[])]
+      const routeMap = new Map<string, string>() // `${cragId}:${normalizeKey(name)}` → routeId
       if (cragIds.length > 0) {
-        const routeSlugs = [...new Set(valid.map(r => slugFromNorm(r.normalized_route)))]
-
         // settori delle falesie → mappa sectorId → cragId
         const { data: sectors } = await supabase
           .from('sectors')
@@ -39,24 +37,22 @@ export function useResolveLogbook(userId: string) {
         const sectorToCrag = new Map((sectors ?? []).map(s => [s.id as string, s.crag_id as string]))
         const sectorIds = [...sectorToCrag.keys()]
 
-        // vie con crag_id diretto
         const { data: byCrag } = await supabase
           .from('routes')
-          .select('id, crag_id, sector_id, normalized_name')
+          .select('id, name, crag_id, sector_id')
           .in('crag_id', cragIds)
-          .in('normalized_name', routeSlugs)
-        // vie collegate solo tramite settore
         const bySector = sectorIds.length > 0
           ? (await supabase
               .from('routes')
-              .select('id, crag_id, sector_id, normalized_name')
-              .in('sector_id', sectorIds)
-              .in('normalized_name', routeSlugs)).data ?? []
+              .select('id, name, crag_id, sector_id')
+              .in('sector_id', sectorIds)).data ?? []
           : []
 
         for (const r of [...(byCrag ?? []), ...bySector]) {
           const cragId = (r.crag_id as string | null) ?? (r.sector_id ? sectorToCrag.get(r.sector_id as string) : undefined)
-          if (cragId) routeMap.set(`${cragId}:${r.normalized_name}`, r.id as string)
+          if (!cragId) continue
+          const key = `${cragId}:${normalizeKey(r.name as string)}`
+          if (!routeMap.has(key)) routeMap.set(key, r.id as string)
         }
       }
 
@@ -76,8 +72,8 @@ export function useResolveLogbook(userId: string) {
         if (!row.isValid) {
           return { ...row, matchStatus: 'unmatched' as const, routeId: null, action: 'skip' as const }
         }
-        const cragId = cragMap.get(slugFromNorm(row.normalized_crag))
-        const routeId = cragId ? routeMap.get(`${cragId}:${slugFromNorm(row.normalized_route)}`) : undefined
+        const cragId = cragMap.get(row.normalized_crag)
+        const routeId = cragId ? routeMap.get(`${cragId}:${row.normalized_route}`) : undefined
 
         if (!routeId) {
           return { ...row, matchStatus: 'unmatched' as const, routeId: null, action: 'import' as const }

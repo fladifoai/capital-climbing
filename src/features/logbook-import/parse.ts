@@ -4,7 +4,7 @@ import {
   LOGBOOK_ALL_FIELDS, LOGBOOK_REQUIRED_FIELDS,
   type LogbookColumnMap, type LogbookField, type ParsedLogbookRow, type RawLogbookRow,
 } from './types'
-import { normalizeAttempt, normalizeDate, normalizeGrade, normalizeKey } from './normalize'
+import { cleanCragName, normalizeAttempt, normalizeDate, normalizeGrade, normalizeKey } from './normalize'
 
 export interface ParseResult {
   headers: string[]
@@ -90,7 +90,7 @@ export function parseLogbookRow(
   const raw_attempt = get('attempt_type')
 
   const date = normalizeDate(raw_date)
-  const crag_name = get('crag')
+  const crag_name = cleanCragName(get('crag'))
   const sector_name = get('sector')
   const route_name = get('route')
   const grade = normalizeGrade(raw_grade)
