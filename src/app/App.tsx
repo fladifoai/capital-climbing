@@ -15,7 +15,7 @@ import RouteDetailPage from '../routes/RouteDetailPage'
 import UsersPage from '../routes/UsersPage'
 import UserProfilePage from '../routes/UserProfilePage'
 import DashboardPage from '../routes/DashboardPage'
-import MyRoutesPage from '../routes/MyRoutesPage'
+import ProfilePage from '../routes/ProfilePage'
 import SessionsPage from '../routes/SessionsPage'
 import ProjectsPage from '../routes/ProjectsPage'
 import AnalyticsPage from '../routes/AnalyticsPage'
@@ -56,7 +56,8 @@ export default function App() {
               {/* Private — richiedono login */}
               <Route element={<AuthGuard />}>
                 <Route path="/dashboard" element={<DashboardPage />} />
-                <Route path="/my-routes" element={<MyRoutesPage />} />
+                <Route path="/profile" element={<ProfilePage />} />
+                <Route path="/my-routes" element={<Navigate to="/profile" replace />} />
                 <Route path="/sessions" element={<SessionsPage />} />
                 <Route path="/projects" element={<ProjectsPage />} />
                 <Route path="/analytics" element={<AnalyticsPage />} />

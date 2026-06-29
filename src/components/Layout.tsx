@@ -12,9 +12,9 @@ const privateNavItems = [
   { to: '/explore', label: 'Esplora' },
   { to: '/sessions', label: 'Sessioni' },
   { to: '/projects', label: 'Progetti' },
-  { to: '/my-routes', label: 'Le mie vie' },
-  { to: '/settings', label: 'Il mio profilo' },
+  { to: '/profile', label: 'Il mio profilo' },
   { to: '/analytics', label: 'Analisi' },
+  { to: '/settings', label: 'Impostazioni' },
 ]
 
 const adminNavItems = [

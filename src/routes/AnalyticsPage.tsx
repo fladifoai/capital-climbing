@@ -298,7 +298,6 @@ export default function AnalyticsPage() {
         <KpiCard value={kpis.bestFlashLabel} label="Max Flash" />
         <KpiCard value={kpis.bestRedpointLabel} label="Max Redpoint" />
         <KpiCard value={kpis.avgGradeLabel} label="Grado medio" />
-        <KpiCard value={kpis.medianGradeLabel} label="Grado mediano" />
         <KpiCard value={`${kpis.osPct}%`} label="On-sight" />
         <KpiCard value={`${kpis.flashPct}%`} label="Flash" />
         <KpiCard value={`${kpis.rpPct}%`} label="Redpoint" />
