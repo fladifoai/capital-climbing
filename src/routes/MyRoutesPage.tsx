@@ -251,14 +251,15 @@ export default function MyRoutesPage() {
       </div>
 
       {adding && (
-        <AscentForm
-          onSubmit={handleCreate}
-          onCancel={() => { setAdding(false); setActionError('') }}
-          isLoading={createAscent.isPending}
-        />
+        <>
+          {actionError && <div className="admin-error" style={{ marginBottom: 12 }}>{actionError}</div>}
+          <AscentForm
+            onSubmit={handleCreate}
+            onCancel={() => { setAdding(false); setActionError('') }}
+            isLoading={createAscent.isPending}
+          />
+        </>
       )}
-
-      {actionError && <div className="admin-error">{actionError}</div>}
 
       {/* Filter bar */}
       <div className="logbook-filters">

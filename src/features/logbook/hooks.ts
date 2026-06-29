@@ -70,7 +70,10 @@ export function useCreateAscent() {
         })
         .select()
         .single()
-      if (error) throw error
+      if (error) {
+        console.error('[useCreateAscent] Supabase error:', error)
+        throw new Error(error.message + (error.details ? ` — ${error.details}` : '') + (error.hint ? ` (${error.hint})` : ''))
+      }
       return data
     },
     onSuccess: (_, { userId }) => {
