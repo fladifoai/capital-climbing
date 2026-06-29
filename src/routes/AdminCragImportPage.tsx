@@ -8,7 +8,7 @@ import {
   CRAG_FIELD_LABELS, autoDetectCragColumns, parseCragFile, parseCragRow,
 } from '../features/crag-import/parse'
 import { useExecuteCragImport, useRegions, useResolveCragImport } from '../features/crag-import/hooks'
-import { geocodeCrag } from '../features/crag-import/geocode'
+import { geocodeCragCandidates, type GeoCandidate } from '../features/crag-import/geocode'
 import { normalizeKey } from '../features/logbook-import/normalize'
 import '../styles/admin.css'
 import '../styles/import.css'
@@ -45,22 +45,27 @@ function CragRow({
   onChange: (g: CragGroup) => void
 }) {
   const [geoLoading, setGeoLoading] = useState(false)
+  const [candidates, setCandidates] = useState<GeoCandidate[] | null>(null)
   const regionByNorm = new Map(regions.map(r => [normalizeKey(r.name), r.id]))
+
+  function applyCandidate(c: GeoCandidate) {
+    const rid = c.region ? regionByNorm.get(normalizeKey(c.region)) ?? null : group.region_id
+    onChange({
+      ...group,
+      region: c.region ?? group.region,
+      region_id: rid,
+      province: c.province ?? group.province,
+      municipality: c.municipality ?? group.municipality,
+      geoSource: 'auto',
+    })
+  }
 
   async function autoGeo() {
     setGeoLoading(true)
-    const res = await geocodeCrag(group.crag_name)
+    const list = await geocodeCragCandidates(group.crag_name)
     setGeoLoading(false)
-    if (!res) return
-    const rid = res.region ? regionByNorm.get(normalizeKey(res.region)) ?? null : group.region_id
-    onChange({
-      ...group,
-      region: res.region ?? group.region,
-      region_id: rid,
-      province: res.province ?? group.province,
-      municipality: res.municipality ?? group.municipality,
-      geoSource: 'auto',
-    })
+    setCandidates(list)
+    if (list.length === 1) applyCandidate(list[0])
   }
 
   const needsRegion = !group.existingCragId && !group.region_id
@@ -96,6 +101,19 @@ function CragRow({
         <button className="btn-secondary" style={{ padding: '5px 10px', fontSize: 12 }} onClick={autoGeo} disabled={geoLoading}>
           {geoLoading ? '…' : '🔍 Auto'}
         </button>
+        {candidates && candidates.length > 1 && (
+          <select
+            className="mapping-select" style={{ minWidth: 160, marginTop: 6, display: 'block' }}
+            defaultValue=""
+            onChange={e => { const c = candidates[Number(e.target.value)]; if (c) applyCandidate(c) }}
+          >
+            <option value="">— scegli risultato ({candidates.length}) —</option>
+            {candidates.map((c, i) => <option key={i} value={i}>{c.label}</option>)}
+          </select>
+        )}
+        {candidates && candidates.length === 0 && (
+          <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4 }}>Nessun risultato, scegli a mano</div>
+        )}
       </td>
     </tr>
   )
