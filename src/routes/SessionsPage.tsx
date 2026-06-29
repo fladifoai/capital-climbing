@@ -26,15 +26,19 @@ const STYLE_COLORS: Record<string, string> = {
   repeat: '#A78BFA',
 }
 
-const optStr = z
-  .union([z.string(), z.null(), z.undefined()])
-  .transform((v): string | null => (v == null || v === '' ? null : v))
+const optStr = z.preprocess(
+  (v) => (v === '' || v == null ? null : String(v)),
+  z.string().nullable()
+)
 
-const optNum = z
-  .union([z.number(), z.nan(), z.null(), z.undefined()])
-  .transform((v): number | null =>
-    v == null || (typeof v === 'number' && isNaN(v)) ? null : v
-  )
+const optNum = z.preprocess(
+  (v) => {
+    if (v === '' || v == null) return null
+    const n = Number(v)
+    return isNaN(n) ? null : n
+  },
+  z.number().nullable()
+)
 
 const sessionSchema = z.object({
   date: z.string().min(1, 'Data richiesta'),
@@ -257,13 +261,16 @@ export default function SessionsPage() {
   const createAscent = useCreateAscent()
   const [addingAscentTo, setAddingAscentTo] = useState<string | null>(null)
   const [ascentSaveError, setAscentSaveError] = useState('')
+  const [savedAscentFor, setSavedAscentFor] = useState<string | null>(null)
 
   async function handleCreateAscent(values: AscentFormValues) {
     if (!user) return
     setAscentSaveError('')
+    const sessionId = addingAscentTo
     try {
       await createAscent.mutateAsync({ userId: user.id, values })
       setAddingAscentTo(null)
+      setSavedAscentFor(sessionId)
     } catch (e) {
       setAscentSaveError((e as Error).message)
     }
@@ -543,8 +550,22 @@ export default function SessionsPage() {
                 confirmDelete={confirmDelete}
                 setConfirmDelete={setConfirmDelete}
                 onDelete={handleDelete}
-                onAddAscent={() => { setAddingAscentTo(s.id); setAscentSaveError('') }}
+                onAddAscent={() => { setAddingAscentTo(s.id); setAscentSaveError(''); setSavedAscentFor(null) }}
               />
+              {savedAscentFor === s.id && addingAscentTo !== s.id && (
+                <div style={{
+                  display: 'flex', alignItems: 'center', gap: 10,
+                  padding: '10px 16px', marginTop: -4,
+                  background: 'rgba(40,180,135,0.12)', border: '1px solid rgba(40,180,135,0.30)',
+                  borderRadius: 10, fontSize: 13, color: '#28B487', fontWeight: 600,
+                }}>
+                  <span>✓ Via aggiunta alla sessione!</span>
+                  <button
+                    style={{ background: 'none', border: 'none', marginLeft: 'auto', fontSize: 12, color: '#28B487', opacity: 0.8, cursor: 'pointer' }}
+                    onClick={() => setSavedAscentFor(null)}
+                  >✕</button>
+                </div>
+              )}
               {addingAscentTo === s.id && (
                 <div className="new-session-form" style={{ marginTop: -4 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>

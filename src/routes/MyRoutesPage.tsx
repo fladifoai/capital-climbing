@@ -167,6 +167,7 @@ export default function MyRoutesPage() {
 
   const [adding, setAdding] = useState(false)
   const [actionError, setActionError] = useState('')
+  const [savedOk, setSavedOk] = useState(false)
 
   const [search, setSearch] = useState('')
   const [yearFilter, setYearFilter] = useState<string>('all')
@@ -181,6 +182,7 @@ export default function MyRoutesPage() {
     try {
       await createAscent.mutateAsync({ userId: user.id, values })
       setAdding(false)
+      setSavedOk(true)
     } catch (e) {
       setActionError((e as Error).message || String(e))
     }
@@ -244,11 +246,27 @@ export default function MyRoutesPage() {
       <div className="logbook-header">
         <h1 className="logbook-title">Le mie vie</h1>
         {!adding && (
-          <button className="btn-primary" onClick={() => { setAdding(true); setActionError('') }}>
+          <button className="btn-primary" onClick={() => { setAdding(true); setActionError(''); setSavedOk(false) }}>
             + Nuova ascensione
           </button>
         )}
       </div>
+
+      {savedOk && !adding && (
+        <div style={{
+          display: 'flex', alignItems: 'center', gap: 10,
+          padding: '12px 16px', marginBottom: 12,
+          background: 'rgba(40,180,135,0.12)', border: '1px solid rgba(40,180,135,0.30)',
+          borderRadius: 10, fontSize: 13, color: '#28B487', fontWeight: 600,
+        }}>
+          <span>✓ Ascensione salvata!</span>
+          <button
+            className="link-btn"
+            style={{ marginLeft: 'auto', fontSize: 12, color: '#28B487', opacity: 0.8 }}
+            onClick={() => setSavedOk(false)}
+          >✕</button>
+        </div>
+      )}
 
       {adding && (
         <>
