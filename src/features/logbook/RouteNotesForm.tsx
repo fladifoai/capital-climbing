@@ -84,12 +84,7 @@ const MOVEMENT_KEYS = [
   { key: 'deadpoint', label: 'Deadpoint' },
 ]
 
-const LEVEL_OPTIONS: { value: ProfileLevel; label: string }[] = [
-  { value: 'none', label: '—' },
-  { value: 'secondary', label: 'Sec.' },
-  { value: 'important', label: 'Imp.' },
-  { value: 'dominant', label: 'Dom.' },
-]
+const LEVEL_CYCLE: ProfileLevel[] = ['none', 'secondary', 'important', 'dominant']
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -169,33 +164,37 @@ export function hasAnyData(values: RouteNotesValues): boolean {
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
 function ProfileSection({
-  title, keys, profile,
-  onChange,
+  title, keys, profile, onChange,
 }: {
   title: string
   keys: { key: string; label: string }[]
   profile: Profile
   onChange: (key: string, val: ProfileLevel) => void
 }) {
+  function cycle(key: string) {
+    const cur = profile[key] ?? 'none'
+    const next = LEVEL_CYCLE[(LEVEL_CYCLE.indexOf(cur) + 1) % LEVEL_CYCLE.length]
+    onChange(key, next)
+  }
+
   return (
     <>
-      <div className="log-section-title">{title}</div>
-      <div className="profile-edit-grid">
+      <div className="log-section-title">{title} <span style={{ fontWeight: 400, fontSize: 10, textTransform: 'none', letterSpacing: 0, color: 'var(--text-muted)', marginLeft: 4 }}>clicca per aggiungere / aumentare livello</span></div>
+      <div className="profile-toggle-grid">
         {keys.map(({ key, label }) => {
           const val = profile[key] ?? 'none'
           return (
-            <div key={key} className="profile-edit-item">
-              <span className="profile-edit-label">{label}</span>
-              <select
-                className={`profile-edit-select${val !== 'none' ? ' has-value' : ''}`}
-                value={val}
-                onChange={e => onChange(key, e.target.value as ProfileLevel)}
-              >
-                {LEVEL_OPTIONS.map(o => (
-                  <option key={o.value} value={o.value}>{o.label}</option>
-                ))}
-              </select>
-            </div>
+            <button
+              key={key}
+              type="button"
+              className="profile-toggle-card"
+              data-level={val}
+              onClick={() => cycle(key)}
+              title={val === 'none' ? 'Clicca per aggiungere' : `Livello: ${val} — clicca per cambiare`}
+            >
+              <span className="profile-toggle-dot" />
+              {label}
+            </button>
           )
         })}
       </div>
