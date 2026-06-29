@@ -77,8 +77,18 @@ export function useResolveLogbook(userId: string) {
         }
       }
 
-      // 3. ascensioni esistenti per dedup (user + route + data)
-      const matchedRouteIds = [...new Set([...routeMap.values()])]
+      // 3. ascensioni esistenti per dedup. ATTENZIONE: usare solo i routeId
+      //    che le righe del file abbinano davvero (≤ n. righe), NON tutta la
+      //    routeMap del catalogo (centinaia/migliaia) — altrimenti l'URL della
+      //    query .in() esplode e il server chiude la connessione.
+      const matchedRouteIds = [...new Set(
+        valid
+          .map(r => {
+            const cid = cragMap.get(r.normalized_crag)
+            return cid ? routeMap.get(`${cid}:${r.normalized_route}`) : undefined
+          })
+          .filter(Boolean) as string[]
+      )]
       const dupSet = new Set<string>()
       if (matchedRouteIds.length > 0) {
         const { data: existing } = await supabase
