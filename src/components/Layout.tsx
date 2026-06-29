@@ -12,6 +12,7 @@ const privateNavItems = [
   { to: '/log/new', label: '+ Nuova salita' },
   { to: '/explore', label: 'Esplora' },
   { to: '/sessions', label: 'Sessioni' },
+  { to: '/logbook/import', label: 'Importa logbook' },
   { to: '/projects', label: 'Progetti' },
   { to: '/profile', label: 'Il mio profilo' },
   { to: '/analytics', label: 'Analisi' },
