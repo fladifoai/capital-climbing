@@ -96,7 +96,7 @@ export default function LogNewPage() {
   const upsertNotes = useUpsertRouteNotes()
 
   // ── Pre-load route from URL param ──
-  const { data: preRoute } = useRoute(preRouteId ?? '')
+  const { data: preRoute, isLoading: preRouteLoading } = useRoute(preRouteId ?? '')
 
   // ── Route search state ──
   const [routeQuery, setRouteQuery] = useState('')
@@ -442,6 +442,16 @@ export default function LogNewPage() {
             </div>
 
             {/* ── Nav buttons ── */}
+            {preRouteId && preRouteLoading && !selectedRoute && (
+              <div style={{ fontSize: 12, color: 'var(--text-muted)', textAlign: 'center', marginBottom: 8 }}>
+                Caricamento via…
+              </div>
+            )}
+            {!selectedRoute && !preRouteLoading && (
+              <div style={{ fontSize: 12, color: 'var(--text-muted)', textAlign: 'center', marginBottom: 8 }}>
+                Cerca e seleziona una via per continuare
+              </div>
+            )}
             <div className="log-nav-btns">
               <button type="button" className="btn-secondary"
                 disabled={isPending || !selectedRoute || !date}
@@ -451,9 +461,9 @@ export default function LogNewPage() {
               </button>
               <div className="log-nav-btns-right">
                 <button type="button" className="btn-primary"
-                  disabled={!selectedRoute}
+                  disabled={!selectedRoute || (!!preRouteId && preRouteLoading)}
                   onClick={() => setStep(2)}>
-                  Continua →
+                  {preRouteId && preRouteLoading && !selectedRoute ? 'Caricamento…' : 'Continua →'}
                 </button>
               </div>
             </div>
