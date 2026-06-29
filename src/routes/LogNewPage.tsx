@@ -22,10 +22,19 @@ import '../styles/logbook.css'
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
-const ASCENT_MODES = [
-  { value: 'onsight',  label: 'On-sight',  icon: '👁️' },
-  { value: 'flash',    label: 'Flash',     icon: '⚡' },
-  { value: 'redpoint', label: 'Redpoint',  icon: '🎯' },
+const QUICK_MODES = [
+  { value: 'onsight', label: 'On-sight', icon: '👁️' },
+  { value: 'flash',   label: 'Flash',    icon: '⚡' },
+]
+
+const EXACT_TRIES = ['2','3','4','5','6','7','8','9','10']
+
+const BUCKET_OPTIONS = [
+  { value: '11_20',   label: '11-20' },
+  { value: '21_30',   label: '21-30' },
+  { value: '31_40',   label: '31-40' },
+  { value: '41_50',   label: '41-50' },
+  { value: '50_plus', label: '50+' },
 ]
 
 const DIFFICULTY_FEEL_OPTIONS = [
@@ -47,6 +56,18 @@ const STEPS = [
   { id: 3, label: 'Beta & Salva' },
 ]
 
+function formatMode(opt: string, repeat: boolean): string {
+  if (repeat) return 'Ripetizione'
+  if (opt === 'onsight') return 'On-sight'
+  if (opt === 'flash') return 'Flash'
+  const bucketLabels: Record<string, string> = {
+    '11_20': '11-20 giri', '21_30': '21-30 giri',
+    '31_40': '31-40 giri', '41_50': '41-50 giri', '50_plus': '50+ giri',
+  }
+  if (bucketLabels[opt]) return `Redpoint (${bucketLabels[opt]})`
+  return `Redpoint (${opt}° giro)`
+}
+
 const EMPTY_NOTES: RouteNotesValues = {
   hold_profile: {}, movement_profile: {}, style_profile: {},
   crux: '', rests: '', main_beta: '', alternative_beta: '',
@@ -55,23 +76,17 @@ const EMPTY_NOTES: RouteNotesValues = {
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-function triesBucket(n: number): AttemptBucket | null {
-  if (n <= 10) return String(n) as AttemptBucket
-  if (n <= 15) return '11_15'
-  if (n <= 20) return '16_20'
-  if (n <= 30) return '21_30'
-  if (n <= 40) return '31_40'
-  if (n <= 50) return '41_50'
-  return '50_plus'
-}
-
-function buildMapped(mode: string, tries: number, isRepeat: boolean): {
+function buildMapped(option: string, isRepeat: boolean): {
   ascent_style: string; attempt_count: number | null; attempt_bucket: AttemptBucket | null
 } {
   if (isRepeat) return { ascent_style: 'repeat', attempt_count: null, attempt_bucket: null }
-  if (mode === 'onsight') return { ascent_style: 'onsight', attempt_count: 1, attempt_bucket: '1' }
-  if (mode === 'flash')   return { ascent_style: 'flash',   attempt_count: 1, attempt_bucket: '1' }
-  return { ascent_style: 'redpoint', attempt_count: tries, attempt_bucket: triesBucket(tries) }
+  if (option === 'onsight') return { ascent_style: 'onsight', attempt_count: 1, attempt_bucket: '1' }
+  if (option === 'flash')   return { ascent_style: 'flash',   attempt_count: 1, attempt_bucket: '1' }
+  if (EXACT_TRIES.includes(option)) {
+    const n = parseInt(option)
+    return { ascent_style: 'redpoint', attempt_count: n, attempt_bucket: option as AttemptBucket }
+  }
+  return { ascent_style: 'redpoint', attempt_count: null, attempt_bucket: option as AttemptBucket }
 }
 
 function getDateShortcuts(): { label: string; value: string }[] {
@@ -112,8 +127,7 @@ export default function LogNewPage() {
 
   // ── Ascent fields ──
   const [date, setDate] = useState(new Date().toISOString().slice(0, 10))
-  const [ascentMode, setAscentMode] = useState<'onsight' | 'flash' | 'redpoint'>('onsight')
-  const [triesCount, setTriesCount] = useState(2)
+  const [selectedOption, setSelectedOption] = useState('onsight')
   const [isRepeat, setIsRepeat] = useState(false)
   const [effort, setEffort] = useState<number | ''>('')
   const dateShortcuts = getDateShortcuts()
@@ -159,7 +173,7 @@ export default function LogNewPage() {
   }
 
   function buildValues(): AscentFormValues {
-    const mapped = buildMapped(ascentMode, triesCount, isRepeat)
+    const mapped = buildMapped(selectedOption, isRepeat)
     return {
       route_id: selectedRoute!.id,
       session_id: null,
@@ -235,7 +249,7 @@ export default function LogNewPage() {
                 setSaved(false); setSelectedRoute(null); setRouteQuery(''); setStep(1)
                 setNotes(''); setQuality(null); setPersonalGrade(''); setProposedGrade('')
                 setDifficultyFeel(''); setStyleFeel(''); setWantRepeat(null); setEffort('')
-                setIsRepeat(false); setAscentMode('onsight'); setTriesCount(2)
+                setIsRepeat(false); setSelectedOption('onsight')
                 setNotesValues(EMPTY_NOTES)
               }}>
                 Aggiungi un'altra
@@ -340,46 +354,50 @@ export default function LogNewPage() {
               ))}
             </div>
 
-            {/* Ascent style circles */}
+            {/* Ascent style */}
             <div className="log-q">Come hai salito?</div>
-            <div className="log-style-circles">
-              {ASCENT_MODES.map(m => {
-                const active = ascentMode === m.value && !isRepeat
-                return (
-                  <button key={m.value} type="button"
-                    className={`log-style-circle${active ? ' active' : ''}`}
-                    data-mode={m.value}
-                    style={isRepeat ? { opacity: 0.35, cursor: 'not-allowed' } : {}}
-                    onClick={() => {
-                      if (!isRepeat) {
-                        setAscentMode(m.value as typeof ascentMode)
-                        if (m.value !== 'redpoint') setTriesCount(2)
-                      }
-                    }}>
-                    <div className="log-style-circle-ring">
-                      <span className="log-style-circle-icon">{m.icon}</span>
-                    </div>
-                    <span className="log-style-circle-label">{m.label}</span>
-                  </button>
-                )
-              })}
+
+            {/* On-sight / Flash — grandi cerchi */}
+            <div className="log-style-circles" style={{ justifyContent: 'center', gap: 32, marginBottom: 16 }}>
+              {QUICK_MODES.map(m => (
+                <button key={m.value} type="button"
+                  className={`log-style-circle${selectedOption === m.value && !isRepeat ? ' active' : ''}`}
+                  data-mode={m.value}
+                  style={isRepeat ? { opacity: 0.35, cursor: 'not-allowed' } : {}}
+                  onClick={() => { if (!isRepeat) setSelectedOption(m.value) }}>
+                  <div className="log-style-circle-ring">
+                    <span className="log-style-circle-icon">{m.icon}</span>
+                  </div>
+                  <span className="log-style-circle-label">{m.label}</span>
+                </button>
+              ))}
             </div>
 
-            {ascentMode === 'redpoint' && !isRepeat && (
-              <div className="log-tries-row">
-                <button type="button" className="log-tries-btn"
-                  disabled={triesCount <= 2}
-                  onClick={() => setTriesCount(n => Math.max(2, n - 1))}>−</button>
-                <div className="log-tries-count">
-                  <span className="log-tries-count-num">{triesCount}</span>
-                  <span className="log-tries-count-label">{triesCount === 1 ? 'tentativo' : 'tentativi'}</span>
-                </div>
-                <button type="button" className="log-tries-btn"
-                  onClick={() => setTriesCount(n => n + 1)}>+</button>
+            {/* Redpoint — numero giri */}
+            <div className="log-redpoint-section" style={{ opacity: isRepeat ? 0.35 : 1, pointerEvents: isRepeat ? 'none' : undefined }}>
+              <div className="log-redpoint-label">Redpoint — numero di giri</div>
+              <div className="log-pill-group" style={{ justifyContent: 'center', marginBottom: 8 }}>
+                {EXACT_TRIES.map(n => (
+                  <button key={n} type="button"
+                    className={`log-pill${selectedOption === n && !isRepeat ? ' active' : ''}`}
+                    style={{ minWidth: 38, textAlign: 'center' }}
+                    onClick={() => setSelectedOption(n)}>
+                    {n}°
+                  </button>
+                ))}
               </div>
-            )}
+              <div className="log-pill-group" style={{ justifyContent: 'center' }}>
+                {BUCKET_OPTIONS.map(b => (
+                  <button key={b.value} type="button"
+                    className={`log-pill${selectedOption === b.value && !isRepeat ? ' active' : ''}`}
+                    onClick={() => setSelectedOption(b.value)}>
+                    {b.label}
+                  </button>
+                ))}
+              </div>
+            </div>
 
-            <div className="log-repeat-row">
+            <div className="log-repeat-row" style={{ marginTop: 16 }}>
               <input type="checkbox" id="repeat-chk" checked={isRepeat}
                 onChange={e => setIsRepeat(e.target.checked)} />
               <label htmlFor="repeat-chk">È una ripetizione</label>
@@ -545,8 +563,7 @@ export default function LogNewPage() {
                 <div>
                   <div className="log-route-preview-name">{selectedRoute.name}</div>
                   <div className="log-route-preview-sub">
-                    {selectedRoute.crag_name} · {date} ·{' '}
-                    {isRepeat ? 'Ripetizione' : ascentMode === 'onsight' ? 'On-sight' : ascentMode === 'flash' ? 'Flash' : `Redpoint (${triesCount})`}
+                    {selectedRoute.crag_name} · {date} · {formatMode(selectedOption, isRepeat)}
                     {hasAnyData(notesValues) && ' · Con dati tecnici'}
                   </div>
                 </div>

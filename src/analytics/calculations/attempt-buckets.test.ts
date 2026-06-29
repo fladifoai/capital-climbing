@@ -5,10 +5,10 @@ describe('getAttemptBucket', () => {
   it('1 → 1', () => expect(getAttemptBucket(1)).toBe('1'))
   it('2 → 2', () => expect(getAttemptBucket(2)).toBe('2'))
   it('10 → 10', () => expect(getAttemptBucket(10)).toBe('10'))
-  it('11 → 11_15', () => expect(getAttemptBucket(11)).toBe('11_15'))
-  it('15 → 11_15', () => expect(getAttemptBucket(15)).toBe('11_15'))
-  it('16 → 16_20', () => expect(getAttemptBucket(16)).toBe('16_20'))
-  it('20 → 16_20', () => expect(getAttemptBucket(20)).toBe('16_20'))
+  it('11 → 11_20', () => expect(getAttemptBucket(11)).toBe('11_20'))
+  it('15 → 11_20', () => expect(getAttemptBucket(15)).toBe('11_20'))
+  it('16 → 11_20', () => expect(getAttemptBucket(16)).toBe('11_20'))
+  it('20 → 11_20', () => expect(getAttemptBucket(20)).toBe('11_20'))
   it('21 → 21_30', () => expect(getAttemptBucket(21)).toBe('21_30'))
   it('30 → 21_30', () => expect(getAttemptBucket(30)).toBe('21_30'))
   it('31 → 31_40', () => expect(getAttemptBucket(31)).toBe('31_40'))
@@ -28,15 +28,15 @@ describe('resolveAttemptFields', () => {
     expect(r.attempt_count).toBe(5)
     expect(r.attempt_bucket).toBe('5')
   })
-  it('bucket 11_15 no exact → count=null, bucket=11_15', () => {
-    const r = resolveAttemptFields('11_15', null)
+  it('bucket 11_20 no exact → count=null, bucket=11_20', () => {
+    const r = resolveAttemptFields('11_20', null)
     expect(r.attempt_count).toBeNull()
-    expect(r.attempt_bucket).toBe('11_15')
+    expect(r.attempt_bucket).toBe('11_20')
   })
-  it('bucket 11_15 + exact 14 → count=14, bucket=11_15', () => {
-    const r = resolveAttemptFields('11_15', 14)
+  it('bucket 11_20 + exact 14 → count=14, bucket=11_20', () => {
+    const r = resolveAttemptFields('11_20', 14)
     expect(r.attempt_count).toBe(14)
-    expect(r.attempt_bucket).toBe('11_15')
+    expect(r.attempt_bucket).toBe('11_20')
   })
   it('null raw → count=null, bucket=null', () => {
     const r = resolveAttemptFields(null, null)
@@ -44,7 +44,6 @@ describe('resolveAttemptFields', () => {
     expect(r.attempt_bucket).toBeNull()
   })
   it('four_plus should NOT be set to 4', () => {
-    // four_plus legacy must not produce attempt_count = 4 automatically
     const r = resolveAttemptFields(null, null)
     expect(r.attempt_count).not.toBe(4)
   })
