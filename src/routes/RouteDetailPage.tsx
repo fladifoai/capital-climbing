@@ -473,12 +473,14 @@ export default function RouteDetailPage() {
   async function handleSubmit(values: AscentFormValues) {
     if (!user) return
     setFormError('')
+    console.log('[RouteDetailPage] handleSubmit called', { routeId, userId: user.id })
     try {
-      await createAscent.mutateAsync({ userId: user.id, values })
+      await createAscent.mutateAsync({ userId: user.id, values, routeId })
       setShowForm(false)
       setFormDone(true)
     } catch (e) {
-      setFormError((e as Error).message)
+      console.error('[RouteDetailPage] handleSubmit error', e)
+      setFormError((e as Error).message || String(e))
     }
   }
 

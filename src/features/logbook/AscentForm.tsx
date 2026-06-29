@@ -87,7 +87,11 @@ export default function AscentForm({ preselectedRoute, defaultDate, sessionId, o
   }
 
   function handleFormSubmit(data: AscentSchema) {
-    if (!selectedRoute) return
+    console.log('[AscentForm] handleFormSubmit', { selectedRoute: selectedRoute?.id, isRepeat, attemptType, data })
+    if (!selectedRoute) {
+      console.warn('[AscentForm] no selectedRoute — aborting')
+      return
+    }
 
     const mapped = isRepeat
       ? { ascent_style: 'repeat', attempt_count: null as number | null, attempt_bucket: null as AttemptBucket | null }

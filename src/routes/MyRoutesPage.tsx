@@ -182,7 +182,7 @@ export default function MyRoutesPage() {
       await createAscent.mutateAsync({ userId: user.id, values })
       setAdding(false)
     } catch (e) {
-      setActionError((e as Error).message)
+      setActionError((e as Error).message || String(e))
     }
   }
 

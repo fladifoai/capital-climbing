@@ -58,8 +58,9 @@ export interface AscentFormValues {
 export function useCreateAscent() {
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: async ({ userId, values }: { userId: string; values: AscentFormValues }) => {
-      const { data, error } = await supabase
+    mutationFn: async ({ userId, values, routeId }: { userId: string; values: AscentFormValues; routeId?: string }) => {
+      console.log('[useCreateAscent] inserting', { userId, route_id: values.route_id, session_id: values.session_id })
+      const { error } = await supabase
         .from('ascents')
         .insert({
           ...values,
@@ -68,17 +69,19 @@ export function useCreateAscent() {
           score: null,
           needs_review: false,
         })
-        .select()
-        .single()
       if (error) {
         console.error('[useCreateAscent] Supabase error:', error)
         throw new Error(error.message + (error.details ? ` — ${error.details}` : '') + (error.hint ? ` (${error.hint})` : ''))
       }
-      return data
+      console.log('[useCreateAscent] insert OK')
+      return { routeId }
     },
-    onSuccess: (_, { userId }) => {
+    onSuccess: (result, { userId }) => {
       qc.invalidateQueries({ queryKey: ['my-ascents', userId] })
       qc.invalidateQueries({ queryKey: ['my-sessions', userId] })
+      if (result?.routeId) {
+        qc.invalidateQueries({ queryKey: ['route-history', result.routeId, userId] })
+      }
     },
   })
 }
