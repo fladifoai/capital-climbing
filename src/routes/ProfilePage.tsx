@@ -331,9 +331,14 @@ export default function ProfilePage() {
             {profile?.preferred_style && <span>🏔 {profile.preferred_style}</span>}
           </div>
         </div>
-        <Link to="/settings" className="btn-secondary" style={{ textDecoration: 'none', fontSize: 12, padding: '6px 14px', flexShrink: 0 }}>
-          Modifica profilo
-        </Link>
+        <div style={{ display: 'flex', gap: 8, flexShrink: 0, flexWrap: 'wrap' }}>
+          <Link to="/logbook/import" className="btn-secondary" style={{ textDecoration: 'none', fontSize: 12, padding: '6px 14px' }}>
+            📒 Importa logbook
+          </Link>
+          <Link to="/settings" className="btn-secondary" style={{ textDecoration: 'none', fontSize: 12, padding: '6px 14px' }}>
+            Modifica profilo
+          </Link>
+        </div>
       </div>
 
       {/* ── KPI principali ── */}

@@ -194,6 +194,16 @@ export default function DashboardPage() {
             }}>
               Nuovo progetto
             </Link>
+            <Link to="/logbook/import" style={{
+              display: 'inline-flex', alignItems: 'center', gap: 6,
+              height: 40, padding: '0 16px', borderRadius: 999,
+              border: '1px solid rgba(255,247,234,0.18)',
+              background: 'rgba(255,247,234,0.04)',
+              color: 'var(--text-on-dark-muted)', fontSize: 13, fontWeight: 600,
+              textDecoration: 'none',
+            }}>
+              📒 Importa logbook
+            </Link>
             {isAdmin && (
               <Link to="/admin/import" style={{
                 display: 'inline-flex', alignItems: 'center', gap: 6,
@@ -231,6 +241,9 @@ export default function DashboardPage() {
           <div style={{ display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' }}>
             <Link to="/my-routes" className="btn-primary" style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center' }}>
               + Aggiungi ascensione
+            </Link>
+            <Link to="/logbook/import" className="btn-secondary" style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center' }}>
+              📒 Importa logbook
             </Link>
             <Link to="/explore" style={{ color: 'var(--accent)', fontWeight: 600, textDecoration: 'none', fontSize: 13, display: 'inline-flex', alignItems: 'center' }}>
               Esplora il catalogo →
