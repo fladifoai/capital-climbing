@@ -101,6 +101,14 @@ export default function CragDetailPage() {
   const { data: sectors, isLoading: loadingSectors } = useSectorsWithRoutes(cragId)
 
   const [filter, setFilter] = useState<RouteFilter>('all')
+  const [openSectors, setOpenSectors] = useState<Set<string>>(new Set())
+
+  const toggleSector = (id: string) =>
+    setOpenSectors(prev => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id); else next.add(id)
+      return next
+    })
 
   // Tutti i routeId della falesia (settori + sottosettori)
   const allRouteIds = useMemo(() => {
@@ -247,16 +255,29 @@ export default function CragDetailPage() {
           return null
         }
 
+        // Settori chiusi di default: click per aprire. Auto-aperti se unico
+        // settore o se è attivo un filtro (così si vedono le vie filtrate).
+        const isOpen = openSectors.has(sector.id) || sectors.length === 1 || (showStatus && filter !== 'all')
+
         return (
           <div key={sector.id} className="sector-block">
-            <div className="sector-header">
-              <div>
-                <span className="sector-name">{sector.name}</span>
-                {(sector.orientation || sector.approach_notes) && (
-                  <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>
-                    {[sector.orientation, sector.approach_notes].filter(Boolean).join(' · ')}
-                  </div>
-                )}
+            <div
+              className="sector-header"
+              style={{ cursor: 'pointer' }}
+              onClick={() => toggleSector(sector.id)}
+              role="button"
+              aria-expanded={isOpen}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span style={{ color: 'var(--text-muted)', fontSize: 12, width: 12 }}>{isOpen ? '▾' : '▸'}</span>
+                <div>
+                  <span className="sector-name">{sector.name}</span>
+                  {(sector.orientation || sector.approach_notes) && (
+                    <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>
+                      {[sector.orientation, sector.approach_notes].filter(Boolean).join(' · ')}
+                    </div>
+                  )}
+                </div>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 2 }}>
                 <span className="sector-badge">{sector.routes.length} vie</span>
@@ -266,7 +287,7 @@ export default function CragDetailPage() {
               </div>
             </div>
 
-            {visibleRoutes.length === 0 ? (
+            {!isOpen ? null : visibleRoutes.length === 0 ? (
               <div className="empty-state" style={{ padding: '20px' }}>Nessuna via.</div>
             ) : (
               <table className="route-table">
@@ -291,7 +312,7 @@ export default function CragDetailPage() {
               </table>
             )}
 
-            {visibleSubs.length > 0 && (
+            {isOpen && visibleSubs.length > 0 && (
               <div style={{ padding: '0 16px 16px' }}>
                 {visibleSubs.map(({ sub, routes }) => (
                   <div key={sub.id} style={{ marginTop: 12 }}>

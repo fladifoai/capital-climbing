@@ -41,8 +41,13 @@ export async function parseCragPdf(file: File): Promise<ParseResult> {
   }
   if (allLines.length === 0) throw new Error('Nessun testo estratto dal PDF (forse è scansionato/immagine).')
 
-  // 2. nome falesia = prima riga prima dell'header
+  // 2. nome falesia = prima riga prima dell'header.
+  //    La parte tra parentesi è il/i settore/i: se è UNO solo (niente virgola)
+  //    lo usiamo come settore di default per tutte le vie (es. "Grotti (Grotti Alta)").
+  //    Se sono più (es. "Collepardo (Cueva, Cuevita)") si ricava dalle note.
   const cragName = allLines[0].map(t => t.s).join(' ').trim()
+  const paren = cragName.match(/\(([^)]*)\)/)?.[1]?.trim() ?? ''
+  const defaultSector = paren && !paren.includes(',') ? paren : ''
 
   // 3. trova l'header colonne (contiene "Nome" e "Grado") + posizioni X
   let headerIdx = -1
@@ -72,7 +77,7 @@ export async function parseCragPdf(file: File): Promise<ParseResult> {
   const isStars = (s: string) => /^[★☆]+$/.test(s.trim())
   const headers = ['Falesia', 'Settore', 'Via', 'Grado', 'Proposto', 'Note', 'Bellezza']
   const rows: RawCragRow[] = []
-  let currentSector = ''
+  let currentSector = defaultSector
 
   // 4. righe dati: iniziano con un numero (#). Le righe senza numero sono
   //    continuazioni di nota → le ignoriamo (best-effort).
