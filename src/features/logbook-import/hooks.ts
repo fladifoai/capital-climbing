@@ -5,6 +5,27 @@ import type {
   LogbookImportReport, ParsedLogbookRow, ResolvedLogbookRow,
 } from './types'
 
+interface RouteRow { id: string; name: string; crag_id: string | null; sector_id: string | null }
+
+// PostgREST limita a 1000 righe per richiesta: pagina con .range() finché finisce.
+async function fetchAllRoutes(col: 'crag_id' | 'sector_id', ids: string[]): Promise<RouteRow[]> {
+  if (ids.length === 0) return []
+  const out: RouteRow[] = []
+  const page = 1000
+  for (let from = 0; ; from += page) {
+    const { data, error } = await supabase
+      .from('routes')
+      .select('id, name, crag_id, sector_id')
+      .in(col, ids)
+      .range(from, from + page - 1)
+    if (error) throw error
+    const rows = (data ?? []) as RouteRow[]
+    out.push(...rows)
+    if (rows.length < page) break
+  }
+  return out
+}
+
 // ── Fase 2: abbina le righe al catalogo + rileva duplicati ──────────────────
 export function useResolveLogbook(userId: string) {
   return useMutation({
@@ -37,18 +58,10 @@ export function useResolveLogbook(userId: string) {
         const sectorToCrag = new Map((sectors ?? []).map(s => [s.id as string, s.crag_id as string]))
         const sectorIds = [...sectorToCrag.keys()]
 
-        const { data: byCrag } = await supabase
-          .from('routes')
-          .select('id, name, crag_id, sector_id')
-          .in('crag_id', cragIds)
-        const bySector = sectorIds.length > 0
-          ? (await supabase
-              .from('routes')
-              .select('id, name, crag_id, sector_id')
-              .in('sector_id', sectorIds)).data ?? []
-          : []
+        const byCrag = await fetchAllRoutes('crag_id', cragIds)
+        const bySector = await fetchAllRoutes('sector_id', sectorIds)
 
-        for (const r of [...(byCrag ?? []), ...bySector]) {
+        for (const r of [...byCrag, ...bySector]) {
           const cragId = (r.crag_id as string | null) ?? (r.sector_id ? sectorToCrag.get(r.sector_id as string) : undefined)
           if (!cragId) continue
           const key = `${cragId}:${normalizeKey(r.name as string)}`
