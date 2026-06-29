@@ -25,23 +25,39 @@ export interface SectorWithRoutes extends Sector {
   subsectors?: SectorWithRoutes[]
 }
 
+// PostgREST limita ogni richiesta a 1000 righe (db-max-rows): .limit(10000) NON lo aggira.
+// Va paginato con .range(), altrimenti regioni con vie "in fondo" vengono sottocontate.
+async function fetchAllPaged<T>(table: string, columns: string): Promise<T[]> {
+  const PAGE = 1000
+  const all: T[] = []
+  for (let from = 0; ; from += PAGE) {
+    const { data, error } = await supabase
+      .from(table)
+      .select(columns)
+      .range(from, from + PAGE - 1)
+    if (error) throw error
+    const rows = (data ?? []) as T[]
+    all.push(...rows)
+    if (rows.length < PAGE) break
+  }
+  return all
+}
+
 export function useRegionsWithCounts(countryId: string) {
   return useQuery({
     queryKey: ['regions-with-counts', countryId],
     queryFn: async (): Promise<RegionWithCount[]> => {
-      const [regionsRes, cragsRes, sectorsRes, routesRes] = await Promise.all([
+      const [regionsRes, cragsRes, sectors, routes] = await Promise.all([
         supabase.from('regions').select('*').eq('country_id', countryId).order('name'),
         supabase.from('crags').select('id, region_id').eq('country_id', countryId),
-        supabase.from('sectors').select('id, crag_id').limit(5000),
-        supabase.from('routes').select('id, sector_id').limit(10000),
+        fetchAllPaged<{ id: string; crag_id: string }>('sectors', 'id, crag_id'),
+        fetchAllPaged<{ id: string; sector_id: string | null }>('routes', 'id, sector_id'),
       ])
 
       if (regionsRes.error) throw regionsRes.error
 
       const regions = regionsRes.data ?? []
       const crags = cragsRes.data ?? []
-      const sectors = sectorsRes.data ?? []
-      const routes = routesRes.data ?? []
 
       const cragsByRegion = new Map<string, string[]>()
       crags.forEach(c => {
@@ -60,6 +76,7 @@ export function useRegionsWithCounts(countryId: string) {
 
       const routesBySector = new Map<string, number>()
       routes.forEach(r => {
+        if (!r.sector_id) return
         routesBySector.set(r.sector_id, (routesBySector.get(r.sector_id) ?? 0) + 1)
       })
 

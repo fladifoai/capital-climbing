@@ -4,13 +4,13 @@ import ErrorBoundary from './ErrorBoundary'
 import './Layout.css'
 
 const publicNavItems = [
-  { to: '/explore', label: 'Esplora' },
+  { to: '/explore', label: 'Falesie' },
 ]
 
 const privateNavItems = [
   { to: '/dashboard', label: 'Dashboard' },
   { to: '/log/new', label: '+ Nuova salita' },
-  { to: '/explore', label: 'Esplora' },
+  { to: '/explore', label: 'Falesie' },
   { to: '/sessions', label: 'Sessioni' },
   { to: '/logbook/import', label: 'Importa logbook' },
   { to: '/projects', label: 'Progetti' },
