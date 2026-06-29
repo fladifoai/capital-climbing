@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import type { UserRouteNote } from '../../types/database'
 import type { RouteNotesPayload } from './hooks'
+import ClimbIcon from './ClimbIcon'
 import '../../styles/log-new.css'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -219,7 +220,7 @@ function ProfileSection({
       <>
         <div className={`log-section-icon-header pic-${color}`}>{title}</div>
         <div className="profile-icon-grid">
-          {keys.map(({ key, label, icon }) => {
+          {keys.map(({ key, label }) => {
             const isActive = (profile[key] ?? 'none') !== 'none'
             return (
               <button
@@ -229,7 +230,7 @@ function ProfileSection({
                 onClick={() => onChange(key, isActive ? 'none' : 'dominant')}
                 title={label}
               >
-                <span className="pic-icon">{icon}</span>
+                <span className="pic-icon"><ClimbIcon name={key} /></span>
                 <span className="pic-label">{label}</span>
               </button>
             )

@@ -631,7 +631,14 @@
 .pic-icon {
   font-size: 20px;
   line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(247,243,234,0.55);
+  transition: color 0.13s;
 }
+
+.profile-icon-card:hover .pic-icon { color: rgba(247,243,234,0.85); }
 
 .pic-label {
   font-size: 10px;
@@ -648,21 +655,24 @@
   border-color: var(--accent);
   background: rgba(200,95,58,0.16);
 }
-.profile-icon-card.pic--orange.pic-active .pic-label { color: var(--accent); }
+.profile-icon-card.pic--orange.pic-active .pic-label,
+.profile-icon-card.pic--orange.pic-active .pic-icon { color: var(--accent); }
 
 /* Blue variant (prese) */
 .profile-icon-card.pic--blue.pic-active {
   border-color: #3B82F6;
   background: rgba(59,130,246,0.16);
 }
-.profile-icon-card.pic--blue.pic-active .pic-label { color: #60A5FA; }
+.profile-icon-card.pic--blue.pic-active .pic-label,
+.profile-icon-card.pic--blue.pic-active .pic-icon { color: #60A5FA; }
 
 /* Teal variant (movimenti) */
 .profile-icon-card.pic--teal.pic-active {
   border-color: #14B8A6;
   background: rgba(20,184,166,0.16);
 }
-.profile-icon-card.pic--teal.pic-active .pic-label { color: #2DD4BF; }
+.profile-icon-card.pic--teal.pic-active .pic-label,
+.profile-icon-card.pic--teal.pic-active .pic-icon { color: #2DD4BF; }
 
 /* ── Repeat toggle ── */
 .log-repeat-row {

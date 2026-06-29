@@ -135,7 +135,6 @@ export default function LogNewPage() {
   // ── Evaluation ──
   const [quality, setQuality] = useState<number | null>(null)
   const [hoverStar, setHoverStar] = useState<number | null>(null)
-  const [personalGrade, setPersonalGrade] = useState('')
   const [proposedGrade, setProposedGrade] = useState('')
   const [difficultyFeel, setDifficultyFeel] = useState('')
   const [styleFeel, setStyleFeel] = useState('')
@@ -185,7 +184,7 @@ export default function LogNewPage() {
       is_repeat: isRepeat,
       grade_at_ascent: selectedRoute!.official_grade,
       grade_numeric_at_ascent: selectedRoute!.grade_numeric,
-      personal_grade: personalGrade || null,
+      personal_grade: null,
       quality,
       difficulty_feel: difficultyFeel || null,
       style_feel: styleFeel || null,
@@ -247,7 +246,7 @@ export default function LogNewPage() {
               </Link>
               <button className="btn-secondary" onClick={() => {
                 setSaved(false); setSelectedRoute(null); setRouteQuery(''); setStep(1)
-                setNotes(''); setQuality(null); setPersonalGrade(''); setProposedGrade('')
+                setNotes(''); setQuality(null); setProposedGrade('')
                 setDifficultyFeel(''); setStyleFeel(''); setWantRepeat(null); setEffort('')
                 setIsRepeat(false); setSelectedOption('onsight')
                 setNotesValues(EMPTY_NOTES)
@@ -465,14 +464,7 @@ export default function LogNewPage() {
             </div>
 
             <div className="form-grid" style={{ marginTop: 14, marginBottom: 14 }}>
-              <div className="form-group">
-                <label>Grado percepito</label>
-                <select className="logbook-select" value={personalGrade} onChange={e => setPersonalGrade(e.target.value)}>
-                  <option value="">— Non specificato —</option>
-                  {GRADE_ORDER.map(g => <option key={g} value={g}>{g}</option>)}
-                </select>
-              </div>
-              <div className="form-group">
+              <div className="form-group form-full">
                 <label>Grado proposto</label>
                 <select className="logbook-select" value={proposedGrade} onChange={e => setProposedGrade(e.target.value)}>
                   <option value="">— Non specificato —</option>
