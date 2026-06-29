@@ -316,28 +316,29 @@
 .route-status-badge.project  { background: rgba(200,95,58,0.18);  color: #F5A788; border: 1px solid rgba(200,95,58,0.34); }
 .route-status-badge.attempted{ background: rgba(224,178,79,0.16); color: #FFD08A; border: 1px solid rgba(224,178,79,0.30); }
 
-/* Sfondo riga pieno per stato */
-.route-table tr.row-sent td      { background: rgba(40,180,135,0.13); }
-.route-table tr.row-repeated td  { background: rgba(167,139,250,0.13); }
-.route-table tr.row-project td   { background: rgba(200,95,58,0.13); }
-.route-table tr.row-attempted td { background: rgba(224,178,79,0.11); }
+/* Sfondo riga pieno e marcato per stato */
+.route-table tr.row-sent td      { background: rgba(40,180,135,0.32) !important; }
+.route-table tr.row-repeated td  { background: rgba(167,139,250,0.32) !important; }
+.route-table tr.row-project td   { background: rgba(200,95,58,0.32) !important; }
+.route-table tr.row-attempted td { background: rgba(224,178,79,0.26) !important; }
 
-/* Barra colorata spessa a sinistra */
-.route-table tr.row-sent td:first-child      { box-shadow: inset 5px 0 0 #28B487; }
-.route-table tr.row-repeated td:first-child  { box-shadow: inset 5px 0 0 #A78BFA; }
-.route-table tr.row-project td:first-child   { box-shadow: inset 5px 0 0 #C85F3A; }
-.route-table tr.row-attempted td:first-child { box-shadow: inset 5px 0 0 #E0B24F; }
+/* Barra colorata spessa a sinistra (tutta la riga) */
+.route-table tr.row-sent td:first-child      { box-shadow: inset 6px 0 0 #28B487 !important; }
+.route-table tr.row-repeated td:first-child  { box-shadow: inset 6px 0 0 #A78BFA !important; }
+.route-table tr.row-project td:first-child   { box-shadow: inset 6px 0 0 #C85F3A !important; }
+.route-table tr.row-attempted td:first-child { box-shadow: inset 6px 0 0 #E0B24F !important; }
 
-/* Hover: tint più intenso, non azzera l'evidenziazione */
-.route-table tr.row-sent:hover td      { background: rgba(40,180,135,0.22); }
-.route-table tr.row-repeated:hover td  { background: rgba(167,139,250,0.22); }
-.route-table tr.row-project:hover td   { background: rgba(200,95,58,0.22); }
-.route-table tr.row-attempted:hover td { background: rgba(224,178,79,0.20); }
+/* Hover: ancora più intenso */
+.route-table tr.row-sent:hover td      { background: rgba(40,180,135,0.42) !important; }
+.route-table tr.row-repeated:hover td  { background: rgba(167,139,250,0.42) !important; }
+.route-table tr.row-project:hover td   { background: rgba(200,95,58,0.42) !important; }
+.route-table tr.row-attempted:hover td { background: rgba(224,178,79,0.36) !important; }
 
-/* Nome via scalata: colore accento verde + grassetto pieno */
+/* Nome via evidenziato: colore acceso + grassetto pieno */
 .route-table tr.row-sent td strong,
-.route-table tr.row-repeated td strong { color: #7EE0BE; }
-.route-table tr.row-project td strong  { color: #F5A788; }
+.route-table tr.row-repeated td strong { color: #9FF0D2; font-weight: 800; }
+.route-table tr.row-project td strong  { color: #F8BBA2; font-weight: 800; }
+.route-table tr.row-attempted td strong{ color: #FFDFA0; font-weight: 800; }
 
 .route-status-cell { white-space: nowrap; }
 .route-status-date { font-size: 11px; color: var(--text-muted); margin-left: 6px; }
