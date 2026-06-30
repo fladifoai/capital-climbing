@@ -4,11 +4,14 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import type { Sector, Route } from '../../types/database'
 import {
-  useAdminSectors, useAdminRoutes,
+  useAdminSectors, useAdminRoutes, useAdminOrphanRoutes, useAdminCrags,
   useCreateSector, useUpdateSector, useDeleteSector,
   useCreateRoute, useUpdateRoute, useDeleteRoute,
+  useMoveRoute, useMoveSector,
   type SectorFormValues, type RouteFormValues,
 } from './hooks'
+
+type SectorOption = { id: string; name: string }
 
 // ── Zod helpers ─────────────────────────────────────────────────────────
 
@@ -212,11 +215,14 @@ function RouteForm({
 
 // ── Routes admin (per sector) ────────────────────────────────────────────
 
-function RoutesAdmin({ sectorId }: { sectorId: string }) {
+function RoutesAdmin({ sectorId, cragId, sectors }: { sectorId: string; cragId: string; sectors: SectorOption[] }) {
   const { data: routes, isLoading } = useAdminRoutes(sectorId)
   const createRoute = useCreateRoute()
   const updateRoute = useUpdateRoute()
   const deleteRoute = useDeleteRoute()
+  const moveRoute = useMoveRoute()
+
+  const otherSectors = sectors.filter((s) => s.id !== sectorId)
 
   const [creating, setCreating] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
@@ -280,6 +286,22 @@ function RoutesAdmin({ sectorId }: { sectorId: string }) {
                     <div className="actions">
                       <button className="btn-edit" onClick={() => setEditingId(route.id)}>Modifica</button>
                       <button className="btn-danger" onClick={() => handleDelete(route)}>Elimina</button>
+                      {otherSectors.length > 0 && (
+                        <select
+                          className="move-select"
+                          value=""
+                          title="Sposta in un altro settore"
+                          onChange={(e) => {
+                            const toSectorId = e.target.value
+                            if (toSectorId) moveRoute.mutate({ id: route.id, cragId, toSectorId })
+                          }}
+                        >
+                          <option value="">Sposta in…</option>
+                          {otherSectors.map((s) => (
+                            <option key={s.id} value={s.id}>{s.name}</option>
+                          ))}
+                        </select>
+                      )}
                     </div>
                   </td>
                 </tr>
@@ -301,11 +323,75 @@ function RoutesAdmin({ sectorId }: { sectorId: string }) {
         </button>
       )}
 
-      {(createRoute.isError || updateRoute.isError || deleteRoute.isError) && (
+      {(createRoute.isError || updateRoute.isError || deleteRoute.isError || moveRoute.isError) && (
         <div className="admin-error">
-          {((createRoute.error || updateRoute.error || deleteRoute.error) as Error)?.message}
+          {((createRoute.error || updateRoute.error || deleteRoute.error || moveRoute.error) as Error)?.message}
         </div>
       )}
+    </div>
+  )
+}
+
+// ── Vie senza settore (orfane) ───────────────────────────────────────────
+
+function OrphanRoutesAdmin({ cragId, sectors }: { cragId: string; sectors: SectorOption[] }) {
+  const { data: routes, isLoading } = useAdminOrphanRoutes(cragId)
+  const moveRoute = useMoveRoute()
+  const deleteRoute = useDeleteRoute()
+
+  if (isLoading || !routes || routes.length === 0) return null
+
+  async function handleDelete(route: Route) {
+    if (!confirm(`Eliminare la via "${route.name}"? L'operazione è irreversibile.`)) return
+    await deleteRoute.mutateAsync({ id: route.id, sectorId: '' })
+  }
+
+  return (
+    <div className="admin-sector-block">
+      <div className="admin-sector-header">
+        <span className="admin-sector-name" style={{ color: 'var(--accent)' }}>
+          ⚠ Vie senza settore ({routes.length})
+        </span>
+      </div>
+      <div className="admin-sector-body">
+        <div className="empty-state" style={{ marginBottom: 8 }}>
+          Queste vie non sono assegnate a nessun settore (es. import senza settore). Assegnale qui sotto.
+        </div>
+        <table className="admin-table">
+          <thead>
+            <tr><th>Nome</th><th>Grado</th><th>Assegna a settore</th></tr>
+          </thead>
+          <tbody>
+            {routes.map((route) => (
+              <tr key={route.id}>
+                <td>{route.name}</td>
+                <td>{route.official_grade ? <span className="grade-badge">{route.official_grade}</span> : '—'}</td>
+                <td>
+                  <div className="actions">
+                    <select
+                      className="move-select"
+                      value=""
+                      onChange={(e) => {
+                        const toSectorId = e.target.value
+                        if (toSectorId) moveRoute.mutate({ id: route.id, cragId, toSectorId })
+                      }}
+                    >
+                      <option value="">Scegli settore…</option>
+                      {sectors.map((s) => (
+                        <option key={s.id} value={s.id}>{s.name}</option>
+                      ))}
+                    </select>
+                    <button className="btn-danger" onClick={() => handleDelete(route)}>Elimina</button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        {(moveRoute.isError || deleteRoute.isError) && (
+          <div className="admin-error">{((moveRoute.error || deleteRoute.error) as Error)?.message}</div>
+        )}
+      </div>
     </div>
   )
 }
@@ -314,13 +400,24 @@ function RoutesAdmin({ sectorId }: { sectorId: string }) {
 
 export default function SectorsAdmin({ cragId }: { cragId: string }) {
   const { data: sectors, isLoading, error } = useAdminSectors(cragId)
+  const { data: allCrags } = useAdminCrags()
   const createSector = useCreateSector()
   const updateSector = useUpdateSector()
   const deleteSector = useDeleteSector()
+  const moveSector = useMoveSector()
+
+  const sectorOptions: SectorOption[] = (sectors ?? []).map((s) => ({ id: s.id, name: s.name }))
+  const otherCrags = (allCrags ?? []).filter((c) => c.id !== cragId)
 
   const [creating, setCreating] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [expandedId, setExpandedId] = useState<string | null>(null)
+
+  async function handleMoveSector(sector: Sector, toCragId: string) {
+    const target = otherCrags.find((c) => c.id === toCragId)
+    if (!confirm(`Spostare il settore "${sector.name}" (con tutte le sue vie) nella falesia "${target?.name}"?`)) return
+    await moveSector.mutateAsync({ sectorId: sector.id, fromCragId: cragId, toCragId })
+  }
 
   async function handleCreate(values: SectorFormValues) {
     await createSector.mutateAsync({ cragId, values })
@@ -391,12 +488,25 @@ export default function SectorsAdmin({ cragId }: { cragId: string }) {
                 <div className="actions">
                   <button className="btn-edit" onClick={() => setEditingId(sector.id)}>Modifica</button>
                   <button className="btn-danger" onClick={() => handleDelete(sector)}>Elimina</button>
+                  {otherCrags.length > 0 && (
+                    <select
+                      className="move-select"
+                      value=""
+                      title="Sposta il settore in un'altra falesia"
+                      onChange={(e) => { if (e.target.value) handleMoveSector(sector, e.target.value) }}
+                    >
+                      <option value="">Sposta in falesia…</option>
+                      {otherCrags.map((c) => (
+                        <option key={c.id} value={c.id}>{c.name}</option>
+                      ))}
+                    </select>
+                  )}
                 </div>
               </div>
 
               {expandedId === sector.id && (
                 <div className="admin-sector-body">
-                  <RoutesAdmin sectorId={sector.id} />
+                  <RoutesAdmin sectorId={sector.id} cragId={cragId} sectors={sectorOptions} />
                 </div>
               )}
             </>
@@ -404,9 +514,11 @@ export default function SectorsAdmin({ cragId }: { cragId: string }) {
         </div>
       ))}
 
-      {(createSector.isError || updateSector.isError || deleteSector.isError) && (
+      <OrphanRoutesAdmin cragId={cragId} sectors={sectorOptions} />
+
+      {(createSector.isError || updateSector.isError || deleteSector.isError || moveSector.isError) && (
         <div className="admin-error">
-          {((createSector.error || updateSector.error || deleteSector.error) as Error)?.message}
+          {((createSector.error || updateSector.error || deleteSector.error || moveSector.error) as Error)?.message}
         </div>
       )}
     </div>

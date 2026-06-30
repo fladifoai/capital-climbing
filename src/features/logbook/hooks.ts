@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '../../lib/supabase'
+import { capitalScoreFromAscent, SCORE_VERSION } from '../../lib/scoring'
 import type { Ascent, Route, Sector, Crag, UserRouteNote } from '../../types/database'
 import type { AttemptType, Visibility } from '../../types/database'
 
@@ -64,13 +65,20 @@ export function useCreateAscent() {
   return useMutation({
     mutationFn: async ({ userId, values, routeId }: { userId: string; values: AscentFormValues; routeId?: string }) => {
       console.log('[useCreateAscent] inserting', { userId, route_id: values.route_id, session_id: values.session_id })
+      const capitalScore = capitalScoreFromAscent({
+        grade: values.grade_at_ascent,
+        ascent_style: values.ascent_style,
+        attempt_count: values.attempt_count,
+        attempt_type: values.attempt_type,
+      })
       const { error } = await supabase
         .from('ascents')
         .insert({
           ...values,
           user_id: userId,
           status: 'completed',
-          score: null,
+          score: capitalScore,
+          score_version: capitalScore === null ? null : SCORE_VERSION,
           needs_review: false,
         })
       if (error) {

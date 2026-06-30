@@ -134,6 +134,24 @@ export function useAdminRoutes(sectorId: string) {
   })
 }
 
+// Vie senza settore (orfane) di una falesia — es. importate senza settore.
+export function useAdminOrphanRoutes(cragId: string) {
+  return useQuery({
+    queryKey: ['admin-orphan-routes', cragId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('routes')
+        .select('*')
+        .eq('crag_id', cragId)
+        .is('sector_id', null)
+        .order('name')
+      if (error) throw error
+      return data as Route[]
+    },
+    enabled: !!cragId,
+  })
+}
+
 // ── Crag mutations ──────────────────────────────────────────────────────
 
 export function useCreateCrag() {
@@ -316,6 +334,42 @@ export function useDeleteRoute() {
     },
     onSuccess: (_, variables) => {
       qc.invalidateQueries({ queryKey: ['admin-routes', variables.sectorId] })
+    },
+  })
+}
+
+// Sposta una via in un altro settore della stessa falesia.
+export function useMoveRoute() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async ({ id, toSectorId }: { id: string; cragId: string; toSectorId: string }) => {
+      const { error } = await supabase.from('routes').update({ sector_id: toSectorId }).eq('id', id)
+      if (error) throw error
+    },
+    onSuccess: (_, { cragId }) => {
+      qc.invalidateQueries({ queryKey: ['admin-routes'] })
+      qc.invalidateQueries({ queryKey: ['admin-orphan-routes', cragId] })
+      qc.invalidateQueries({ queryKey: ['sectors-with-routes', cragId] })
+    },
+  })
+}
+
+// Sposta un settore (con tutte le sue vie) in un'altra falesia.
+export function useMoveSector() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async ({ sectorId, toCragId }: { sectorId: string; fromCragId: string; toCragId: string }) => {
+      const { error: e1 } = await supabase.from('sectors').update({ crag_id: toCragId }).eq('id', sectorId)
+      if (e1) throw e1
+      const { error: e2 } = await supabase.from('routes').update({ crag_id: toCragId }).eq('sector_id', sectorId)
+      if (e2) throw e2
+    },
+    onSuccess: (_, { fromCragId, toCragId }) => {
+      qc.invalidateQueries({ queryKey: ['admin-sectors', fromCragId] })
+      qc.invalidateQueries({ queryKey: ['admin-sectors', toCragId] })
+      qc.invalidateQueries({ queryKey: ['sectors-with-routes', fromCragId] })
+      qc.invalidateQueries({ queryKey: ['sectors-with-routes', toCragId] })
+      qc.invalidateQueries({ queryKey: ['regions-with-counts'] })
     },
   })
 }

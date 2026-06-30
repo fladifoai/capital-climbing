@@ -1,0 +1,23 @@
+{
+  "country": "Italy",
+  "region": "Lazio",
+  "province": "Roma",
+  "municipality": "Subiaco",
+  "crag": "Subiaco",
+  "sector": "Regno dei Ragni",
+  "routes": [
+    { "name": "Senza nome 1", "grade": "6c+" },
+    { "name": "Senza nome 2", "grade": "6c+" },
+    { "name": "Senza nome 2 L2", "grade": null },
+    { "name": "Ad occhi chiusi L1", "grade": "6c+" },
+    { "name": "Ad occhi chiusi L2", "grade": "8a" },
+    { "name": "Il Turco", "grade": "7b+" },
+    { "name": "Lo sgradasso", "grade": "7b" },
+    { "name": "Aji Musa", "grade": "8b" },
+    { "name": "Gommolo", "grade": "7a+" },
+    { "name": "La storia infinita", "grade": "8b+" },
+    { "name": "Sacro Speco", "grade": "8a+" },
+    { "name": "La Tana", "grade": "8b" },
+    { "name": "unchio", "grade": "8b+" }
+  ]
+}
