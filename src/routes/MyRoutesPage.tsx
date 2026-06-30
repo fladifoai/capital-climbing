@@ -16,10 +16,83 @@ const ATTEMPT_COLORS: Record<string, string> = {
   onsight: '#28B487', flash: '#4C9BE8', redpoint: '#D9902F', second: '#D9902F', third: '#D9902F', four_plus: '#D9902F',
   repeat: '#A78BFA', unknown: '#8E887E',
 }
+const ATTEMPT_FULL: Record<string, string> = {
+  onsight: 'On-sight', flash: 'Flash', redpoint: 'Redpoint',
+  second: '2° giro', third: '3° giro', four_plus: '4° giro o oltre', repeat: 'Ripetizione',
+}
+// Ordine di "bontà" stile per scegliere il miglior stile di una via (0 = migliore).
+const STYLE_RANK: Record<string, number> = {
+  onsight: 0, flash: 1, redpoint: 2, second: 2, third: 2, four_plus: 2, unknown: 4,
+}
 
 type SortKey = 'date_desc' | 'date_asc' | 'grade_desc' | 'grade_asc' | 'quality_desc'
 type StatusFilter = 'completed' | 'attempted' | 'all'
 type ViewMode = 'grade' | 'list'
+
+// ── Una via raggruppata: tutte le ascensioni dell'utente su quella via ──────
+interface RouteGroup {
+  routeId: string
+  route: AscentWithRoute['route'] | null
+  items: AscentWithRoute[]      // ordinate per data desc
+  displayGrade: string
+  gradeNumeric: number
+  bestStyle: string | null      // miglior stile tra le SALITE (no ripetizioni)
+  firstSendDate: string | null
+  lastActivity: string
+  repeatCount: number
+  sessionCount: number
+  quality: number | null
+  hasSend: boolean
+}
+
+function styleKey(a: AscentWithRoute): string {
+  return (a.ascent_style ?? a.attempt_type ?? 'unknown')
+}
+function isRepeatAscent(a: AscentWithRoute): boolean {
+  return a.is_repeat === true || styleKey(a) === 'repeat'
+}
+
+function buildGroups(ascents: AscentWithRoute[]): RouteGroup[] {
+  const byRoute = new Map<string, AscentWithRoute[]>()
+  for (const a of ascents) {
+    const arr = byRoute.get(a.route_id)
+    if (arr) arr.push(a)
+    else byRoute.set(a.route_id, [a])
+  }
+  const groups: RouteGroup[] = []
+  byRoute.forEach((items, routeId) => {
+    const sorted = [...items].sort((a, b) => b.date.localeCompare(a.date))
+    const sends = sorted.filter(a => !isRepeatAscent(a) && a.status === 'completed')
+    // Miglior salita: rank stile più basso, a parità grado più alto, poi data più vecchia.
+    const best = [...sends].sort((a, b) => {
+      const ra = STYLE_RANK[styleKey(a)] ?? 4
+      const rb = STYLE_RANK[styleKey(b)] ?? 4
+      if (ra !== rb) return ra - rb
+      const ga = a.grade_numeric_at_ascent ?? a.route?.grade_numeric ?? 0
+      const gb = b.grade_numeric_at_ascent ?? b.route?.grade_numeric ?? 0
+      if (gb !== ga) return gb - ga
+      return a.date.localeCompare(b.date)
+    })[0] ?? null
+    const repeatCount = sorted.filter(isRepeatAscent).length
+    const sessionKeys = new Set(sorted.map(a => a.session_id ?? `d:${a.date}`))
+    const ref = best ?? sorted[0]
+    groups.push({
+      routeId,
+      route: ref?.route ?? null,
+      items: sorted,
+      displayGrade: ref?.grade_at_ascent ?? ref?.route?.official_grade ?? '?',
+      gradeNumeric: ref?.grade_numeric_at_ascent ?? ref?.route?.grade_numeric ?? 0,
+      bestStyle: best ? styleKey(best) : null,
+      firstSendDate: sends.length ? sends.map(a => a.date).sort()[0] : null,
+      lastActivity: sorted[0]?.date ?? '',
+      repeatCount,
+      sessionCount: sessionKeys.size,
+      quality: best?.quality ?? sorted.find(a => a.quality != null)?.quality ?? null,
+      hasSend: sends.length > 0,
+    })
+  })
+  return groups
+}
 
 function Stars({ n }: { n: number | null }) {
   if (!n) return null
@@ -30,27 +103,23 @@ function Stars({ n }: { n: number | null }) {
   )
 }
 
-function sortAscents(list: AscentWithRoute[], sort: SortKey): AscentWithRoute[] {
+function sortGroups(list: RouteGroup[], sort: SortKey): RouteGroup[] {
   return [...list].sort((a, b) => {
     switch (sort) {
-      case 'date_desc': return b.date.localeCompare(a.date)
-      case 'date_asc':  return a.date.localeCompare(b.date)
-      case 'grade_desc': return (b.grade_numeric_at_ascent ?? b.route?.grade_numeric ?? 0) - (a.grade_numeric_at_ascent ?? a.route?.grade_numeric ?? 0)
-      case 'grade_asc':  return (a.grade_numeric_at_ascent ?? a.route?.grade_numeric ?? 0) - (b.grade_numeric_at_ascent ?? b.route?.grade_numeric ?? 0)
+      case 'date_desc': return b.lastActivity.localeCompare(a.lastActivity)
+      case 'date_asc':  return a.lastActivity.localeCompare(b.lastActivity)
+      case 'grade_desc': return b.gradeNumeric - a.gradeNumeric
+      case 'grade_asc':  return a.gradeNumeric - b.gradeNumeric
       case 'quality_desc': {
         const qa = a.quality ?? 0, qb = b.quality ?? 0
-        return qb !== qa ? qb - qa : b.date.localeCompare(a.date)
+        return qb !== qa ? qb - qa : b.lastActivity.localeCompare(a.lastActivity)
       }
     }
   })
 }
 
-const ATTEMPT_FULL: Record<string, string> = {
-  onsight: 'On-sight', flash: 'Flash', redpoint: 'Redpoint',
-  second: '2° giro', third: '3° giro', four_plus: '4° giro o oltre',
-}
-
-interface AscentRowProps {
+// ── Una riga della timeline (singola ascensione/ripetizione) con edit/elimina ─
+interface HistoryItemProps {
   a: AscentWithRoute
   onDelete: (id: string, name: string) => void
   isPending: boolean
@@ -60,140 +129,157 @@ interface AscentRowProps {
   onSaveEdit: (values: AscentUpdateValues) => void
   savingEdit: boolean
 }
-function AscentRow({ a, onDelete, isPending, editing, onStartEdit, onCancelEdit, onSaveEdit, savingEdit }: AscentRowProps) {
-  const [open, setOpen] = useState(false)
-  const grade = a.grade_at_ascent ?? a.route?.official_grade
-  const type = a.ascent_style ?? a.attempt_type
-
+function HistoryItem({ a, onDelete, isPending, editing, onStartEdit, onCancelEdit, onSaveEdit, savingEdit }: HistoryItemProps) {
   if (editing) {
     return (
-      <div className="ascent-card-row expanded">
-        <div style={{ padding: '14px 16px' }}>
-          <AscentEditForm
-            ascent={{
-              id: a.id,
-              date: a.date,
-              ascent_style: a.ascent_style,
-              attempt_count: a.attempt_count,
-              grade_at_ascent: a.grade_at_ascent,
-              is_repeat: a.is_repeat,
-              personal_grade: a.personal_grade,
-              quality: a.quality,
-              effort: a.effort,
-              kneepad_used: a.kneepad_used,
-              notes: a.notes,
-              visibility: a.visibility,
-              route: a.route ? { id: a.route.id, name: a.route.name, official_grade: a.route.official_grade } : null,
-            }}
-            onSubmit={onSaveEdit}
-            onCancel={onCancelEdit}
-            isLoading={savingEdit}
-          />
-        </div>
+      <div style={{ padding: '10px 12px', borderTop: '1px solid rgba(247,243,234,0.08)' }}>
+        <AscentEditForm
+          ascent={{
+            id: a.id,
+            date: a.date,
+            ascent_style: a.ascent_style,
+            attempt_count: a.attempt_count,
+            grade_at_ascent: a.grade_at_ascent,
+            is_repeat: a.is_repeat,
+            personal_grade: a.personal_grade,
+            quality: a.quality,
+            effort: a.effort,
+            kneepad_used: a.kneepad_used,
+            notes: a.notes,
+            visibility: a.visibility,
+            route: a.route ? { id: a.route.id, name: a.route.name, official_grade: a.route.official_grade } : null,
+          }}
+          onSubmit={onSaveEdit}
+          onCancel={onCancelEdit}
+          isLoading={savingEdit}
+        />
       </div>
     )
   }
+
+  const repeat = isRepeatAscent(a)
+  const type = repeat ? 'repeat' : styleKey(a)
+  const label = a.status !== 'completed' ? 'Tentativo' : (ATTEMPT_FULL[type] ?? type)
+
+  return (
+    <div className="history-timeline-row" style={{
+      display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap',
+      padding: '8px 12px', borderTop: '1px solid rgba(247,243,234,0.08)', fontSize: 13,
+    }}>
+      <span style={{ color: 'var(--text-muted)', minWidth: 88 }}>{a.date}</span>
+      <span style={{ fontWeight: 700, color: ATTEMPT_COLORS[type] ?? 'var(--text-muted)' }}>{label}</span>
+      {repeat && (
+        <span style={{
+          fontSize: 10, fontWeight: 700, color: '#A78BFA',
+          border: '1px solid rgba(167,139,250,0.4)', borderRadius: 8, padding: '1px 6px',
+        }}>Nessun punteggio</span>
+      )}
+      {a.grade_at_ascent && <span className="grade-badge">{a.grade_at_ascent}</span>}
+      <Stars n={a.quality ?? null} />
+      {a.notes && <span style={{ color: 'var(--text-muted)', flex: 1, minWidth: 120 }}>{a.notes}</span>}
+      <span style={{ marginLeft: 'auto', display: 'flex', gap: 6 }}>
+        <button
+          className="btn-secondary" style={{ fontSize: 11, padding: '2px 7px' }}
+          onClick={() => onStartEdit(a.id)} title="Modifica"
+        >✎</button>
+        <button
+          className="btn-secondary" style={{ fontSize: 11, padding: '2px 7px', color: '#FFB0A5' }}
+          onClick={() => onDelete(a.id, a.route?.name ?? '')} disabled={isPending}
+        >×</button>
+      </span>
+    </div>
+  )
+}
+
+// ── La card di una via (riga unica del logbook) ──────────────────────────────
+interface RouteGroupRowProps {
+  g: RouteGroup
+  onDelete: (id: string, name: string) => void
+  deletePending: boolean
+  editingId: string | null
+  onStartEdit: (id: string) => void
+  onCancelEdit: () => void
+  onSaveEdit: (ascentId: string, routeId: string | undefined, values: AscentUpdateValues) => void
+  savingEdit: boolean
+}
+function RouteGroupRow({ g, onDelete, deletePending, editingId, onStartEdit, onCancelEdit, onSaveEdit, savingEdit }: RouteGroupRowProps) {
+  const [open, setOpen] = useState(false)
+  const bs = g.bestStyle
 
   return (
     <div className={`ascent-card-row${open ? ' expanded' : ''}`}>
       <div className="ascent-row-header" onClick={() => setOpen(o => !o)} style={{ cursor: 'pointer' }}>
         <div className="ascent-row-main">
           <span className="ascent-row-name">
-            {a.route?.name ?? '—'}
-          </span>
-          <div className="ascent-row-sub">
             <Link
-              to={`/crags/${a.route?.sector?.crag?.id}`}
+              to={`/routes/${g.routeId}`}
               style={{ color: 'inherit', textDecoration: 'none' }}
               onClick={e => e.stopPropagation()}
             >
-              {a.route?.sector?.crag?.name}
+              {g.route?.name ?? '—'}
             </Link>
-            {a.route?.sector?.name ? ` › ${a.route.sector.name}` : ''}
+          </span>
+          <div className="ascent-row-sub">
+            <Link
+              to={`/crags/${g.route?.sector?.crag?.id}`}
+              style={{ color: 'inherit', textDecoration: 'none' }}
+              onClick={e => e.stopPropagation()}
+            >
+              {g.route?.sector?.crag?.name}
+            </Link>
+            {g.route?.sector?.name ? ` › ${g.route.sector.name}` : ''}
           </div>
         </div>
         <div className="ascent-row-meta">
-          {grade && <span className="grade-badge">{grade}</span>}
-          {type && (
-            <span style={{ fontSize: 11, fontWeight: 700, color: ATTEMPT_COLORS[type] ?? 'var(--accent)' }}>
-              {ATTEMPT_LABELS[type] ?? type}
+          {g.displayGrade && g.displayGrade !== '?' && <span className="grade-badge">{g.displayGrade}</span>}
+          {bs && (
+            <span style={{ fontSize: 11, fontWeight: 700, color: ATTEMPT_COLORS[bs] ?? 'var(--accent)' }}>
+              {ATTEMPT_LABELS[bs] ?? bs}
             </span>
           )}
-          {a.status === 'attempted' && !type && (
+          {!g.hasSend && (
             <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>Tentativo</span>
           )}
-          <Stars n={a.quality ?? null} />
-          <span className="ascent-row-date">{a.date}</span>
+          {g.repeatCount > 0 && (
+            <span style={{ fontSize: 11, fontWeight: 700, color: '#A78BFA' }} title="Ripetizioni">
+              ↻ {g.repeatCount}
+            </span>
+          )}
+          <span style={{ fontSize: 11, color: 'var(--text-muted)' }} title="Sessioni">
+            {g.sessionCount} {g.sessionCount === 1 ? 'sess.' : 'sess.'}
+          </span>
+          <Stars n={g.quality} />
+          <span className="ascent-row-date">{g.lastActivity}</span>
           <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>{open ? '▲' : '▼'}</span>
-          <button
-            className="btn-secondary"
-            style={{ fontSize: 11, padding: '2px 7px' }}
-            onClick={e => { e.stopPropagation(); onStartEdit(a.id) }}
-            title="Modifica ascensione"
-          >✎</button>
-          <button
-            className="btn-secondary"
-            style={{ fontSize: 11, padding: '2px 7px', color: '#FFB0A5' }}
-            onClick={e => { e.stopPropagation(); onDelete(a.id, a.route?.name ?? '') }}
-            disabled={isPending}
-          >×</button>
         </div>
       </div>
 
       {open && (
-        <div className="ascent-detail-panel">
-          <div className="ascent-detail-grid">
-            <div className="ascent-detail-item">
-              <span className="ascent-detail-label">Via</span>
-              <Link to={`/routes/${a.route?.id}`} style={{ color: 'var(--accent)', fontWeight: 600, textDecoration: 'none' }}>
-                {a.route?.name}
-              </Link>
-            </div>
-            <div className="ascent-detail-item">
-              <span className="ascent-detail-label">Data</span>
-              <span>{a.date}</span>
-            </div>
-            <div className="ascent-detail-item">
-              <span className="ascent-detail-label">Tipo</span>
-              <span>{type ? ATTEMPT_FULL[type] : a.status === 'attempted' ? 'Tentativo' : '—'}</span>
-            </div>
-            <div className="ascent-detail-item">
-              <span className="ascent-detail-label">Grado salita</span>
-              <span>{a.grade_at_ascent ?? '—'}</span>
-            </div>
-            {a.personal_grade && (
-              <div className="ascent-detail-item">
-                <span className="ascent-detail-label">Grado personale</span>
-                <span>{a.personal_grade}</span>
-              </div>
-            )}
-            <div className="ascent-detail-item">
-              <span className="ascent-detail-label">Bellezza</span>
-              <span>{a.quality ? <Stars n={a.quality} /> : '—'}</span>
-            </div>
-            {a.effort != null && (
-              <div className="ascent-detail-item">
-                <span className="ascent-detail-label">Sforzo</span>
-                <span>{a.effort}/10</span>
-              </div>
-            )}
-            {a.kneepad_used != null && (
-              <div className="ascent-detail-item">
-                <span className="ascent-detail-label">Ginocchiera</span>
-                <span>{a.kneepad_used ? 'Sì' : 'No'}</span>
-              </div>
-            )}
-            <div className="ascent-detail-item">
-              <span className="ascent-detail-label">Visibilità</span>
-              <span>{a.visibility === 'public' ? 'Pubblica' : 'Privata'}</span>
-            </div>
+        <div className="ascent-detail-panel" style={{ padding: '4px 0 8px' }}>
+          <div style={{
+            display: 'flex', gap: 16, flexWrap: 'wrap', padding: '8px 16px',
+            fontSize: 12, color: 'var(--text-muted)',
+          }}>
+            {g.firstSendDate && <span>Prima salita: <strong style={{ color: 'var(--text)' }}>{g.firstSendDate}</strong></span>}
+            <span>Ripetizioni: <strong style={{ color: 'var(--text)' }}>{g.repeatCount}</strong></span>
+            <span>Sessioni: <strong style={{ color: 'var(--text)' }}>{g.sessionCount}</strong></span>
+            <Link to={`/routes/${g.routeId}`} style={{ marginLeft: 'auto', color: 'var(--accent)', textDecoration: 'none', fontWeight: 600 }}>
+              Apri dettaglio via →
+            </Link>
           </div>
-          {a.notes && (
-            <div className="ascent-detail-notes">
-              <span className="ascent-detail-label">Note</span>
-              <p>{a.notes}</p>
-            </div>
-          )}
+          {g.items.map(a => (
+            <HistoryItem
+              key={a.id}
+              a={a}
+              onDelete={onDelete}
+              isPending={deletePending}
+              editing={editingId === a.id}
+              onStartEdit={onStartEdit}
+              onCancelEdit={onCancelEdit}
+              onSaveEdit={values => onSaveEdit(a.id, a.route?.id, values)}
+              savingEdit={savingEdit}
+            />
+          ))}
         </div>
       )}
     </div>
@@ -258,11 +344,10 @@ export default function MyRoutesPage() {
     return Array.from(years).sort((a, b) => b.localeCompare(a))
   }, [ascents])
 
-  const filtered = useMemo(() => {
+  // Filtra le ascensioni, poi raggruppa: UNA riga per via.
+  const groups = useMemo(() => {
     let list = ascents ?? []
-    if (statusFilter !== 'all') list = list.filter(a => a.status === statusFilter)
     if (yearFilter !== 'all') list = list.filter(a => a.date.startsWith(yearFilter))
-    if (typeFilter !== 'all') list = list.filter(a => (a.ascent_style ?? a.attempt_type) === typeFilter)
     if (search.trim().length >= 2) {
       const q = search.toLowerCase()
       list = list.filter(a =>
@@ -270,30 +355,36 @@ export default function MyRoutesPage() {
         a.route?.sector?.crag?.name?.toLowerCase().includes(q)
       )
     }
-    return sortAscents(list, sort)
-  }, [ascents, statusFilter, yearFilter, typeFilter, search, sort])
+    let g = buildGroups(list)
+    // Stato: completate (con almeno una salita) / solo tentativi / tutto.
+    if (statusFilter === 'completed') g = g.filter(x => x.hasSend)
+    else if (statusFilter === 'attempted') g = g.filter(x => !x.hasSend)
+    // Tipo
+    if (typeFilter === 'repeat') g = g.filter(x => x.repeatCount > 0)
+    else if (typeFilter === 'redpoint') g = g.filter(x => ['redpoint', 'second', 'third', 'four_plus'].includes(x.bestStyle ?? ''))
+    else if (typeFilter !== 'all') g = g.filter(x => x.bestStyle === typeFilter)
+    return sortGroups(g, sort)
+  }, [ascents, yearFilter, search, statusFilter, typeFilter, sort])
 
   const gradeGroups = useMemo(() => {
-    const map = new Map<string, { numeric: number; items: AscentWithRoute[] }>()
-    filtered.forEach(a => {
-      const g = a.grade_at_ascent ?? a.route?.official_grade ?? '?'
-      const n = a.grade_numeric_at_ascent ?? a.route?.grade_numeric ?? 0
-      const existing = map.get(g)
-      if (existing) existing.items.push(a)
-      else map.set(g, { numeric: n, items: [a] })
+    const map = new Map<string, { numeric: number; items: RouteGroup[] }>()
+    groups.forEach(g => {
+      const existing = map.get(g.displayGrade)
+      if (existing) existing.items.push(g)
+      else map.set(g.displayGrade, { numeric: g.gradeNumeric, items: [g] })
     })
     return Array.from(map.entries())
       .sort(([, a], [, b]) => b.numeric - a.numeric)
       .map(([grade, { numeric, items }]) => {
-        const os = items.filter(a => (a.ascent_style ?? a.attempt_type) === 'onsight').length
-        const fl = items.filter(a => (a.ascent_style ?? a.attempt_type) === 'flash').length
-        const rp = items.filter(a => ['redpoint','second','third','four_plus'].includes(a.ascent_style ?? a.attempt_type ?? '')).length
+        const os = items.filter(g => g.bestStyle === 'onsight').length
+        const fl = items.filter(g => g.bestStyle === 'flash').length
+        const rp = items.filter(g => ['redpoint', 'second', 'third', 'four_plus'].includes(g.bestStyle ?? '')).length
         return { grade, numeric, items, os, fl, rp }
       })
-  }, [filtered])
+  }, [groups])
 
   const isEmpty = !isLoading && (ascents?.length ?? 0) === 0
-  const noResults = !isLoading && (ascents?.length ?? 0) > 0 && filtered.length === 0
+  const noResults = !isLoading && (ascents?.length ?? 0) > 0 && groups.length === 0
 
   return (
     <div className="logbook-page">
@@ -355,7 +446,7 @@ export default function MyRoutesPage() {
           <option value="onsight">On-sight</option>
           <option value="flash">Flash</option>
           <option value="redpoint">Redpoint</option>
-          <option value="repeat">Ripetizione</option>
+          <option value="repeat">Con ripetizioni</option>
         </select>
       </div>
 
@@ -404,7 +495,7 @@ export default function MyRoutesPage() {
         </div>
 
         <span style={{ fontSize: 12, color: 'var(--text-on-dark-muted)' }}>
-          {filtered.length} {filtered.length === 1 ? 'ascensione' : 'ascensioni'}
+          {groups.length} {groups.length === 1 ? 'via' : 'vie'}
         </span>
       </div>
 
@@ -442,30 +533,32 @@ export default function MyRoutesPage() {
       {/* No results from filters */}
       {noResults && (
         <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text-on-dark-muted)', fontSize: 14 }}>
-          Nessuna ascensione con i filtri selezionati.
+          Nessuna via con i filtri selezionati.
         </div>
       )}
 
       {/* Grade view */}
-      {!isLoading && view === 'grade' && gradeGroups.map(g => (
-        <div key={g.grade} className="grade-group">
+      {!isLoading && view === 'grade' && gradeGroups.map(gg => (
+        <div key={gg.grade} className="grade-group">
           <div className="grade-group-header">
-            <span className="grade-badge" style={{ fontSize: 14, padding: '4px 12px' }}>{g.grade}</span>
+            <span className="grade-badge" style={{ fontSize: 14, padding: '4px 12px' }}>{gg.grade}</span>
             <span style={{ fontSize: 13, color: 'var(--text-on-dark)', fontWeight: 600 }}>
-              {g.items.length} {g.items.length === 1 ? 'via' : 'vie'}
+              {gg.items.length} {gg.items.length === 1 ? 'via' : 'vie'}
             </span>
             <span style={{ fontSize: 12, color: 'var(--text-on-dark-muted)', display: 'flex', gap: 8 }}>
-              {g.os > 0 && <span style={{ color: '#28B487', fontWeight: 700 }}>{g.os} OS</span>}
-              {g.fl > 0 && <span style={{ color: '#4C9BE8', fontWeight: 700 }}>{g.fl} FL</span>}
-              {g.rp > 0 && <span style={{ color: '#D9902F', fontWeight: 700 }}>{g.rp} RP</span>}
+              {gg.os > 0 && <span style={{ color: '#28B487', fontWeight: 700 }}>{gg.os} OS</span>}
+              {gg.fl > 0 && <span style={{ color: '#4C9BE8', fontWeight: 700 }}>{gg.fl} FL</span>}
+              {gg.rp > 0 && <span style={{ color: '#D9902F', fontWeight: 700 }}>{gg.rp} RP</span>}
             </span>
           </div>
-          {g.items.map(a => (
-            <AscentRow key={a.id} a={a} onDelete={handleDelete} isPending={deleteAscent.isPending}
-              editing={editingId === a.id}
+          {gg.items.map(g => (
+            <RouteGroupRow
+              key={g.routeId} g={g}
+              onDelete={handleDelete} deletePending={deleteAscent.isPending}
+              editingId={editingId}
               onStartEdit={setEditingId}
               onCancelEdit={() => setEditingId(null)}
-              onSaveEdit={values => handleSaveEdit(a.id, a.route?.id, values)}
+              onSaveEdit={handleSaveEdit}
               savingEdit={updateAscent.isPending}
             />
           ))}
@@ -473,12 +566,14 @@ export default function MyRoutesPage() {
       ))}
 
       {/* List view */}
-      {!isLoading && view === 'list' && filtered.map(a => (
-        <AscentRow key={a.id} a={a} onDelete={handleDelete} isPending={deleteAscent.isPending}
-          editing={editingId === a.id}
+      {!isLoading && view === 'list' && groups.map(g => (
+        <RouteGroupRow
+          key={g.routeId} g={g}
+          onDelete={handleDelete} deletePending={deleteAscent.isPending}
+          editingId={editingId}
           onStartEdit={setEditingId}
           onCancelEdit={() => setEditingId(null)}
-          onSaveEdit={values => handleSaveEdit(a.id, a.route?.id, values)}
+          onSaveEdit={handleSaveEdit}
           savingEdit={updateAscent.isPending}
         />
       ))}

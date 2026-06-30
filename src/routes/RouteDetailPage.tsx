@@ -397,7 +397,7 @@ function RoutePersonalHistory({
   ascents: Ascent[]
   routeId: string
 }) {
-  const best = ascents.find(a => a.status === 'completed')
+  const best = ascents.find(a => a.status === 'completed' && !a.is_repeat)
   return (
     <div className="route-section">
       <div className="personal-history-header">
@@ -422,10 +422,17 @@ function RoutePersonalHistory({
             <div key={a.id} className="history-row">
               <span className="history-date">{new Date(a.date).toLocaleDateString('it-IT')}</span>
               <span className={`attempt-badge${a.status !== 'completed' ? ' attempted' : ''}`}>
-                {a.status === 'completed'
-                  ? (ATTEMPT_LABEL[a.ascent_style ?? a.attempt_type ?? ''] ?? a.ascent_style ?? a.attempt_type ?? 'Salita')
-                  : 'Tentativo'}
+                {a.status !== 'completed'
+                  ? 'Tentativo'
+                  : a.is_repeat
+                    ? 'Ripetizione'
+                    : (ATTEMPT_LABEL[a.ascent_style ?? a.attempt_type ?? ''] ?? a.ascent_style ?? a.attempt_type ?? 'Salita')}
               </span>
+              {a.is_repeat && (
+                <span className="attempt-badge" style={{ color: '#A78BFA', borderColor: 'rgba(167,139,250,0.4)' }}>
+                  Nessun punteggio
+                </span>
+              )}
               {a.grade_at_ascent && <span className="grade-badge">{a.grade_at_ascent}</span>}
               {a.quality != null && (
                 <span className="history-quality">

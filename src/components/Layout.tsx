@@ -16,6 +16,7 @@ const privateNavItems = [
   { to: '/logbook/import', label: 'Importa logbook' },
   { to: '/projects', label: 'Progetti' },
   { to: '/profile', label: 'Il mio profilo' },
+  { to: '/score', label: 'Capital Score' },
   { to: '/analytics', label: 'Analisi' },
   { to: '/settings', label: 'Impostazioni' },
 ]

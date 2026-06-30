@@ -1,0 +1,30 @@
+.chart-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0 0 4px;
+}
+
+.score-page {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 24px 16px 64px;
+}
+
+.score-page-header h1 {
+  font-size: 26px;
+  font-weight: 800;
+  margin: 0 0 4px;
+}
+
+.score-page-header p {
+  color: var(--text-muted);
+  font-size: 14px;
+  margin: 0 0 20px;
+}
+
+.score-grid-2 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+  gap: 16px;
+}

@@ -17,6 +17,7 @@ import UsersPage from '../routes/UsersPage'
 import UserProfilePage from '../routes/UserProfilePage'
 import DashboardPage from '../routes/DashboardPage'
 import ProfilePage from '../routes/ProfilePage'
+import ScorePage from '../routes/ScorePage'
 import SessionsPage from '../routes/SessionsPage'
 import ProjectsPage from '../routes/ProjectsPage'
 import AnalyticsPage from '../routes/AnalyticsPage'
@@ -64,6 +65,7 @@ export default function App() {
               <Route element={<AuthGuard />}>
                 <Route path="/dashboard" element={<DashboardPage />} />
                 <Route path="/profile" element={<ProfilePage />} />
+                <Route path="/score" element={<ScorePage />} />
                 <Route path="/my-routes" element={<Navigate to="/profile" replace />} />
                 <Route path="/sessions" element={<SessionsPage />} />
                 <Route path="/projects" element={<ProjectsPage />} />

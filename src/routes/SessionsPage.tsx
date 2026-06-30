@@ -390,9 +390,10 @@ function SessionCard({
                 </div>
               )
             }
-            const style = a.ascent_style ?? a.attempt_type ?? ''
-            const styleLabel = ATTEMPT_LABELS[style] ?? style
-            const color = STYLE_COLORS[style] ?? 'var(--text-muted)'
+            const repeat = a.is_repeat === true || (a.ascent_style ?? a.attempt_type) === 'repeat'
+            const style = repeat ? 'repeat' : (a.ascent_style ?? a.attempt_type ?? '')
+            const styleLabel = repeat ? 'Ripetizione' : (ATTEMPT_LABELS[style] ?? style)
+            const color = repeat ? '#A78BFA' : (STYLE_COLORS[style] ?? 'var(--text-muted)')
             return (
               <div key={a.id} className="session-route-row">
                 <Link to={`/routes/${a.route?.id}`} className="session-route-name">
@@ -403,6 +404,11 @@ function SessionCard({
                   {style && (
                     <span style={{ fontSize: 11, fontWeight: 800, color, background: `${color}18`, border: `1px solid ${color}44`, padding: '2px 8px', borderRadius: 999 }}>
                       {styleLabel}
+                    </span>
+                  )}
+                  {repeat && (
+                    <span style={{ fontSize: 10, fontWeight: 700, color: '#A78BFA', border: '1px solid rgba(167,139,250,0.4)', padding: '1px 6px', borderRadius: 999 }}>
+                      Nessun punteggio
                     </span>
                   )}
                   <button className="btn-secondary" style={{ fontSize: 11, padding: '2px 7px' }}
