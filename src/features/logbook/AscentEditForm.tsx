@@ -44,6 +44,7 @@ export interface EditableAscent {
   date: string
   ascent_style: string | null
   attempt_count: number | null
+  grade_at_ascent: string | null
   is_repeat: boolean
   personal_grade: string | null
   quality: number | null
@@ -82,6 +83,7 @@ export default function AscentEditForm({ ascent, onSubmit, onCancel, isLoading }
       ascent_style: mapped.ascent_style,
       attempt_count: mapped.attempt_count,
       attempt_bucket: mapped.attempt_bucket,
+      grade_at_ascent: ascent.grade_at_ascent,
       is_repeat: isRepeat,
       personal_grade: personalGrade || null,
       quality,

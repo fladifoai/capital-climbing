@@ -19,7 +19,15 @@ type AscentExt = AscentWithRoute & {
 }
 
 function getStyle(a: AscentExt): AscentStyle {
+  // is_repeat è autoritativo: una ripetizione conta sempre come 'repeat',
+  // anche se importata con ascent_style reale (es. redpoint).
+  if (a.is_repeat) return 'repeat'
   return normalizeAscentStyle((a as AscentExt).ascent_style ?? a.attempt_type)
+}
+
+// Una ripetizione non genera punteggio e non incide sui KPI di performance.
+function isRepeat(a: AscentExt): boolean {
+  return getStyle(a) === 'repeat'
 }
 
 function getBucket(a: AscentExt): AttemptBucket {
@@ -78,22 +86,28 @@ export function computeKpis(
   const filtered = filterAscents(ascents, filters) as AscentExt[]
   const total = filtered.length
 
-  const grades = filtered.map(a => a.grade_numeric_at_ascent ?? 0).filter(n => n > 0)
+  // Performance: solo salite valide (le ripetizioni NON contano per grado
+  // max, miglior salita, % OS/Flash, grado medio, tentativi-per-chiusura).
+  const sends = filtered.filter(a => !isRepeat(a))
+  const sendTotal = sends.length
+
+  const grades = sends.map(a => a.grade_numeric_at_ascent ?? 0).filter(n => n > 0)
   const avgGrade = grades.length ? Math.round(grades.reduce((s, n) => s + n, 0) / grades.length) : null
   const medGrade = grades.length ? median(grades) : null
 
-  const osFl = filtered.filter(a => getStyle(a) === 'onsight' || getStyle(a) === 'flash').length
-  const osCount = filtered.filter(a => getStyle(a) === 'onsight').length
-  const flCount = filtered.filter(a => getStyle(a) === 'flash').length
-  const rpCount = filtered.filter(a => getStyle(a) === 'redpoint').length
+  const osFl = sends.filter(a => getStyle(a) === 'onsight' || getStyle(a) === 'flash').length
+  const osCount = sends.filter(a => getStyle(a) === 'onsight').length
+  const flCount = sends.filter(a => getStyle(a) === 'flash').length
+  const rpCount = sends.filter(a => getStyle(a) === 'redpoint').length
 
+  // Volume: le ripetizioni contano (vie uniche, giornate, falesie, attività).
   const uniqueRoutes = new Set(filtered.map(a => a.route_id)).size
   const uniqueCrags = new Set(filtered.map(a => a.route?.sector?.crag?.id).filter(Boolean)).size
   const activeDays = new Set(filtered.map(a => a.date)).size
-  const repeatCount = filtered.filter(a => getStyle(a) === 'repeat').length
+  const repeatCount = filtered.filter(a => isRepeat(a)).length
 
   const within = (n: number) =>
-    filtered.filter(a => {
+    sends.filter(a => {
       const count = a.attempt_count
       if (count != null) return count <= n
       const bucket = getBucket(a)
@@ -122,15 +136,15 @@ export function computeKpis(
     uniqueRoutes,
     activeDays,
     repeatCount,
-    bestOnsightLabel: maxGradeLabel(filtered, 'onsight'),
-    bestFlashLabel: maxGradeLabel(filtered, 'flash'),
-    bestRedpointLabel: maxGradeLabel(filtered, 'redpoint'),
-    avgGradeLabel: avgGrade != null ? (filtered.find(a => (a.grade_numeric_at_ascent ?? 0) === avgGrade)?.grade_at_ascent ?? numToGrade(avgGrade)) : '—',
+    bestOnsightLabel: maxGradeLabel(sends, 'onsight'),
+    bestFlashLabel: maxGradeLabel(sends, 'flash'),
+    bestRedpointLabel: maxGradeLabel(sends, 'redpoint'),
+    avgGradeLabel: avgGrade != null ? (sends.find(a => (a.grade_numeric_at_ascent ?? 0) === avgGrade)?.grade_at_ascent ?? numToGrade(avgGrade)) : '—',
     medianGradeLabel: medGrade != null ? numToGrade(medGrade) : '—',
-    osFlashPct: total > 0 ? Math.round((osFl / total) * 100) : 0,
-    osPct: total > 0 ? Math.round((osCount / total) * 100) : 0,
-    flashPct: total > 0 ? Math.round((flCount / total) * 100) : 0,
-    rpPct: total > 0 ? Math.round((rpCount / total) * 100) : 0,
+    osFlashPct: sendTotal > 0 ? Math.round((osFl / sendTotal) * 100) : 0,
+    osPct: sendTotal > 0 ? Math.round((osCount / sendTotal) * 100) : 0,
+    flashPct: sendTotal > 0 ? Math.round((flCount / sendTotal) * 100) : 0,
+    rpPct: sendTotal > 0 ? Math.round((rpCount / sendTotal) * 100) : 0,
     repeatPct: total > 0 ? Math.round((repeatCount / total) * 100) : 0,
     within1: w1,
     within3: within(3),
@@ -162,6 +176,7 @@ export function computeDataQuality(ascents: AscentWithRoute[]): DataQualityStats
 
 export function computeGradeProgression(ascents: AscentWithRoute[]): GradeProgressionPoint[] {
   return (ascents as AscentExt[])
+    .filter(a => !isRepeat(a))
     .filter(a => a.grade_numeric_at_ascent && a.grade_numeric_at_ascent > 0)
     .map(a => ({
       date: a.date,
@@ -206,7 +221,8 @@ export function computeGradeProgressionLine(
   yearFilter: number | 'all'
 ): GradeProgressionLine[] {
   const map = new Map<string, { best: number; total: number; count: number }>()
-  ascents.forEach(a => {
+  ;(ascents as AscentExt[]).forEach(a => {
+    if (isRepeat(a)) return
     const key = yearFilter === 'all' ? a.date.slice(0, 4) : a.date.slice(0, 7)
     const n = a.grade_numeric_at_ascent ?? 0
     if (!n) return

@@ -377,6 +377,7 @@ function SessionCard({
                     ascent={{
                       id: a.id, date: a.date,
                       ascent_style: a.ascent_style, attempt_count: a.attempt_count,
+                      grade_at_ascent: a.grade_at_ascent,
                       is_repeat: a.is_repeat, personal_grade: a.personal_grade,
                       quality: a.quality, effort: a.effort, kneepad_used: a.kneepad_used,
                       notes: a.notes, visibility: a.visibility,

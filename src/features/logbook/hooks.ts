@@ -65,12 +65,15 @@ export function useCreateAscent() {
   return useMutation({
     mutationFn: async ({ userId, values, routeId }: { userId: string; values: AscentFormValues; routeId?: string }) => {
       console.log('[useCreateAscent] inserting', { userId, route_id: values.route_id, session_id: values.session_id })
-      const capitalScore = capitalScoreFromAscent({
-        grade: values.grade_at_ascent,
-        ascent_style: values.ascent_style,
-        attempt_count: values.attempt_count,
-        attempt_type: values.attempt_type,
-      })
+      // Le ripetizioni NON generano punteggio: score=null.
+      const capitalScore = values.is_repeat
+        ? null
+        : capitalScoreFromAscent({
+            grade: values.grade_at_ascent,
+            ascent_style: values.ascent_style,
+            attempt_count: values.attempt_count,
+            attempt_type: values.attempt_type,
+          })
       const { error } = await supabase
         .from('ascents')
         .insert({
@@ -103,6 +106,7 @@ export type AscentUpdateValues = {
   ascent_style?: string | null
   attempt_count?: number | null
   attempt_bucket?: string | null
+  grade_at_ascent?: string | null
   is_repeat?: boolean
   personal_grade?: string | null
   quality?: number | null
@@ -116,9 +120,34 @@ export function useUpdateAscent() {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: async (variables: { id: string; userId: string; values: AscentUpdateValues; routeId?: string }) => {
+      const values = variables.values
+      // Ricalcola il Capital Score se cambia stile/conteggio/ripetizione.
+      // Le ripetizioni NON generano punteggio: score=null.
+      const touchesScore =
+        'ascent_style' in values || 'attempt_count' in values || 'is_repeat' in values
+      const payload =
+        touchesScore && (values.is_repeat || values.grade_at_ascent)
+          ? (() => {
+              const capitalScore = values.is_repeat
+                ? null
+                : values.grade_at_ascent
+                  ? capitalScoreFromAscent({
+                      grade: values.grade_at_ascent,
+                      ascent_style: values.ascent_style,
+                      attempt_count: values.attempt_count,
+                    })
+                  : undefined
+              if (capitalScore === undefined) return values
+              return {
+                ...values,
+                score: capitalScore,
+                score_version: capitalScore === null ? null : SCORE_VERSION,
+              }
+            })()
+          : values
       const { error } = await supabase
         .from('ascents')
-        .update(variables.values)
+        .update(payload)
         .eq('id', variables.id)
       if (error) throw new Error(error.message + (error.details ? ` — ${error.details}` : ''))
       return { routeId: variables.routeId }
