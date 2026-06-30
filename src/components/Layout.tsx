@@ -1,6 +1,7 @@
 import { NavLink, Outlet, Link, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../features/auth/AuthContext'
 import ErrorBoundary from './ErrorBoundary'
+import SearchBar from './SearchBar'
 import './Layout.css'
 
 const publicNavItems = [
@@ -47,6 +48,7 @@ export default function Layout() {
           <span className="brandmark">▲</span>
           <span className="brand-name">Capital Climbing</span>
         </Link>
+        <SearchBar />
         <nav>
           {navItems.map(({ to, label: navLabel }) => (
             <NavLink

@@ -59,7 +59,7 @@ interface Props {
   preselectedRoute?: RouteSearchResult
   defaultDate?: string
   sessionId?: string | null
-  onSubmit: (values: AscentFormValues) => void
+  onSubmit: (values: AscentFormValues, route?: RouteSearchResult) => void
   onCancel: () => void
   isLoading?: boolean
 }
@@ -121,7 +121,7 @@ export default function AscentForm({ preselectedRoute, defaultDate, sessionId, o
       effort: data.effort ?? null,
       notes: data.notes ?? null,
       visibility: data.visibility,
-    })
+    }, selectedRoute)
   }
 
   return (

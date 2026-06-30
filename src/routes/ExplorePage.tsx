@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useRegionsWithCounts, useItalyStats, ITALY_ID } from '../features/catalog/hooks'
+import { useCragSearch } from '../features/sessions/hooks'
+import { useRouteSearch } from '../features/logbook/hooks'
 import { useAuth } from '../features/auth/AuthContext'
 import '../styles/catalog.css'
 
@@ -11,10 +13,15 @@ export default function ExplorePage() {
   const [search, setSearch] = useState('')
   const [hideEmpty, setHideEmpty] = useState(false)
 
+  const trimmed = search.trim()
+  const hasSearch = trimmed.length >= 2
+  const { data: cragResults, isFetching: cragsFetching } = useCragSearch(trimmed)
+  const { data: routeResults, isFetching: routesFetching } = useRouteSearch(trimmed)
+
   const filtered = regions
     ? regions.filter(r => {
         if (hideEmpty && r.crag_count === 0) return false
-        if (search.trim()) return r.name.toLowerCase().includes(search.trim().toLowerCase())
+        if (trimmed) return r.name.toLowerCase().includes(trimmed.toLowerCase())
         return true
       })
     : []
@@ -60,7 +67,7 @@ export default function ExplorePage() {
         <input
           className="explore-search"
           type="search"
-          placeholder="Cerca regione…"
+          placeholder="Cerca regione, falesia o via…"
           value={search}
           onChange={e => setSearch(e.target.value)}
         />
@@ -73,6 +80,50 @@ export default function ExplorePage() {
           Solo regioni con falesie
         </label>
       </div>
+
+      {/* Risultati falesie + vie quando si cerca */}
+      {hasSearch && (
+        <div style={{ marginBottom: 24 }}>
+          {(cragResults?.length ?? 0) > 0 && (
+            <>
+              <h2 className="explore-results-heading">Falesie</h2>
+              <div className="explore-results-list">
+                {cragResults!.map(c => (
+                  <Link key={c.id} to={`/crags/${c.id}`} className="explore-result-row">
+                    <span className="explore-result-icon">🪨</span>
+                    <span className="explore-result-main">
+                      <span className="explore-result-name">{c.name}</span>
+                      {(c.region || c.province) && (
+                        <span className="explore-result-sub">{[c.region, c.province].filter(Boolean).join(' · ')}</span>
+                      )}
+                    </span>
+                  </Link>
+                ))}
+              </div>
+            </>
+          )}
+          {(routeResults?.length ?? 0) > 0 && (
+            <>
+              <h2 className="explore-results-heading">Vie</h2>
+              <div className="explore-results-list">
+                {routeResults!.map(r => (
+                  <Link key={r.id} to={`/routes/${r.id}`} className="explore-result-row">
+                    <span className="explore-result-icon">🧗</span>
+                    <span className="explore-result-main">
+                      <span className="explore-result-name">{r.name}</span>
+                      <span className="explore-result-sub">{r.crag_name}{r.sector_name ? ` › ${r.sector_name}` : ''}</span>
+                    </span>
+                    {r.official_grade && <span className="grade-badge">{r.official_grade}</span>}
+                  </Link>
+                ))}
+              </div>
+            </>
+          )}
+          {!cragsFetching && !routesFetching && (cragResults?.length ?? 0) === 0 && (routeResults?.length ?? 0) === 0 && (
+            <div className="empty-state">Nessuna falesia o via trovata per “{trimmed}”.</div>
+          )}
+        </div>
+      )}
 
       {isLoading && <div className="loading-state">Caricamento regioni…</div>}
       {error && <div className="error-state">Errore nel caricamento.</div>}

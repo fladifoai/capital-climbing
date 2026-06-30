@@ -89,7 +89,7 @@ export default function AdminCragPage() {
         ) : (
           <div className="crag-header-card">
             <div className="crag-meta-row">
-              {crag.region && <span className="crag-meta-item"><span className="crag-meta-label">Regione:</span> {crag.region}</span>}
+              {crag.region && <span className="crag-meta-item"><span className="crag-meta-label">Regione:</span> {crag.region.name}</span>}
               {crag.municipality && <span className="crag-meta-item"><span className="crag-meta-label">Comune:</span> {crag.municipality}</span>}
               {crag.rock_type && <span className="crag-meta-item"><span className="crag-meta-label">Roccia:</span> {crag.rock_type}</span>}
               {crag.altitude_m && <span className="crag-meta-item"><span className="crag-meta-label">Alt.:</span> {crag.altitude_m}m</span>}

@@ -90,6 +90,41 @@ export function useCreateAscent() {
   })
 }
 
+export type AscentUpdateValues = {
+  date?: string
+  ascent_style?: string | null
+  attempt_count?: number | null
+  attempt_bucket?: string | null
+  is_repeat?: boolean
+  personal_grade?: string | null
+  quality?: number | null
+  effort?: number | null
+  kneepad_used?: boolean | null
+  notes?: string | null
+  visibility?: Visibility
+}
+
+export function useUpdateAscent() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async (variables: { id: string; userId: string; values: AscentUpdateValues; routeId?: string }) => {
+      const { error } = await supabase
+        .from('ascents')
+        .update(variables.values)
+        .eq('id', variables.id)
+      if (error) throw new Error(error.message + (error.details ? ` — ${error.details}` : ''))
+      return { routeId: variables.routeId }
+    },
+    onSuccess: (result, variables) => {
+      qc.invalidateQueries({ queryKey: ['my-ascents', variables.userId] })
+      qc.invalidateQueries({ queryKey: ['my-sessions', variables.userId] })
+      if (result?.routeId) {
+        qc.invalidateQueries({ queryKey: ['route-history', result.routeId, variables.userId] })
+      }
+    },
+  })
+}
+
 export function useDeleteAscent() {
   const qc = useQueryClient()
   return useMutation({
@@ -99,6 +134,7 @@ export function useDeleteAscent() {
     },
     onSuccess: (_, variables) => {
       qc.invalidateQueries({ queryKey: ['my-ascents', variables.userId] })
+      qc.invalidateQueries({ queryKey: ['my-sessions', variables.userId] })
     },
   })
 }
@@ -114,9 +150,9 @@ export interface RouteSearchResult {
   crag_name: string
 }
 
-export function useRouteSearch(query: string) {
+export function useRouteSearch(query: string, limit = 20) {
   return useQuery({
-    queryKey: ['route-search', query],
+    queryKey: ['route-search', query, limit],
     queryFn: async (): Promise<RouteSearchResult[]> => {
       const { data, error } = await supabase
         .from('routes')
@@ -125,7 +161,7 @@ export function useRouteSearch(query: string) {
           sector:sectors(name, crag:crags(name))
         `)
         .ilike('name', `%${query}%`)
-        .limit(20)
+        .limit(limit)
       if (error) throw error
       return (data ?? []).map((r: unknown) => {
         const row = r as {

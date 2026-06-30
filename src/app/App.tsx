@@ -9,6 +9,7 @@ import RegisterPage from '../routes/RegisterPage'
 import ForgotPasswordPage from '../routes/ForgotPasswordPage'
 import CheckEmailPage from '../routes/CheckEmailPage'
 import ExplorePage from '../routes/ExplorePage'
+import SearchResultsPage from '../routes/SearchResultsPage'
 import RegionPage from '../routes/RegionPage'
 import CragDetailPage from '../routes/CragDetailPage'
 import RouteDetailPage from '../routes/RouteDetailPage'
@@ -52,6 +53,7 @@ export default function App() {
               {/* Pubbliche — accessibili senza account */}
               <Route path="/home" element={<Navigate to="/dashboard" replace />} />
               <Route path="/explore" element={<ExplorePage />} />
+              <Route path="/cerca" element={<SearchResultsPage />} />
               <Route path="/regions/:regionId" element={<RegionPage />} />
               <Route path="/crags/:cragId" element={<CragDetailPage />} />
               <Route path="/routes/:routeId" element={<RouteDetailPage />} />

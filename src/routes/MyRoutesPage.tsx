@@ -1,8 +1,9 @@
 import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../features/auth/AuthContext'
-import { useMyAscents, useCreateAscent, useDeleteAscent, type AscentFormValues, type AscentWithRoute } from '../features/logbook/hooks'
+import { useMyAscents, useCreateAscent, useDeleteAscent, useUpdateAscent, type AscentFormValues, type AscentUpdateValues, type AscentWithRoute } from '../features/logbook/hooks'
 import AscentForm from '../features/logbook/AscentForm'
+import AscentEditForm from '../features/logbook/AscentEditForm'
 import '../styles/admin.css'
 import '../styles/catalog.css'
 import '../styles/logbook.css'
@@ -53,11 +54,44 @@ interface AscentRowProps {
   a: AscentWithRoute
   onDelete: (id: string, name: string) => void
   isPending: boolean
+  editing: boolean
+  onStartEdit: (id: string) => void
+  onCancelEdit: () => void
+  onSaveEdit: (values: AscentUpdateValues) => void
+  savingEdit: boolean
 }
-function AscentRow({ a, onDelete, isPending }: AscentRowProps) {
+function AscentRow({ a, onDelete, isPending, editing, onStartEdit, onCancelEdit, onSaveEdit, savingEdit }: AscentRowProps) {
   const [open, setOpen] = useState(false)
   const grade = a.grade_at_ascent ?? a.route?.official_grade
   const type = a.ascent_style ?? a.attempt_type
+
+  if (editing) {
+    return (
+      <div className="ascent-card-row expanded">
+        <div style={{ padding: '14px 16px' }}>
+          <AscentEditForm
+            ascent={{
+              id: a.id,
+              date: a.date,
+              ascent_style: a.ascent_style,
+              attempt_count: a.attempt_count,
+              is_repeat: a.is_repeat,
+              personal_grade: a.personal_grade,
+              quality: a.quality,
+              effort: a.effort,
+              kneepad_used: a.kneepad_used,
+              notes: a.notes,
+              visibility: a.visibility,
+              route: a.route ? { id: a.route.id, name: a.route.name, official_grade: a.route.official_grade } : null,
+            }}
+            onSubmit={onSaveEdit}
+            onCancel={onCancelEdit}
+            isLoading={savingEdit}
+          />
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className={`ascent-card-row${open ? ' expanded' : ''}`}>
@@ -90,6 +124,12 @@ function AscentRow({ a, onDelete, isPending }: AscentRowProps) {
           <Stars n={a.quality ?? null} />
           <span className="ascent-row-date">{a.date}</span>
           <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>{open ? '▲' : '▼'}</span>
+          <button
+            className="btn-secondary"
+            style={{ fontSize: 11, padding: '2px 7px' }}
+            onClick={e => { e.stopPropagation(); onStartEdit(a.id) }}
+            title="Modifica ascensione"
+          >✎</button>
           <button
             className="btn-secondary"
             style={{ fontSize: 11, padding: '2px 7px', color: '#FFB0A5' }}
@@ -164,8 +204,10 @@ export default function MyRoutesPage() {
   const { data: ascents, isLoading, error } = useMyAscents(user?.id ?? '')
   const createAscent = useCreateAscent()
   const deleteAscent = useDeleteAscent()
+  const updateAscent = useUpdateAscent()
 
   const [adding, setAdding] = useState(false)
+  const [editingId, setEditingId] = useState<string | null>(null)
   const [actionError, setActionError] = useState('')
   const [savedOk, setSavedOk] = useState(false)
 
@@ -193,6 +235,17 @@ export default function MyRoutesPage() {
     if (!confirm(`Eliminare l'ascensione su "${name}"?`)) return
     try {
       await deleteAscent.mutateAsync({ id, userId: user.id })
+    } catch (e) {
+      setActionError((e as Error).message)
+    }
+  }
+
+  async function handleSaveEdit(id: string, routeId: string | undefined, values: AscentUpdateValues) {
+    if (!user) return
+    setActionError('')
+    try {
+      await updateAscent.mutateAsync({ id, userId: user.id, values, routeId })
+      setEditingId(null)
     } catch (e) {
       setActionError((e as Error).message)
     }
@@ -407,14 +460,26 @@ export default function MyRoutesPage() {
             </span>
           </div>
           {g.items.map(a => (
-            <AscentRow key={a.id} a={a} onDelete={handleDelete} isPending={deleteAscent.isPending} />
+            <AscentRow key={a.id} a={a} onDelete={handleDelete} isPending={deleteAscent.isPending}
+              editing={editingId === a.id}
+              onStartEdit={setEditingId}
+              onCancelEdit={() => setEditingId(null)}
+              onSaveEdit={values => handleSaveEdit(a.id, a.route?.id, values)}
+              savingEdit={updateAscent.isPending}
+            />
           ))}
         </div>
       ))}
 
       {/* List view */}
       {!isLoading && view === 'list' && filtered.map(a => (
-        <AscentRow key={a.id} a={a} onDelete={handleDelete} isPending={deleteAscent.isPending} />
+        <AscentRow key={a.id} a={a} onDelete={handleDelete} isPending={deleteAscent.isPending}
+          editing={editingId === a.id}
+          onStartEdit={setEditingId}
+          onCancelEdit={() => setEditingId(null)}
+          onSaveEdit={values => handleSaveEdit(a.id, a.route?.id, values)}
+          savingEdit={updateAscent.isPending}
+        />
       ))}
     </div>
   )

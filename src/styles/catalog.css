@@ -366,3 +366,46 @@
   border-color: var(--accent);
   color: #fff;
 }
+
+/* ── Explore search results (falesie + vie) ── */
+.explore-results-heading {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--text-on-dark-muted);
+  margin: 16px 0 8px;
+}
+.explore-results-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+.explore-result-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1px solid rgba(247, 243, 234, 0.10);
+  background: rgba(247, 243, 234, 0.04);
+  text-decoration: none;
+  color: var(--text-on-dark);
+  transition: background 0.12s, border-color 0.12s;
+}
+.explore-result-row:hover {
+  background: rgba(232, 93, 53, 0.10);
+  border-color: rgba(232, 93, 53, 0.30);
+}
+.explore-result-icon { font-size: 15px; flex-shrink: 0; }
+.explore-result-main { display: flex; flex-direction: column; min-width: 0; flex: 1; }
+.explore-result-name { font-size: 14px; font-weight: 600; }
+.explore-result-sub {
+  font-size: 12px;
+  color: var(--text-on-dark-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.explore-result-row .grade-badge { flex-shrink: 0; margin-left: auto; }
