@@ -10,6 +10,9 @@ import { useMyAscents, useCreateAscent, useDeleteAscent, type AscentFormValues, 
 import { buildGroups, sortGroups, isRepeatAscent, type RouteGroup } from '../features/logbook/groupAscents'
 import { useMyProjects } from '../features/projects/hooks'
 import { useMySessions } from '../features/sessions/hooks'
+import { useScoreData } from '../features/score/hooks'
+import ScoreOverviewCards from '../components/score/ScoreOverviewCards'
+import LevelProgress from '../components/score/LevelProgress'
 import AscentForm from '../features/logbook/AscentForm'
 import {
   computeKpis,
@@ -215,6 +218,9 @@ export default function ProfilePage() {
   const progressionData = useMemo(() => computeGradeProgressionLine(completedAscents, 'all'), [completedAscents])
   const modeBreakdown = useMemo(() => computeAscentModeBreakdown(completedAscents), [completedAscents])
 
+  // Capital Score (riusa la stessa query useMyAscents, deduplicata da TanStack).
+  const score = useScoreData(user?.id ?? '', new Date().getFullYear())
+
   // ── Lista vie (filtrable) ──────────────────────────────────────────────────
   const availableYears = useMemo(() => {
     const years = new Set<string>()
@@ -331,6 +337,22 @@ export default function ProfilePage() {
           <KpiCard value={kpis.bestRedpointLabel} label="Max Redpoint" />
           <KpiCard value={kpis.totalCrags} label="Falesie visitate" />
           <KpiCard value={kpis.activeProjects} label="Progetti attivi" />
+        </div>
+      )}
+
+      {/* ── Capital Score ── */}
+      {!isLoading && score.hasData && (
+        <div style={{ marginBottom: 28 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 12, flexWrap: 'wrap', gap: 8 }}>
+            <h2 style={{ margin: 0, fontSize: 18, fontWeight: 800 }}>Capital Score</h2>
+            <Link to="/score" className="btn-secondary" style={{ textDecoration: 'none', fontSize: 12, padding: '6px 14px' }}>
+              Vedi tutti i punti →
+            </Link>
+          </div>
+          <ScoreOverviewCards overview={score.overview} />
+          <div style={{ marginTop: 16 }}>
+            <LevelProgress level={score.overview.level} lifetimeScore={score.overview.lifetime_score} />
+          </div>
         </div>
       )}
 
