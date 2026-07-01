@@ -14,6 +14,7 @@ import {
   useCreateAscent, useUpdateAscent, useDeleteAscent,
   type AscentFormValues, type AscentUpdateValues, type RouteSearchResult,
 } from '../features/logbook/hooks'
+import { useMyProjects } from '../features/projects/hooks'
 import AscentForm from '../features/logbook/AscentForm'
 import AscentEditForm from '../features/logbook/AscentEditForm'
 import '../styles/sessions.css'
@@ -266,12 +267,13 @@ interface SessionCardProps {
   onRemoveAscent: (a: SessionAscent) => void
   savingAscentEdit: boolean
   removingAscentId: string | null
+  projectRouteIds: Set<string>
 }
 
 function SessionCard({
   session, confirmDelete, setConfirmDelete, onDelete, onEdit, onAddAscent,
   editingAscentId, onStartEditAscent, onCancelEditAscent, onSaveEditAscent, onRemoveAscent,
-  savingAscentEdit, removingAscentId,
+  savingAscentEdit, removingAscentId, projectRouteIds,
 }: SessionCardProps) {
   const [showNotes, setShowNotes] = useState(false)
   const routeCount = session.ascents?.length ?? 0
@@ -398,6 +400,14 @@ function SessionCard({
               <div key={a.id} className="session-route-row">
                 <Link to={`/routes/${a.route?.id}`} className="session-route-name">
                   {a.route?.name ?? '—'}
+                  {a.route?.id && projectRouteIds.has(a.route.id) && (
+                    <span
+                      title="Questa via è un tuo progetto"
+                      style={{ fontSize: 11, fontWeight: 700, color: '#C85F3A', border: '1px solid rgba(200,95,58,0.45)', padding: '1px 7px', borderRadius: 999, marginLeft: 8 }}
+                    >
+                      🎯 Progetto
+                    </span>
+                  )}
                 </Link>
                 <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexShrink: 0 }}>
                   {a.grade_at_ascent && <span className="grade-badge">{a.grade_at_ascent}</span>}
@@ -437,6 +447,7 @@ function SessionCard({
 export default function SessionsPage() {
   const { user } = useAuth()
   const { data: sessions, isLoading } = useMySessions(user?.id ?? '')
+  const { data: projects } = useMyProjects(user?.id ?? '')
   const createSession = useCreateSession()
   const updateSession = useUpdateSession()
   const deleteSession = useDeleteSession()
@@ -547,6 +558,7 @@ export default function SessionsPage() {
   }
 
   const editingSession = sessions?.find(s => s.id === editingSessionId) ?? null
+  const projectRouteIds = new Set((projects ?? []).map(p => p.route_id))
 
   const stagedSection = (
     <>
@@ -683,6 +695,7 @@ export default function SessionsPage() {
                   onRemoveAscent={handleRemoveAscent}
                   savingAscentEdit={updateAscent.isPending}
                   removingAscentId={removingAscentId}
+                  projectRouteIds={projectRouteIds}
                 />
               )}
               {savedAscentFor === s.id && addingAscentTo !== s.id && (

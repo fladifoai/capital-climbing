@@ -94,6 +94,8 @@ export function useCreateAscent() {
     onSuccess: (result, { userId }) => {
       qc.invalidateQueries({ queryKey: ['my-ascents', userId] })
       qc.invalidateQueries({ queryKey: ['my-sessions', userId] })
+      // Un'ascensione può chiudere un progetto (trigger 033) → aggiorna Progetti.
+      qc.invalidateQueries({ queryKey: ['my-projects', userId] })
       if (result?.routeId) {
         qc.invalidateQueries({ queryKey: ['route-history', result.routeId, userId] })
       }
