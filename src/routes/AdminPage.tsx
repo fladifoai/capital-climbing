@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import CragForm from '../features/admin/CragForm'
+import EnrichmentPanel from '../features/admin/EnrichmentPanel'
 import { useAdminCrags, useCreateCrag, useDeleteCrag, type CragFormValues } from '../features/admin/hooks'
 import '../styles/admin.css'
 import '../styles/catalog.css'
@@ -44,6 +45,8 @@ export default function AdminPage() {
           <button className="btn-secondary" onClick={() => navigate('/admin/requests')}>Richieste falesia</button>
         </div>
       </div>
+
+      <EnrichmentPanel />
 
       <div className="admin-section">
         <div className="admin-section-header">

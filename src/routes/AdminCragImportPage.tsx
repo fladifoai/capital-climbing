@@ -260,7 +260,15 @@ export default function AdminCragImportPage() {
             <div className="report-stat"><div className="report-stat-num ok">{report.sectorsCreated}</div><div className="report-stat-label">Settori nuovi</div></div>
             <div className="report-stat"><div className="report-stat-num ok">{report.routesCreated}</div><div className="report-stat-label">Vie nuove</div></div>
             <div className="report-stat"><div className="report-stat-num skip">{report.routesSkipped}</div><div className="report-stat-label">Vie già presenti</div></div>
+            <div className="report-stat"><div className="report-stat-num upd">{report.enrichmentQueued}</div><div className="report-stat-label">In arricchimento</div></div>
           </div>
+          {report.enrichmentQueued > 0 && (
+            <p style={{ fontSize: 13, color: 'var(--text-muted)', margin: '4px 0 12px' }}>
+              🛰️ {report.enrichmentQueued} falesie messe in coda: coordinate, quota, orientamento, stagione e mesi
+              migliori vengono cercati e completati automaticamente in background (fonti aperte OSM/Open-Meteo).
+              Segui lo stato in <a href="/admin">Admin → Arricchimento</a>. I campi già presenti non vengono toccati.
+            </p>
+          )}
           {report.errors.length > 0 && (
             <table className="import-table" style={{ width: '100%' }}>
               <thead><tr><th>Falesia</th><th>Errore</th></tr></thead>

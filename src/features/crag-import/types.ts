@@ -58,5 +58,6 @@ export interface CragImportReport {
   sectorsCreated: number
   routesCreated: number
   routesSkipped: number
+  enrichmentQueued: number   // falesie messe in coda di arricchimento (coord/quota/stagione/...)
   errors: { crag: string; message: string }[]
 }

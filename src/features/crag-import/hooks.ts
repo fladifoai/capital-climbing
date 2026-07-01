@@ -112,8 +112,9 @@ export function useExecuteCragImport() {
   return useMutation({
     mutationFn: async (groups: CragGroup[]): Promise<CragImportReport> => {
       const report: CragImportReport = {
-        cragsCreated: 0, cragsMerged: 0, sectorsCreated: 0, routesCreated: 0, routesSkipped: 0, errors: [],
+        cragsCreated: 0, cragsMerged: 0, sectorsCreated: 0, routesCreated: 0, routesSkipped: 0, enrichmentQueued: 0, errors: [],
       }
+      const affectedCragIds: string[] = []
 
       for (const g of groups) {
         try {
@@ -145,6 +146,7 @@ export function useExecuteCragImport() {
             report.cragsCreated++
           }
           const resolvedCragId = cragId
+          affectedCragIds.push(resolvedCragId)
 
           // 2. settori esistenti della falesia → mappa
           const { data: secs } = await supabase.from('sectors').select('id, name').eq('crag_id', resolvedCragId)
@@ -198,6 +200,25 @@ export function useExecuteCragImport() {
         } catch (e) {
           report.errors.push({ crag: g.crag_name, message: (e as Error).message })
         }
+      }
+
+      // Arricchimento automatico: metti in coda le falesie toccate (coord/quota/orientamento/
+      // stagione/best_months). La edge function `crag-enrich` le completa; il cron riprende
+      // finché la coda non è vuota. Idempotente e valida-non-sovrascrive (non tocca i campi
+      // già presenti). Best-effort: se la coda/function non risponde, l'import resta valido.
+      const uniqueCragIds = [...new Set(affectedCragIds)]
+      if (uniqueCragIds.length > 0) {
+        try {
+          const { error } = await supabase
+            .from('enrichment_queue')
+            .upsert(
+              uniqueCragIds.map(id => ({ crag_id: id, status: 'pending', updated_at: new Date().toISOString() })),
+              { onConflict: 'crag_id' },
+            )
+          if (!error) report.enrichmentQueued = uniqueCragIds.length
+          // sveglia subito la function per un primo giro (il resto lo fa il cron)
+          supabase.functions.invoke('crag-enrich', { body: { mode: 'drain', batch: 5 } }).catch(() => {})
+        } catch { /* coda non disponibile: l'import resta valido, riprova il cron */ }
       }
       return report
     },
