@@ -13,18 +13,16 @@ export type DrawsMode = 'unknown' | 'preplaced' | 'placed_by_user'
 export const BASE_SCORE = 700
 export const GRADE_STEP = 100
 
-// grade_numeric Capital: 5c = 0, +1 per gradino. Slash = mezzo gradino.
+// grade_numeric Capital: 5c = 0, +1 per gradino. Nessun grado slash: la scala
+// va da 5c a 9c senza mezzi gradini (sotto il 5c → null, fuori scala Capital).
 export const GRADE_MAP: Record<string, number> = {
   '5c': 0,
   '6a': 1,
   '6a+': 2,
   '6b': 3,
-  '6b/6b+': 3.5,
   '6b+': 4,
   '6c': 5,
-  '6c/6c+': 5.5,
   '6c+': 6,
-  '6c+/7a': 6.5,
   '7a': 7,
   '7a+': 8,
   '7b': 9,
@@ -41,6 +39,7 @@ export const GRADE_MAP: Record<string, number> = {
   '9a+': 20,
   '9b': 21,
   '9b+': 22,
+  '9c': 23,
 }
 
 export const STYLE_BONUS: Record<CapitalAttemptType, number> = {

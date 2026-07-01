@@ -1,0 +1,23 @@
+crag_id,country,region,province_or_island,municipality,municipality_status,crag_name,aliases,sectors
+CRAG-001,Spagna,Isole Baleari,Mallorca,Selva (Caimari),ok,Caimari,Les Perxes; Comuna de Caimari,Adalt; Adalt de Tot; Es Raconet; Placa Rotja
+CRAG-002,Spagna,Isole Baleari,Mallorca,Manacor,ok,Cala Magraner,,Estrema Sinistra; Pipiricot; Sense Voler; Xorics
+CRAG-003,Italia,Lazio,Frosinone,Roccasecca (Caprile),ok,Caprile,Braciere dei Poveri,I Gradoni; Le Grandi Panze
+CRAG-004,Italia,Molise,Isernia,Frosolone,ok,Colle dell'Orso,Morgia Quadra; Falesia di Frosolone,"Blocco P, Q - Morgia Quadra"
+CRAG-005,Italia,Lazio,Frosinone,Collepardo,ok,Collepardo,,Cueva; Cuevita
+CRAG-006,Italia,Lazio,Rieti,Configni,ok,Configni,,Non specificato
+CRAG-007,Spagna,Isole Baleari,Mallorca,Arta,ok,Ermita de Betlem,Ermita de Belen,Non specificato
+CRAG-008,Italia,Umbria,Terni,Ferentillo,ok,Ferentillo,,Gabbio
+CRAG-009,Italia,Lazio,Frosinone,Roccasecca,da_verificare,Fraioli,,Non specificato
+CRAG-010,Italia,Lazio,Rieti,Cittaducale (Grotti),ok,Grotti,Grotti Bassa,Grotti Bassa - Nuovo Settore
+CRAG-011,Italia,Lazio,Rieti,,da_verificare,La Fortezza,,Non specificato
+CRAG-012,Italia,Valle d'Aosta,Aosta,Valgrisenche (La Bethaz),ok,Miollet,Miollet Alta; Bethaz alta,Destro
+CRAG-013,Italia,Lazio,Latina,Norma,ok,Norma,,Placche Rosse
+CRAG-014,Italia,Abruzzo,L'Aquila,Ovindoli,ok,Ovindoli,,Val d'Arano
+CRAG-015,Italia,Abruzzo,L'Aquila,Cappadocia (Petrella Liri),ok,Petrella Liri,,Petrella Alta; Placche di Bini
+CRAG-016,Italia,Abruzzo,L'Aquila,Carsoli (Pietrasecca),ok,Pietrasecca,,Vena Cionca
+CRAG-017,Italia,Abruzzo,Chieti,Pizzoferrato,ok,Pizzoferrato,,Non specificato
+CRAG-018,Italia,Lazio,Roma,Allumiere,ok,Ripa Majala,Ripa Maiale,Non specificato
+CRAG-019,Italia,Lazio,Roma,Subiaco,ok,Subiaco,,Regno dei Ragni
+CRAG-020,Italia,Abruzzo,L'Aquila,Tagliacozzo,ok,Tagliacozzo,,Estrema destra; Estrema sinistra; Grande tetto; Scudo centrale
+CRAG-021,Spagna,Isole Baleari,Mallorca,,da_verificare,Tijuana,,Non specificato
+CRAG-022,Italia,Sardegna,Nuoro,Ulassai,ok,Ulassai,,Il Canyon; Torre dei Venti

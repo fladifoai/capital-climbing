@@ -35,8 +35,8 @@
     { "name": "Salutami Jessica", "grade": "6a+" },
     { "name": "No ubriaco... oltre!", "grade": "6a+" },
     { "name": "Sesso virtuale", "grade": "5c" },
-    { "name": "Il regno del ragno", "grade": "5c+" },
-    { "name": "Narcolettico", "grade": "5c+" },
-    { "name": "Mazza pazza", "grade": "5c+" }
+    { "name": "Il regno del ragno", "grade": "5c" },
+    { "name": "Narcolettico", "grade": "5c" },
+    { "name": "Mazza pazza", "grade": "5c" }
   ]
 }

@@ -6,7 +6,7 @@
   "crag": "Petrella Liri",
   "sector": "Placche di Bini",
   "routes": [
-    { "name": "Bob mano di fata", "grade": "5b+" },
+    { "name": "Bob mano di fata", "grade": "5b" },
     { "name": "L'asino innamorato", "grade": "6c" },
     { "name": "Miloù", "grade": "6a+" },
     { "name": "Grillo parlante", "grade": "6b+" },
@@ -50,7 +50,7 @@
     { "name": "Strudel L2", "grade": "5b" },
     { "name": "Strudel L3", "grade": "5c" },
     { "name": "Rumba magica", "grade": "6a+" },
-    { "name": "Senza nome 2", "grade": "5b+" },
+    { "name": "Senza nome 2", "grade": "5b" },
     { "name": "Rumba mistica", "grade": "6a" },
     { "name": "Senza nome 3", "grade": null },
     { "name": "Le bateau ivre", "grade": "8b+" },

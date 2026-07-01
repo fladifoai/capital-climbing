@@ -7,7 +7,7 @@
   "routes": [
     { "name": "Cip", "grade": "6a+" },
     { "name": "Ciop", "grade": "6a" },
-    { "name": "The Eye", "grade": "5c+" },
+    { "name": "The Eye", "grade": "5c" },
     { "name": "1998", "grade": "5c" },
     { "name": "Tettino", "grade": "5c" },
     { "name": "Arianna", "grade": "6a+" },
@@ -15,15 +15,15 @@
     { "name": "Brick", "grade": "6a+" },
     { "name": "Rino", "grade": "6b+" },
     { "name": "Il Sole", "grade": "5c" },
-    { "name": "Hot jazz", "grade": "5c+" },
+    { "name": "Hot jazz", "grade": "5c" },
     { "name": "Hard rock", "grade": "6a" },
     { "name": "Zoom", "grade": "6a" },
     { "name": "Grazie Mario", "grade": "6a" },
     { "name": "Alfio", "grade": "6a" },
     { "name": "Bye bye baby", "grade": "5c" },
-    { "name": "Tribolazione", "grade": "5b+" },
+    { "name": "Tribolazione", "grade": "5b" },
     { "name": "Concoraggio", "grade": "4c" },
     { "name": "Disturbata", "grade": "6a+" },
-    { "name": "Slittony", "grade": "6a/6a+" }
+    { "name": "Slittony", "grade": "6a+" }
   ]
 }

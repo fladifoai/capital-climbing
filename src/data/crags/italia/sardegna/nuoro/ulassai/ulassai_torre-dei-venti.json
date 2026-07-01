@@ -5,7 +5,7 @@
   "crag": "Ulassai",
   "sector": "Torre dei Venti",
   "routes": [
-    { "name": "Tenendo per mano il sole", "grade": "5c+" },
+    { "name": "Tenendo per mano il sole", "grade": "5c" },
     { "name": "Catturando spiritelli", "grade": "7a+" },
     { "name": "Diario intimo L1", "grade": "6b" },
     { "name": "Diario intimo L1+L2", "grade": "6b+" },
@@ -39,7 +39,7 @@
     { "name": "Il volo dell'oca", "grade": "5c" },
     { "name": "Creando spazi nuovi", "grade": "5c" },
     { "name": "Errando", "grade": "5b" },
-    { "name": "Un filo nella notte L1", "grade": "5b+" },
+    { "name": "Un filo nella notte L1", "grade": "5b" },
     { "name": "Un filo nella notte L1+L2", "grade": "7c" },
     { "name": "Robusta anima mia", "grade": "7a+" },
     { "name": "La casa delle inquietudini", "grade": "6c" },
