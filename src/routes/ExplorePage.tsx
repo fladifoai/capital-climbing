@@ -1,37 +1,47 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { useRegionsWithCounts, useItalyStats, ITALY_ID } from '../features/catalog/hooks'
+import { useCountriesWithCounts } from '../features/catalog/hooks'
 import { useCragSearch } from '../features/sessions/hooks'
 import { useRouteSearch } from '../features/logbook/hooks'
 import { useAuth } from '../features/auth/AuthContext'
 import '../styles/catalog.css'
 
+// iso2 → emoji bandiera (indicatori regionali unicode)
+function flagFor(iso2: string): string {
+  if (!iso2 || iso2.length !== 2) return '🏳️'
+  const A = 0x1f1e6
+  return String.fromCodePoint(
+    A + iso2.toUpperCase().charCodeAt(0) - 65,
+    A + iso2.toUpperCase().charCodeAt(1) - 65,
+  )
+}
+
 export default function ExplorePage() {
   const { user } = useAuth()
-  const { data: regions, isLoading, error } = useRegionsWithCounts(ITALY_ID)
-  const { data: stats } = useItalyStats()
+  const { data: countries, isLoading, error } = useCountriesWithCounts()
   const [search, setSearch] = useState('')
-  const [hideEmpty, setHideEmpty] = useState(false)
 
   const trimmed = search.trim()
   const hasSearch = trimmed.length >= 2
   const { data: cragResults, isFetching: cragsFetching } = useCragSearch(trimmed)
   const { data: routeResults, isFetching: routesFetching } = useRouteSearch(trimmed)
 
-  const filtered = regions
-    ? regions.filter(r => {
-        if (hideEmpty && r.crag_count === 0) return false
-        if (trimmed) return r.name.toLowerCase().includes(trimmed.toLowerCase())
-        return true
-      })
-    : []
+  const totals = (countries ?? []).reduce(
+    (acc, c) => {
+      acc.crags += c.crag_count
+      acc.sectors += c.sector_count
+      acc.routes += c.route_count
+      return acc
+    },
+    { crags: 0, sectors: 0, routes: 0 },
+  )
 
   return (
     <div className="catalog-page">
       <div className="catalog-header">
         <div>
           <h1 className="catalog-title">Esplora il catalogo</h1>
-          <p className="catalog-subtitle">Cerca falesie, settori e vie. Il catalogo è condiviso, i tuoi dati personali restano separati.</p>
+          <p className="catalog-subtitle">Scegli una nazione, poi la regione e la falesia. Il catalogo è condiviso, i tuoi dati personali restano separati.</p>
         </div>
         <Link to={user ? '/dashboard' : '/'} style={{
           display: 'inline-flex', alignItems: 'center', gap: 6,
@@ -46,18 +56,22 @@ export default function ExplorePage() {
         </Link>
       </div>
 
-      {stats && (
+      {countries && countries.length > 0 && (
         <div className="stat-bar">
           <div className="stat-item">
-            <span className="stat-number">{stats.crags}</span>
+            <span className="stat-number">{countries.length}</span>
+            <span className="stat-label">Nazioni</span>
+          </div>
+          <div className="stat-item">
+            <span className="stat-number">{totals.crags}</span>
             <span className="stat-label">Falesie</span>
           </div>
           <div className="stat-item">
-            <span className="stat-number">{stats.sectors}</span>
+            <span className="stat-number">{totals.sectors}</span>
             <span className="stat-label">Settori</span>
           </div>
           <div className="stat-item">
-            <span className="stat-number">{stats.routes}</span>
+            <span className="stat-number">{totals.routes}</span>
             <span className="stat-label">Vie</span>
           </div>
         </div>
@@ -67,18 +81,10 @@ export default function ExplorePage() {
         <input
           className="explore-search"
           type="search"
-          placeholder="Cerca regione, falesia o via…"
+          placeholder="Cerca falesia o via…"
           value={search}
           onChange={e => setSearch(e.target.value)}
         />
-        <label className="explore-filter-toggle">
-          <input
-            type="checkbox"
-            checked={hideEmpty}
-            onChange={e => setHideEmpty(e.target.checked)}
-          />
-          Solo regioni con falesie
-        </label>
       </div>
 
       {/* Risultati falesie + vie quando si cerca */}
@@ -125,20 +131,23 @@ export default function ExplorePage() {
         </div>
       )}
 
-      {isLoading && <div className="loading-state">Caricamento regioni…</div>}
+      {isLoading && <div className="loading-state">Caricamento nazioni…</div>}
       {error && <div className="error-state">Errore nel caricamento.</div>}
 
-      {regions && (
-        filtered.length === 0
-          ? <div className="empty-state">Nessuna regione trovata.</div>
+      {countries && (
+        countries.length === 0
+          ? <div className="empty-state">Nessuna nazione nel catalogo.</div>
           : (
             <div className="region-grid">
-              {filtered.map(r => (
-                <Link key={r.id} to={`/regions/${r.id}`} className="region-card">
-                  <div className="region-card-name">{r.name}</div>
+              {countries.map(c => (
+                <Link key={c.id} to={`/countries/${c.id}`} className="region-card country-card">
+                  <div className="country-card-head">
+                    <span className="country-flag">{flagFor(c.iso2)}</span>
+                    <span className="region-card-name">{c.name}</span>
+                  </div>
                   <div className="region-card-counts">
-                    <div><span>{r.crag_count}</span> {r.crag_count === 1 ? 'falesia' : 'falesie'}</div>
-                    {r.sector_count > 0 && <div><span>{r.sector_count}</span> settori · <span>{r.route_count}</span> vie</div>}
+                    <div><span>{c.region_count}</span> {c.region_count === 1 ? 'regione' : 'regioni'}</div>
+                    <div><span>{c.crag_count}</span> {c.crag_count === 1 ? 'falesia' : 'falesie'} · <span>{c.route_count}</span> vie</div>
                   </div>
                 </Link>
               ))}

@@ -11,6 +11,7 @@ import CheckEmailPage from '../routes/CheckEmailPage'
 import ExplorePage from '../routes/ExplorePage'
 import SearchResultsPage from '../routes/SearchResultsPage'
 import RegionPage from '../routes/RegionPage'
+import CountryPage from '../routes/CountryPage'
 import CragDetailPage from '../routes/CragDetailPage'
 import RouteDetailPage from '../routes/RouteDetailPage'
 import UsersPage from '../routes/UsersPage'
@@ -55,6 +56,7 @@ export default function App() {
               <Route path="/home" element={<Navigate to="/dashboard" replace />} />
               <Route path="/explore" element={<ExplorePage />} />
               <Route path="/cerca" element={<SearchResultsPage />} />
+              <Route path="/countries/:countryId" element={<CountryPage />} />
               <Route path="/regions/:regionId" element={<RegionPage />} />
               <Route path="/crags/:cragId" element={<CragDetailPage />} />
               <Route path="/routes/:routeId" element={<RouteDetailPage />} />

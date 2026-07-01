@@ -35,6 +35,12 @@ export default function RegionPage() {
     <div className="catalog-page">
       <nav className="breadcrumb">
         <Link to="/explore">Falesie</Link>
+        {region.country && (
+          <>
+            <span className="breadcrumb-sep">›</span>
+            <Link to={`/countries/${region.country.id}`}>{region.country.name}</Link>
+          </>
+        )}
         <span className="breadcrumb-sep">›</span>
         <span>{region.name}</span>
       </nav>

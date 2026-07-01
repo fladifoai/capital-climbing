@@ -1,10 +1,17 @@
 import { useQuery } from '@tanstack/react-query'
 import { supabase } from '../../lib/supabase'
-import type { Region, Area, Crag, Sector, Route } from '../../types/database'
+import type { Country, Region, Area, Crag, Sector, Route } from '../../types/database'
 
 export const ITALY_ID = '00000000-0000-0000-0001-000000000001'
 
 export interface RegionWithCount extends Region {
+  crag_count: number
+  sector_count: number
+  route_count: number
+}
+
+export interface CountryWithCount extends Country {
+  region_count: number
   crag_count: number
   sector_count: number
   route_count: number
@@ -41,6 +48,79 @@ async function fetchAllPaged<T>(table: string, columns: string): Promise<T[]> {
     if (rows.length < PAGE) break
   }
   return all
+}
+
+// Ordine nazioni: Italia sempre prima, poi per numero falesie decrescente, poi nome.
+const COUNTRY_PRIORITY: Record<string, number> = { [ITALY_ID]: 0 }
+
+export function useCountriesWithCounts() {
+  return useQuery({
+    queryKey: ['countries-with-counts'],
+    queryFn: async (): Promise<CountryWithCount[]> => {
+      const [countriesRes, regionsRes, cragsRes, sectors, routes] = await Promise.all([
+        supabase.from('countries').select('*').order('name'),
+        supabase.from('regions').select('id, country_id'),
+        supabase.from('crags').select('id, country_id'),
+        fetchAllPaged<{ id: string; crag_id: string }>('sectors', 'id, crag_id'),
+        fetchAllPaged<{ id: string; sector_id: string | null }>('routes', 'id, sector_id'),
+      ])
+      if (countriesRes.error) throw countriesRes.error
+      if (regionsRes.error) throw regionsRes.error
+      if (cragsRes.error) throw cragsRes.error
+
+      const countries = countriesRes.data ?? []
+      const regions = regionsRes.data ?? []
+      const crags = cragsRes.data ?? []
+
+      const regionsByCountry = new Map<string, number>()
+      regions.forEach(r => {
+        if (!r.country_id) return
+        regionsByCountry.set(r.country_id, (regionsByCountry.get(r.country_id) ?? 0) + 1)
+      })
+
+      const cragsByCountry = new Map<string, string[]>()
+      crags.forEach(c => {
+        if (!c.country_id) return
+        const list = cragsByCountry.get(c.country_id) ?? []
+        list.push(c.id)
+        cragsByCountry.set(c.country_id, list)
+      })
+
+      const sectorsByCrag = new Map<string, string[]>()
+      sectors.forEach(s => {
+        const list = sectorsByCrag.get(s.crag_id) ?? []
+        list.push(s.id)
+        sectorsByCrag.set(s.crag_id, list)
+      })
+
+      const routesBySector = new Map<string, number>()
+      routes.forEach(r => {
+        if (!r.sector_id) return
+        routesBySector.set(r.sector_id, (routesBySector.get(r.sector_id) ?? 0) + 1)
+      })
+
+      const withCounts = countries.map(c => {
+        const countryCrags = cragsByCountry.get(c.id) ?? []
+        const countrySectors = countryCrags.flatMap(cid => sectorsByCrag.get(cid) ?? [])
+        const countryRoutes = countrySectors.reduce((sum, sid) => sum + (routesBySector.get(sid) ?? 0), 0)
+        return {
+          ...c,
+          region_count: regionsByCountry.get(c.id) ?? 0,
+          crag_count: countryCrags.length,
+          sector_count: countrySectors.length,
+          route_count: countryRoutes,
+        }
+      })
+
+      return withCounts.sort((a, b) => {
+        const pa = COUNTRY_PRIORITY[a.id] ?? 1
+        const pb = COUNTRY_PRIORITY[b.id] ?? 1
+        if (pa !== pb) return pa - pb
+        if (b.crag_count !== a.crag_count) return b.crag_count - a.crag_count
+        return a.name.localeCompare(b.name, 'it')
+      })
+    },
+  })
 }
 
 export function useRegionsWithCounts(countryId: string) {
@@ -91,6 +171,22 @@ export function useRegionsWithCounts(countryId: string) {
           route_count: regionRoutes,
         }
       })
+    },
+    enabled: !!countryId,
+  })
+}
+
+export function useCountry(countryId: string) {
+  return useQuery({
+    queryKey: ['country', countryId],
+    queryFn: async (): Promise<Country> => {
+      const { data, error } = await supabase
+        .from('countries')
+        .select('*')
+        .eq('id', countryId)
+        .single()
+      if (error) throw error
+      return data as Country
     },
     enabled: !!countryId,
   })
