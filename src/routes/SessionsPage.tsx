@@ -7,14 +7,14 @@ import type { Resolver } from 'react-hook-form'
 import { useAuth } from '../features/auth/AuthContext'
 import {
   useMySessions, useCreateSession, useUpdateSession, useDeleteSession,
-  useCragSearch,
-  type CragSearchResult, type SessionWithCrag, type SessionAscent, type SessionFormValues,
+  useCragSearch, useLogProjectWork, useDeleteAttempt,
+  type CragSearchResult, type SessionWithCrag, type SessionAscent, type SessionAttempt, type SessionFormValues,
 } from '../features/sessions/hooks'
 import {
   useCreateAscent, useUpdateAscent, useDeleteAscent,
   type AscentFormValues, type AscentUpdateValues, type RouteSearchResult,
 } from '../features/logbook/hooks'
-import { useMyProjects } from '../features/projects/hooks'
+import { useMyProjects, type ProjectWithRoute } from '../features/projects/hooks'
 import AscentForm from '../features/logbook/AscentForm'
 import AscentEditForm from '../features/logbook/AscentEditForm'
 import '../styles/sessions.css'
@@ -252,6 +252,79 @@ function SessionForm({
   )
 }
 
+// ═══════════════ Form "Lavorato su progetto" (tentativo, non chiusura) ═════════
+interface ProjectWorkFormProps {
+  activeProjects: ProjectWithRoute[]
+  isLoading: boolean
+  onSave: (vars: { projectId: string; routeId: string; currentAttempts: number; highPoint: string | null; effort: number | null; notes: string | null }) => void
+  onCancel: () => void
+}
+
+function ProjectWorkForm({ activeProjects, isLoading, onSave, onCancel }: ProjectWorkFormProps) {
+  const [projectId, setProjectId] = useState('')
+  const [highPoint, setHighPoint] = useState('')
+  const [effort, setEffort] = useState('')
+  const [notes, setNotes] = useState('')
+
+  if (activeProjects.length === 0) {
+    return (
+      <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>
+        Nessun progetto attivo. Aggiungine uno dalla pagina <Link to="/projects" style={{ color: 'var(--accent)' }}>Progetti</Link>.
+      </div>
+    )
+  }
+
+  const selected = activeProjects.find(p => p.id === projectId)
+
+  function submit() {
+    if (!selected) return
+    onSave({
+      projectId: selected.id,
+      routeId: selected.route.id,
+      currentAttempts: selected.attempts_count,
+      highPoint: highPoint.trim() || null,
+      effort: effort ? Number(effort) : null,
+      notes: notes.trim() || null,
+    })
+  }
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+      <div className="form-group" style={{ margin: 0 }}>
+        <label>Progetto *</label>
+        <select value={projectId} onChange={e => setProjectId(e.target.value)}>
+          <option value="">— Scegli progetto —</option>
+          {activeProjects.map(p => (
+            <option key={p.id} value={p.id}>
+              {p.route.name}{p.route.official_grade ? ` (${p.route.official_grade})` : ''} — {p.attempts_count} tent.
+            </option>
+          ))}
+        </select>
+      </div>
+      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+        <div className="form-group" style={{ margin: 0, flex: 1, minWidth: 140 }}>
+          <label>High point</label>
+          <input value={highPoint} onChange={e => setHighPoint(e.target.value)} placeholder="es. Passo 5" />
+        </div>
+        <div className="form-group" style={{ margin: 0, width: 110 }}>
+          <label>Sforzo (1–10)</label>
+          <input type="number" min={1} max={10} value={effort} onChange={e => setEffort(e.target.value)} placeholder="7" />
+        </div>
+      </div>
+      <div className="form-group" style={{ margin: 0 }}>
+        <label>Note</label>
+        <input value={notes} onChange={e => setNotes(e.target.value)} placeholder="Come è andato il lavoro sul progetto…" />
+      </div>
+      <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+        <button type="button" className="btn-secondary" onClick={onCancel}>Annulla</button>
+        <button type="button" className="btn-primary" disabled={!selected || isLoading} onClick={submit}>
+          {isLoading ? 'Salvataggio…' : 'Salva lavoro'}
+        </button>
+      </div>
+    </div>
+  )
+}
+
 // ═══════════════════════════════ Session card ═════════════════════════════════
 interface SessionCardProps {
   session: SessionWithCrag
@@ -268,14 +341,20 @@ interface SessionCardProps {
   savingAscentEdit: boolean
   removingAscentId: string | null
   projectRouteIds: Set<string>
+  activeProjects: ProjectWithRoute[]
+  onLogWork: (sessionId: string, sessionDate: string, vars: { projectId: string; routeId: string; currentAttempts: number; highPoint: string | null; effort: number | null; notes: string | null }) => void
+  logWorkPending: boolean
+  onDeleteAttempt: (a: SessionAttempt) => void
 }
 
 function SessionCard({
   session, confirmDelete, setConfirmDelete, onDelete, onEdit, onAddAscent,
   editingAscentId, onStartEditAscent, onCancelEditAscent, onSaveEditAscent, onRemoveAscent,
   savingAscentEdit, removingAscentId, projectRouteIds,
+  activeProjects, onLogWork, logWorkPending, onDeleteAttempt,
 }: SessionCardProps) {
   const [showNotes, setShowNotes] = useState(false)
+  const [showWorkForm, setShowWorkForm] = useState(false)
   const routeCount = session.ascents?.length ?? 0
   const closedCount = session.ascents?.filter(a =>
     ['onsight','flash','redpoint','second','third','four_plus'].includes(a.ascent_style ?? a.attempt_type ?? '')
@@ -433,12 +512,54 @@ function SessionCard({
         </div>
       )}
 
-      {/* Add ascent to session */}
-      <div style={{ padding: '10px 18px', borderTop: '1px solid rgba(247,243,234,0.08)' }}>
+      {/* Lavoro sui progetti (tentativi) */}
+      {session.attempts?.length > 0 && (
+        <div className="session-routes-list">
+          {session.attempts.map(a => (
+            <div key={a.id} className="session-route-row">
+              <Link to={`/routes/${a.route?.id}`} className="session-route-name">
+                {a.route?.name ?? '—'}
+                <span
+                  title="Lavorato sul progetto (tentativo, non chiuso)"
+                  style={{ fontSize: 11, fontWeight: 700, color: '#D9902F', border: '1px solid rgba(217,144,47,0.45)', padding: '1px 7px', borderRadius: 999, marginLeft: 8 }}
+                >
+                  🎯 Lavorato
+                </span>
+              </Link>
+              <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexShrink: 0 }}>
+                {a.route?.official_grade && <span className="grade-badge">{a.route.official_grade}</span>}
+                {a.high_point && <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>⛰️ {a.high_point}</span>}
+                {a.effort != null && <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>💪 {a.effort}/10</span>}
+                <button className="btn-secondary" style={{ fontSize: 11, padding: '2px 7px', color: '#FFB0A5' }}
+                  title="Rimuovi lavoro" onClick={() => onDeleteAttempt(a)}>×</button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Add ascent / log project work */}
+      <div style={{ padding: '10px 18px', borderTop: '1px solid rgba(247,243,234,0.08)', display: 'flex', gap: 8, flexWrap: 'wrap' }}>
         <button className="btn-secondary" style={{ fontSize: 12, padding: '5px 14px' }} onClick={onAddAscent}>
           + Aggiungi via
         </button>
+        {!showWorkForm && (
+          <button className="btn-secondary" style={{ fontSize: 12, padding: '5px 14px' }} onClick={() => setShowWorkForm(true)}>
+            🎯 Lavorato su progetto
+          </button>
+        )}
       </div>
+
+      {showWorkForm && (
+        <div style={{ padding: '0 18px 14px' }}>
+          <ProjectWorkForm
+            activeProjects={activeProjects}
+            isLoading={logWorkPending}
+            onSave={vars => { onLogWork(session.id, session.date, vars); setShowWorkForm(false) }}
+            onCancel={() => setShowWorkForm(false)}
+          />
+        </div>
+      )}
     </div>
   )
 }
@@ -455,6 +576,8 @@ export default function SessionsPage() {
   const createAscent = useCreateAscent()
   const updateAscent = useUpdateAscent()
   const deleteAscent = useDeleteAscent()
+  const logProjectWork = useLogProjectWork()
+  const deleteAttempt = useDeleteAttempt()
 
   const [adding, setAdding] = useState(false)
   const [editingSessionId, setEditingSessionId] = useState<string | null>(null)
@@ -559,6 +682,20 @@ export default function SessionsPage() {
 
   const editingSession = sessions?.find(s => s.id === editingSessionId) ?? null
   const projectRouteIds = new Set((projects ?? []).map(p => p.route_id))
+  const activeProjects = (projects ?? []).filter(p => p.status === 'active' || p.status === 'paused')
+
+  function handleLogWork(
+    sessionId: string,
+    sessionDate: string,
+    vars: { projectId: string; routeId: string; currentAttempts: number; highPoint: string | null; effort: number | null; notes: string | null },
+  ) {
+    logProjectWork.mutate({ userId: user!.id, sessionId, sessionDate, ...vars })
+  }
+
+  async function handleDeleteAttempt(a: SessionAttempt) {
+    if (!confirm(`Rimuovere il lavoro su "${a.route?.name ?? 'questo progetto'}"?`)) return
+    await deleteAttempt.mutateAsync({ id: a.id, userId: user!.id })
+  }
 
   const stagedSection = (
     <>
@@ -696,6 +833,10 @@ export default function SessionsPage() {
                   savingAscentEdit={updateAscent.isPending}
                   removingAscentId={removingAscentId}
                   projectRouteIds={projectRouteIds}
+                  activeProjects={activeProjects}
+                  onLogWork={handleLogWork}
+                  logWorkPending={logProjectWork.isPending}
+                  onDeleteAttempt={handleDeleteAttempt}
                 />
               )}
               {savedAscentFor === s.id && addingAscentTo !== s.id && (
