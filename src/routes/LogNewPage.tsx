@@ -25,22 +25,28 @@ import '../styles/logbook.css'
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 const QUICK_MODES = [
-  { value: 'onsight', label: 'On-sight', icon: '👁️' },
-  { value: 'flash',   label: 'Flash',    icon: '⚡' },
+  { value: 'onsight',  label: 'On-sight', icon: '👁️' },
+  { value: 'flash',    label: 'Flash',    icon: '⚡' },
+  { value: 'redpoint', label: 'Redpoint', icon: '🔴' },
 ]
 
 const EXACT_TRIES = ['2','3','4','5','6','7','8','9','10']
 
+// Un'opzione è "redpoint" se non è né on-sight né flash (numero giri o bucket).
+const isRedpointOption = (opt: string) => opt !== 'onsight' && opt !== 'flash'
+
+// Opzioni della tendina "numero di giri": 2°…10° giro + bucket oltre il 10°.
+const REDPOINT_OPTIONS: { value: string; label: string }[] = [
+  ...EXACT_TRIES.map(n => ({ value: n, label: `${n}° giro` })),
+  { value: '11_20',   label: '11-20 giri' },
+  { value: '21_30',   label: '21-30 giri' },
+  { value: '31_40',   label: '31-40 giri' },
+  { value: '41_50',   label: '41-50 giri' },
+  { value: '50_plus', label: '50+ giri' },
+]
+
 // Decimale del grado proposto: .1–.9 (raffina il grado community)
 const GRADE_DECIMALS = ['1','2','3','4','5','6','7','8','9']
-
-const BUCKET_OPTIONS = [
-  { value: '11_20',   label: '11-20' },
-  { value: '21_30',   label: '21-30' },
-  { value: '31_40',   label: '31-40' },
-  { value: '41_50',   label: '41-50' },
-  { value: '50_plus', label: '50+' },
-]
 
 const DIFFICULTY_FEEL_OPTIONS = [
   { value: 'soft',      label: 'Soft' },
@@ -486,45 +492,51 @@ export default function LogNewPage() {
             {/* Ascent style */}
             <div className="log-q">Come hai salito?</div>
 
-            {/* On-sight / Flash — grandi cerchi */}
+            {/* On-sight / Flash / Redpoint — scelta singola esclusiva */}
             <div className="log-style-circles" style={{ justifyContent: 'center', gap: 32, marginBottom: 16 }}>
-              {QUICK_MODES.map(m => (
-                <button key={m.value} type="button"
-                  className={`log-style-circle${selectedOption === m.value && !isRepeat ? ' active' : ''}`}
-                  data-mode={m.value}
-                  style={isRepeat ? { opacity: 0.35, cursor: 'not-allowed' } : {}}
-                  onClick={() => { if (!isRepeat) setSelectedOption(m.value) }}>
-                  <div className="log-style-circle-ring">
-                    <span className="log-style-circle-icon">{m.icon}</span>
-                  </div>
-                  <span className="log-style-circle-label">{m.label}</span>
-                </button>
-              ))}
+              {QUICK_MODES.map(m => {
+                const active = !isRepeat && (
+                  m.value === 'redpoint' ? isRedpointOption(selectedOption) : selectedOption === m.value
+                )
+                return (
+                  <button key={m.value} type="button"
+                    className={`log-style-circle${active ? ' active' : ''}`}
+                    data-mode={m.value}
+                    style={isRepeat ? { opacity: 0.35, cursor: 'not-allowed' } : {}}
+                    onClick={() => {
+                      if (isRepeat) return
+                      // Radio: selezionare un modo deseleziona gli altri due.
+                      // Redpoint default al 2° giro (se non già su un'opzione redpoint).
+                      if (m.value === 'redpoint') {
+                        if (!isRedpointOption(selectedOption)) setSelectedOption('2')
+                      } else {
+                        setSelectedOption(m.value)
+                      }
+                    }}>
+                    <div className="log-style-circle-ring">
+                      <span className="log-style-circle-icon">{m.icon}</span>
+                    </div>
+                    <span className="log-style-circle-label">{m.label}</span>
+                  </button>
+                )
+              })}
             </div>
 
-            {/* Redpoint — numero giri */}
-            <div className="log-redpoint-section" style={{ opacity: isRepeat ? 0.35 : 1, pointerEvents: isRepeat ? 'none' : undefined }}>
-              <div className="log-redpoint-label">Redpoint — numero di giri</div>
-              <div className="log-pill-group" style={{ justifyContent: 'center', marginBottom: 8 }}>
-                {EXACT_TRIES.map(n => (
-                  <button key={n} type="button"
-                    className={`log-pill${selectedOption === n && !isRepeat ? ' active' : ''}`}
-                    style={{ minWidth: 38, textAlign: 'center' }}
-                    onClick={() => setSelectedOption(n)}>
-                    {n}°
-                  </button>
-                ))}
+            {/* Redpoint — tendina numero giri, solo se Redpoint selezionato */}
+            {!isRepeat && isRedpointOption(selectedOption) && (
+              <div className="log-redpoint-section">
+                <div className="log-redpoint-label">Numero di giri</div>
+                <div style={{ display: 'flex', justifyContent: 'center' }}>
+                  <select className="logbook-select" style={{ minWidth: 180 }}
+                    value={selectedOption}
+                    onChange={e => setSelectedOption(e.target.value)}>
+                    {REDPOINT_OPTIONS.map(o => (
+                      <option key={o.value} value={o.value}>{o.label}</option>
+                    ))}
+                  </select>
+                </div>
               </div>
-              <div className="log-pill-group" style={{ justifyContent: 'center' }}>
-                {BUCKET_OPTIONS.map(b => (
-                  <button key={b.value} type="button"
-                    className={`log-pill${selectedOption === b.value && !isRepeat ? ' active' : ''}`}
-                    onClick={() => setSelectedOption(b.value)}>
-                    {b.label}
-                  </button>
-                ))}
-              </div>
-            </div>
+            )}
 
             <div className="log-repeat-row" style={{ marginTop: 16 }}>
               <input type="checkbox" id="repeat-chk" checked={isRepeat}
