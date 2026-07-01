@@ -35,3 +35,9 @@ dist-ssr
 *.sql.gz
 supabase/.branches
 supabase/.temp
+
+# scratch / WIP (auto-added per errore, non versionare)
+_ci_*
+_dump.mjs
+data/crags-metadata/
+HANDOFF_*.md
