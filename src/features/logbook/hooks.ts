@@ -48,6 +48,7 @@ export interface AscentFormValues {
   is_repeat: boolean
   grade_at_ascent: string | null
   grade_numeric_at_ascent: number | null
+  draws_mode: string | null
   personal_grade: string | null
   quality: number | null
   difficulty_feel: string | null
@@ -73,6 +74,7 @@ export function useCreateAscent() {
             ascent_style: values.ascent_style,
             attempt_count: values.attempt_count,
             attempt_type: values.attempt_type,
+            draws_mode: values.draws_mode as 'unknown' | 'preplaced' | 'placed_by_user' | null,
           })
       const { error } = await supabase
         .from('ascents')

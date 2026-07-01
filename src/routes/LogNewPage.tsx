@@ -134,6 +134,7 @@ export default function LogNewPage() {
   // ── Ascent fields ──
   const [date, setDate] = useState(new Date().toISOString().slice(0, 10))
   const [selectedOption, setSelectedOption] = useState('onsight')
+  const [drawsMode, setDrawsMode] = useState('unknown')
   const [isRepeat, setIsRepeat] = useState(false)
   const [effort, setEffort] = useState<number | ''>('')
   const dateShortcuts = getDateShortcuts()
@@ -201,6 +202,7 @@ export default function LogNewPage() {
       is_repeat: isRepeat,
       grade_at_ascent: selectedRoute!.official_grade,
       grade_numeric_at_ascent: selectedRoute!.grade_numeric,
+      draws_mode: isRepeat ? null : drawsMode,
       personal_grade: null,
       quality,
       difficulty_feel: difficultyFeel || null,
@@ -433,6 +435,26 @@ export default function LogNewPage() {
                 onChange={e => setIsRepeat(e.target.checked)} />
               <label htmlFor="repeat-chk">È una ripetizione</label>
             </div>
+
+            {/* Montaggio via — incide sul bonus solo per l'on-sight */}
+            {!isRepeat && (
+              <>
+                <div className="log-q">Montaggio via <span style={{ fontWeight: 400, fontSize: 11, color: 'var(--text-muted)', textTransform: 'none', letterSpacing: 0 }}>(hai messo tu i rinvii?)</span></div>
+                <div className="log-pill-group" style={{ justifyContent: 'center' }}>
+                  {[
+                    { value: 'unknown', label: 'Non ricordo' },
+                    { value: 'preplaced', label: 'Rinvii già presenti' },
+                    { value: 'placed_by_user', label: 'Ho montato la via' },
+                  ].map(m => (
+                    <button key={m.value} type="button"
+                      className={`log-pill${drawsMode === m.value ? ' active' : ''}`}
+                      onClick={() => setDrawsMode(m.value)}>
+                      {m.label}
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
 
             {/* Sforzo */}
             <div className="log-q">Sforzo percepito <span style={{ fontWeight: 400, fontSize: 11, color: 'var(--text-muted)', textTransform: 'none', letterSpacing: 0 }}>(opzionale)</span></div>

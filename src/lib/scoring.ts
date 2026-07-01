@@ -169,14 +169,12 @@ export function capitalScoreFromAscent(input: {
 }): number | null {
   if (!input.grade) return null
   const attemptType = capitalAttemptTypeFromAscent(input)
-  // Policy v1.0: ogni a-vista conta come "onsight montando" (montaggio via)
-  // se non è già specificato un draws_mode diverso.
-  const drawsMode =
-    input.draws_mode ?? (attemptType === 'onsight' ? 'placed_by_user' : undefined)
+  // Il bonus montaggio dipende dal draws_mode reale della salita.
+  // Import → 'placed_by_user' (montato); inserimento manuale → scelta utente.
   return calculateCapitalScore({
     grade: input.grade,
     attemptType,
-    drawsMode,
+    drawsMode: input.draws_mode ?? undefined,
   })
 }
 

@@ -71,6 +71,7 @@ export default function AscentForm({ preselectedRoute, defaultDate, sessionId, o
   const [quality, setQuality] = useState<number | null>(null)
   const [hoverStar, setHoverStar] = useState<number | null>(null)
   const [attemptType, setAttemptType] = useState('onsight')
+  const [drawsMode, setDrawsMode] = useState('unknown')
   const [isRepeat, setIsRepeat] = useState(false)
 
   const { data: results, isFetching } = useRouteSearch(preselectedRoute ? '' : query)
@@ -111,6 +112,7 @@ export default function AscentForm({ preselectedRoute, defaultDate, sessionId, o
       is_repeat: isRepeat,
       grade_at_ascent: selectedRoute.official_grade,
       grade_numeric_at_ascent: selectedRoute.grade_numeric,
+      draws_mode: isRepeat ? null : drawsMode,
       personal_grade: data.personal_grade ?? null,
       quality,
       difficulty_feel: null,
@@ -198,6 +200,20 @@ export default function AscentForm({ preselectedRoute, defaultDate, sessionId, o
             {ATTEMPT_TYPE_OPTIONS.map(o => (
               <option key={o.value} value={o.value}>{o.label}</option>
             ))}
+          </select>
+        </div>
+
+        <div className="form-group">
+          <label>Montaggio via</label>
+          <select
+            value={drawsMode}
+            onChange={e => setDrawsMode(e.target.value)}
+            disabled={isRepeat}
+            style={isRepeat ? { opacity: 0.4 } : {}}
+          >
+            <option value="unknown">Non ricordo</option>
+            <option value="preplaced">Rinvii già presenti</option>
+            <option value="placed_by_user">Ho montato la via</option>
           </select>
         </div>
 

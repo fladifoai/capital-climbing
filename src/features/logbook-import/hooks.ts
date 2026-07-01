@@ -173,6 +173,8 @@ export function useExecuteLogbookImport(userId: string) {
           sector_name_snapshot: r.sector_name || null,
           notes: r.notes,
           visibility: 'public',
+          // Import: le a-vista si considerano montate (montaggio automatico).
+          draws_mode: r.ascent_style === 'onsight' ? 'placed_by_user' : null,
         }))
         const { error } = await supabase.from('ascents').insert(payload)
         if (error) {
