@@ -12,6 +12,7 @@ export default function LoginPage() {
   const navigate = useNavigate()
   const [mode, setMode] = useState<Mode>('login')
   const [rememberMe, setRememberMe] = useState(false)
+  const [showPw, setShowPw] = useState(false)
   const [loginError, setLoginError] = useState('')
   const [loginLoading, setLoginLoading] = useState(false)
   const [forgotSent, setForgotSent] = useState(false)
@@ -80,7 +81,21 @@ export default function LoginPage() {
 
               <div className="field">
                 <label>Password</label>
-                <input type="password" {...loginForm.register('password')} placeholder="••••••••" />
+                <div className="pw-wrap">
+                  <input
+                    type={showPw ? 'text' : 'password'}
+                    {...loginForm.register('password')}
+                    placeholder="••••••••"
+                  />
+                  <button
+                    type="button"
+                    className="pw-toggle"
+                    onClick={() => setShowPw(v => !v)}
+                    aria-label={showPw ? 'Nascondi password' : 'Mostra password'}
+                  >
+                    {showPw ? 'Nascondi' : 'Mostra'}
+                  </button>
+                </div>
                 {loginForm.formState.errors.password && (
                   <span className="field-error">{loginForm.formState.errors.password.message}</span>
                 )}

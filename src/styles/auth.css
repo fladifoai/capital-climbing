@@ -217,6 +217,26 @@
 
 .auth-link-btn--center { display: block; text-align: center; width: 100%; }
 
+/* Campo password con toggle mostra/nascondi */
+.pw-wrap { position: relative; display: flex; align-items: center; }
+.pw-wrap input { flex: 1; padding-right: 82px; }
+.pw-toggle {
+  position: absolute;
+  right: 8px;
+  height: 32px;
+  padding: 0 10px;
+  border: none;
+  border-radius: 10px;
+  background: rgba(247, 243, 234, 0.08);
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background var(--t-fast) var(--ease), color var(--t-fast) var(--ease);
+}
+.pw-toggle:hover { background: rgba(200, 95, 58, 0.18); color: var(--text); }
+
 /* Banner successo */
 .auth-success {
   font-size: 13px;

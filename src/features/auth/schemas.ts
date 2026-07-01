@@ -13,7 +13,7 @@ export const registerSchema = z.object({
     .regex(/^[a-z0-9_]+$/, 'Solo lettere minuscole, numeri e underscore'),
   display_name: z.string().min(2, 'Nome di almeno 2 caratteri').max(50),
   email: z.string().email('Email non valida'),
-  password: z.string().min(6, 'Password di almeno 6 caratteri'),
+  password: z.string().min(8, 'Password di almeno 8 caratteri'),
 })
 
 export const forgotPasswordSchema = z.object({

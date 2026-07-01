@@ -10,6 +10,7 @@ export default function RegisterPage() {
   const navigate = useNavigate()
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [showPw, setShowPw] = useState(false)
 
   const { register, handleSubmit, formState: { errors } } = useForm<RegisterData>({
     resolver: zodResolver(registerSchema),
@@ -72,7 +73,21 @@ export default function RegisterPage() {
 
           <div className="field">
             <label>Password</label>
-            <input type="password" {...register('password')} placeholder="Minimo 6 caratteri" />
+            <div className="pw-wrap">
+              <input
+                type={showPw ? 'text' : 'password'}
+                {...register('password')}
+                placeholder="Minimo 8 caratteri"
+              />
+              <button
+                type="button"
+                className="pw-toggle"
+                onClick={() => setShowPw(v => !v)}
+                aria-label={showPw ? 'Nascondi password' : 'Mostra password'}
+              >
+                {showPw ? 'Nascondi' : 'Mostra'}
+              </button>
+            </div>
             {errors.password && <span className="field-error">{errors.password.message}</span>}
           </div>
 
