@@ -8,5 +8,8 @@ export default defineConfig({
     globals: true,
     environment: 'jsdom',
     setupFiles: './src/test/setup.ts',
+    // data/ contiene script standalone (es. crag_scoring.test.mjs) eseguiti con `node`,
+    // non da vitest: usano process.exit e non sono suite vitest.
+    exclude: ['**/node_modules/**', '**/dist/**', 'data/**'],
   },
 })

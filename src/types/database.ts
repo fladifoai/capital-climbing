@@ -148,6 +148,11 @@ export interface Sector {
   description: string | null
   orientation: string | null
   approach_notes: string | null
+  sun_morning: string | null
+  sun_afternoon: string | null
+  summer_score: number | null
+  winter_score: number | null
+  best_season: string | null
   sort_order: number
   created_at: string
   updated_at: string

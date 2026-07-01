@@ -185,6 +185,38 @@ export default function CragDetailPage() {
               <span className="crag-meta-label">Avvicinamento:</span> {crag.approach_minutes} min
             </div>
           )}
+          {crag.altitude_m != null && (
+            <div className="crag-meta-item">
+              <span className="crag-meta-label">Quota:</span> {crag.altitude_m} m
+            </div>
+          )}
+          {crag.orientation && (
+            <div className="crag-meta-item">
+              <span className="crag-meta-label">Esposizione:</span> {crag.orientation}
+            </div>
+          )}
+          {crag.best_seasons && crag.best_seasons.length > 0 && (
+            <div className="crag-meta-item">
+              <span className="crag-meta-label">Stagioni:</span> {crag.best_seasons.join(', ')}
+            </div>
+          )}
+          {crag.parking_notes && (
+            <div className="crag-meta-item">
+              <span className="crag-meta-label">Parcheggio:</span> {crag.parking_notes}
+            </div>
+          )}
+          {crag.latitude != null && crag.longitude != null && (
+            <div className="crag-meta-item">
+              <a
+                className="crag-meta-maps"
+                href={`https://www.google.com/maps/search/?api=1&query=${crag.latitude},${crag.longitude}`}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                📍 Apri su Google Maps
+              </a>
+            </div>
+          )}
           {crag.access_status && (
             <div className="crag-meta-item">
               <span className={`access-badge ${crag.access_status}`}>
@@ -272,11 +304,23 @@ export default function CragDetailPage() {
                 <span style={{ color: 'var(--text-muted)', fontSize: 12, width: 12 }}>{isOpen ? '▾' : '▸'}</span>
                 <div>
                   <span className="sector-name">{sector.name}</span>
-                  {(sector.orientation || sector.approach_notes) && (
-                    <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>
-                      {[sector.orientation, sector.approach_notes].filter(Boolean).join(' · ')}
-                    </div>
-                  )}
+                  {(() => {
+                    const sun = sector.sun_morning === 'si' && sector.sun_afternoon === 'si' ? 'sole tutto il giorno'
+                      : sector.sun_morning === 'si' ? 'sole mattino'
+                      : sector.sun_afternoon === 'si' ? 'sole pomeriggio' : null
+                    const bits = [
+                      sector.orientation && `Esp. ${sector.orientation}`,
+                      sector.best_season,
+                      sun,
+                      sector.summer_score != null && `estate ${sector.summer_score}/inverno ${sector.winter_score}`,
+                      sector.approach_notes,
+                    ].filter(Boolean)
+                    return bits.length ? (
+                      <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>
+                        {bits.join(' · ')}
+                      </div>
+                    ) : null
+                  })()}
                 </div>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 2 }}>
