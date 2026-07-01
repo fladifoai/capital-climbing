@@ -176,6 +176,8 @@ export function useDeleteAscent() {
     onSuccess: (_, variables) => {
       qc.invalidateQueries({ queryKey: ['my-ascents', variables.userId] })
       qc.invalidateQueries({ queryKey: ['my-sessions', variables.userId] })
+      // La delete può riaprire un progetto (trigger 037): aggiorna la lista.
+      qc.invalidateQueries({ queryKey: ['my-projects', variables.userId] })
     },
   })
 }

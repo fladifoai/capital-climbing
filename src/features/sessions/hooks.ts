@@ -110,6 +110,8 @@ export function useDeleteAttempt() {
     },
     onSuccess: (_, variables) => {
       qc.invalidateQueries({ queryKey: ['my-sessions', variables.userId] })
+      // Il trigger 037 decrementa attempts_count del progetto: aggiorna.
+      qc.invalidateQueries({ queryKey: ['my-projects', variables.userId] })
     },
   })
 }
