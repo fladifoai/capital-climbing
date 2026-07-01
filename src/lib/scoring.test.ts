@@ -68,8 +68,12 @@ describe('Capital Score — grado non riconosciuto', () => {
 })
 
 describe('capitalScoreFromAscent — adapter modello app', () => {
-  it('onsight style', () =>
-    expect(capitalScoreFromAscent({ grade: '7a', ascent_style: 'onsight' })).toBe(1690))
+  it('onsight style = montando (+10) → 1700', () =>
+    expect(capitalScoreFromAscent({ grade: '7a', ascent_style: 'onsight' })).toBe(1700))
+  it('onsight montando (1700) NON supera 7b+ redpoint (1700)', () =>
+    expect(capitalScoreFromAscent({ grade: '7a', ascent_style: 'onsight' })!).toBeLessThanOrEqual(
+      calculateCapitalScore({ grade: '7b+', attemptType: 'redpoint' })!,
+    ))
   it('redpoint con attempt_count 2 → second_go', () =>
     expect(
       capitalScoreFromAscent({ grade: '7a', ascent_style: 'redpoint', attempt_count: 2 }),

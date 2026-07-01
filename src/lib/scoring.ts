@@ -50,11 +50,15 @@ export const STYLE_BONUS: Record<CapitalAttemptType, number> = {
   redpoint: 0,
 }
 
-// Predisposto ma disattivato. Non sommare nulla finché ACTIVE = false.
-export const MOUNT_BONUS_ACTIVE = false
+// Bonus montaggio via ATTIVO (v1.0): per ora ogni a-vista è considerata
+// "onsight montando". Il bonus è un micro-bonus (+10) — il massimo che
+// preserva la regola di spec "7a onsight montando NON supera 7b+ redpoint"
+// (7a onsight 1690, 7b+ redpoint 1700 → margine 10). Non deve mai diventare
+// un cambio di categoria.
+export const MOUNT_BONUS_ACTIVE = true
 
 export const MOUNT_BONUS: Record<CapitalAttemptType, number> = {
-  onsight: 0,
+  onsight: 10,
   flash: 0,
   second_go: 0,
   redpoint: 0,
@@ -165,10 +169,14 @@ export function capitalScoreFromAscent(input: {
 }): number | null {
   if (!input.grade) return null
   const attemptType = capitalAttemptTypeFromAscent(input)
+  // Policy v1.0: ogni a-vista conta come "onsight montando" (montaggio via)
+  // se non è già specificato un draws_mode diverso.
+  const drawsMode =
+    input.draws_mode ?? (attemptType === 'onsight' ? 'placed_by_user' : undefined)
   return calculateCapitalScore({
     grade: input.grade,
     attemptType,
-    drawsMode: input.draws_mode ?? undefined,
+    drawsMode,
   })
 }
 
