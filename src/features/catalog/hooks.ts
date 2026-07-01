@@ -32,24 +32,6 @@ export interface SectorWithRoutes extends Sector {
   subsectors?: SectorWithRoutes[]
 }
 
-// PostgREST limita ogni richiesta a 1000 righe (db-max-rows): .limit(10000) NON lo aggira.
-// Va paginato con .range(), altrimenti regioni con vie "in fondo" vengono sottocontate.
-async function fetchAllPaged<T>(table: string, columns: string): Promise<T[]> {
-  const PAGE = 1000
-  const all: T[] = []
-  for (let from = 0; ; from += PAGE) {
-    const { data, error } = await supabase
-      .from(table)
-      .select(columns)
-      .range(from, from + PAGE - 1)
-    if (error) throw error
-    const rows = (data ?? []) as T[]
-    all.push(...rows)
-    if (rows.length < PAGE) break
-  }
-  return all
-}
-
 // Ordine nazioni: Italia sempre prima, poi per numero falesie decrescente, poi nome.
 const COUNTRY_PRIORITY: Record<string, number> = { [ITALY_ID]: 0 }
 
@@ -57,20 +39,22 @@ export function useCountriesWithCounts() {
   return useQuery({
     queryKey: ['countries-with-counts'],
     queryFn: async (): Promise<CountryWithCount[]> => {
-      const [countriesRes, regionsRes, cragsRes, sectors, routes] = await Promise.all([
+      // Conteggi aggregati lato server (view country_counts): niente più
+      // download dell'intera tabella routes nel browser.
+      const [countriesRes, regionsRes, countsRes] = await Promise.all([
         supabase.from('countries').select('*').order('name'),
         supabase.from('regions').select('id, country_id'),
-        supabase.from('crags').select('id, country_id'),
-        fetchAllPaged<{ id: string; crag_id: string }>('sectors', 'id, crag_id'),
-        fetchAllPaged<{ id: string; sector_id: string | null }>('routes', 'id, sector_id'),
+        supabase.from('country_counts').select('country_id, crag_count, sector_count, route_count'),
       ])
       if (countriesRes.error) throw countriesRes.error
       if (regionsRes.error) throw regionsRes.error
-      if (cragsRes.error) throw cragsRes.error
+      if (countsRes.error) throw countsRes.error
 
       const countries = countriesRes.data ?? []
       const regions = regionsRes.data ?? []
-      const crags = cragsRes.data ?? []
+      const counts = new Map(
+        (countsRes.data ?? []).map(c => [c.country_id as string, c])
+      )
 
       const regionsByCountry = new Map<string, number>()
       regions.forEach(r => {
@@ -78,37 +62,14 @@ export function useCountriesWithCounts() {
         regionsByCountry.set(r.country_id, (regionsByCountry.get(r.country_id) ?? 0) + 1)
       })
 
-      const cragsByCountry = new Map<string, string[]>()
-      crags.forEach(c => {
-        if (!c.country_id) return
-        const list = cragsByCountry.get(c.country_id) ?? []
-        list.push(c.id)
-        cragsByCountry.set(c.country_id, list)
-      })
-
-      const sectorsByCrag = new Map<string, string[]>()
-      sectors.forEach(s => {
-        const list = sectorsByCrag.get(s.crag_id) ?? []
-        list.push(s.id)
-        sectorsByCrag.set(s.crag_id, list)
-      })
-
-      const routesBySector = new Map<string, number>()
-      routes.forEach(r => {
-        if (!r.sector_id) return
-        routesBySector.set(r.sector_id, (routesBySector.get(r.sector_id) ?? 0) + 1)
-      })
-
       const withCounts = countries.map(c => {
-        const countryCrags = cragsByCountry.get(c.id) ?? []
-        const countrySectors = countryCrags.flatMap(cid => sectorsByCrag.get(cid) ?? [])
-        const countryRoutes = countrySectors.reduce((sum, sid) => sum + (routesBySector.get(sid) ?? 0), 0)
+        const ct = counts.get(c.id)
         return {
           ...c,
           region_count: regionsByCountry.get(c.id) ?? 0,
-          crag_count: countryCrags.length,
-          sector_count: countrySectors.length,
-          route_count: countryRoutes,
+          crag_count: ct?.crag_count ?? 0,
+          sector_count: ct?.sector_count ?? 0,
+          route_count: ct?.route_count ?? 0,
         }
       })
 
@@ -127,48 +88,26 @@ export function useRegionsWithCounts(countryId: string) {
   return useQuery({
     queryKey: ['regions-with-counts', countryId],
     queryFn: async (): Promise<RegionWithCount[]> => {
-      const [regionsRes, cragsRes, sectors, routes] = await Promise.all([
+      // Conteggi aggregati lato server (view region_counts).
+      const [regionsRes, countsRes] = await Promise.all([
         supabase.from('regions').select('*').eq('country_id', countryId).order('name'),
-        supabase.from('crags').select('id, region_id').eq('country_id', countryId),
-        fetchAllPaged<{ id: string; crag_id: string }>('sectors', 'id, crag_id'),
-        fetchAllPaged<{ id: string; sector_id: string | null }>('routes', 'id, sector_id'),
+        supabase.from('region_counts').select('region_id, crag_count, sector_count, route_count').eq('country_id', countryId),
       ])
 
       if (regionsRes.error) throw regionsRes.error
+      if (countsRes.error) throw countsRes.error
 
-      const regions = regionsRes.data ?? []
-      const crags = cragsRes.data ?? []
+      const counts = new Map(
+        (countsRes.data ?? []).map(r => [r.region_id as string, r])
+      )
 
-      const cragsByRegion = new Map<string, string[]>()
-      crags.forEach(c => {
-        if (!c.region_id) return
-        const list = cragsByRegion.get(c.region_id) ?? []
-        list.push(c.id)
-        cragsByRegion.set(c.region_id, list)
-      })
-
-      const sectorsByCrag = new Map<string, string[]>()
-      sectors.forEach(s => {
-        const list = sectorsByCrag.get(s.crag_id) ?? []
-        list.push(s.id)
-        sectorsByCrag.set(s.crag_id, list)
-      })
-
-      const routesBySector = new Map<string, number>()
-      routes.forEach(r => {
-        if (!r.sector_id) return
-        routesBySector.set(r.sector_id, (routesBySector.get(r.sector_id) ?? 0) + 1)
-      })
-
-      return regions.map(r => {
-        const regionCrags = cragsByRegion.get(r.id) ?? []
-        const regionSectors = regionCrags.flatMap(cid => sectorsByCrag.get(cid) ?? [])
-        const regionRoutes = regionSectors.reduce((sum, sid) => sum + (routesBySector.get(sid) ?? 0), 0)
+      return (regionsRes.data ?? []).map(r => {
+        const ct = counts.get(r.id)
         return {
           ...r,
-          crag_count: regionCrags.length,
-          sector_count: regionSectors.length,
-          route_count: regionRoutes,
+          crag_count: ct?.crag_count ?? 0,
+          sector_count: ct?.sector_count ?? 0,
+          route_count: ct?.route_count ?? 0,
         }
       })
     },
@@ -309,6 +248,11 @@ export function useSectorsWithRoutes(cragId: string) {
           description: null,
           orientation: null,
           approach_notes: null,
+          sun_morning: null,
+          sun_afternoon: null,
+          summer_score: null,
+          winter_score: null,
+          best_season: null,
           sort_order: 9999,
           created_at: '',
           updated_at: '',
