@@ -112,8 +112,13 @@ export type AscentUpdateValues = {
   attempt_bucket?: string | null
   grade_at_ascent?: string | null
   is_repeat?: boolean
+  draws_mode?: string | null
   personal_grade?: string | null
   quality?: number | null
+  difficulty_feel?: string | null
+  style_feel?: string | null
+  proposed_grade?: string | null
+  want_repeat?: boolean | null
   effort?: number | null
   kneepad_used?: boolean | null
   notes?: string | null
@@ -128,7 +133,8 @@ export function useUpdateAscent() {
       // Ricalcola il Capital Score se cambia stile/conteggio/ripetizione.
       // Le ripetizioni NON generano punteggio: score=null.
       const touchesScore =
-        'ascent_style' in values || 'attempt_count' in values || 'is_repeat' in values
+        'ascent_style' in values || 'attempt_count' in values ||
+        'is_repeat' in values || 'draws_mode' in values
       const payload =
         touchesScore && (values.is_repeat || values.grade_at_ascent)
           ? (() => {
@@ -139,6 +145,7 @@ export function useUpdateAscent() {
                       grade: values.grade_at_ascent,
                       ascent_style: values.ascent_style,
                       attempt_count: values.attempt_count,
+                      draws_mode: values.draws_mode as 'unknown' | 'preplaced' | 'placed_by_user' | null,
                     })
                   : undefined
               if (capitalScore === undefined) return values

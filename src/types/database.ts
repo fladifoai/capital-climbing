@@ -202,6 +202,7 @@ export interface Ascent {
   ascent_style: string | null
   attempt_count: number | null
   attempt_bucket: string | null
+  draws_mode: string | null
   legacy_attempt_type: string | null
   needs_review: boolean
   is_repeat: boolean

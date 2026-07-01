@@ -12,8 +12,13 @@ export interface SessionAscent {
   attempt_count: number | null
   attempt_bucket: string | null
   is_repeat: boolean
+  draws_mode: string | null
   personal_grade: string | null
   quality: number | null
+  difficulty_feel: string | null
+  style_feel: string | null
+  proposed_grade: string | null
+  want_repeat: boolean | null
   effort: number | null
   kneepad_used: boolean | null
   notes: string | null
@@ -27,7 +32,12 @@ export interface SessionAttempt {
   route_id: string
   result: string | null
   high_point: string | null
+  fall_move: string | null
+  beta_used: string | null
+  kneepad_used: boolean | null
+  shoes: string | null
   effort: number | null
+  rest_minutes: number | null
   notes: string | null
   route: { id: string; name: string; official_grade: string | null } | null
 }
@@ -44,7 +54,7 @@ export function useMySessions(userId: string) {
     queryFn: async (): Promise<SessionWithCrag[]> => {
       const { data, error } = await supabase
         .from('sessions')
-        .select('*, crag:crags(id, name), ascents(id, date, grade_at_ascent, grade_numeric_at_ascent, attempt_type, ascent_style, attempt_count, attempt_bucket, is_repeat, personal_grade, quality, effort, kneepad_used, notes, visibility, route:routes(id, name, official_grade, grade_numeric, route_type)), attempts(id, route_id, result, high_point, effort, notes, route:routes(id, name, official_grade))')
+        .select('*, crag:crags(id, name), ascents(id, date, grade_at_ascent, grade_numeric_at_ascent, attempt_type, ascent_style, attempt_count, attempt_bucket, is_repeat, draws_mode, personal_grade, quality, difficulty_feel, style_feel, proposed_grade, want_repeat, effort, kneepad_used, notes, visibility, route:routes(id, name, official_grade, grade_numeric, route_type)), attempts(id, route_id, result, high_point, fall_move, beta_used, kneepad_used, shoes, effort, rest_minutes, notes, route:routes(id, name, official_grade))')
         .eq('user_id', userId)
         .order('date', { ascending: false })
       if (error) throw error
@@ -112,6 +122,37 @@ export function useDeleteAttempt() {
       qc.invalidateQueries({ queryKey: ['my-sessions', variables.userId] })
       // Il trigger 037 decrementa attempts_count del progetto: aggiorna.
       qc.invalidateQueries({ queryKey: ['my-projects', variables.userId] })
+    },
+  })
+}
+
+// Modifica un tentativo (lavoro su progetto) già registrato: UPDATE su attempts,
+// stesso pattern di useDeleteAttempt. Non tocca projects.attempts_count (il
+// numero di tentativi non cambia, cambiano solo i dati del singolo tentativo).
+export interface AttemptUpdateValues {
+  result?: string | null
+  high_point?: string | null
+  fall_move?: string | null
+  beta_used?: string | null
+  kneepad_used?: boolean | null
+  shoes?: string | null
+  effort?: number | null
+  rest_minutes?: number | null
+  notes?: string | null
+}
+
+export function useUpdateAttempt() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async (variables: { id: string; userId: string; values: AttemptUpdateValues }) => {
+      const { error } = await supabase
+        .from('attempts')
+        .update(variables.values)
+        .eq('id', variables.id)
+      if (error) throw new Error(error.message + (error.details ? ` — ${error.details}` : ''))
+    },
+    onSuccess: (_, variables) => {
+      qc.invalidateQueries({ queryKey: ['my-sessions', variables.userId] })
     },
   })
 }

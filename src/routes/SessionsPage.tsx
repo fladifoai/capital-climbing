@@ -7,8 +7,9 @@ import type { Resolver } from 'react-hook-form'
 import { useAuth } from '../features/auth/AuthContext'
 import {
   useMySessions, useCreateSession, useUpdateSession, useDeleteSession,
-  useCragSearch, useLogProjectWork, useDeleteAttempt,
-  type CragSearchResult, type SessionWithCrag, type SessionAscent, type SessionAttempt, type SessionFormValues,
+  useCragSearch, useLogProjectWork, useDeleteAttempt, useUpdateAttempt,
+  type CragSearchResult, type SessionWithCrag, type SessionAscent, type SessionAttempt,
+  type SessionFormValues, type AttemptUpdateValues,
 } from '../features/sessions/hooks'
 import {
   useCreateAscent, useUpdateAscent, useDeleteAscent,
@@ -325,6 +326,98 @@ function ProjectWorkForm({ activeProjects, isLoading, onSave, onCancel }: Projec
   )
 }
 
+// ═══════════ Form modifica tentativo (lavoro su progetto già registrato) ═══════
+const RESULT_OPTIONS = [
+  { value: 'attempt', label: 'Tentativo' },
+  { value: 'send', label: 'Chiuso' },
+  { value: 'repeat', label: 'Ripetizione' },
+  { value: 'project', label: 'Progetto' },
+]
+
+interface AttemptEditFormProps {
+  attempt: SessionAttempt
+  isLoading: boolean
+  onSave: (values: AttemptUpdateValues) => void
+  onCancel: () => void
+}
+
+function AttemptEditForm({ attempt, isLoading, onSave, onCancel }: AttemptEditFormProps) {
+  const [result, setResult] = useState(attempt.result ?? 'attempt')
+  const [highPoint, setHighPoint] = useState(attempt.high_point ?? '')
+  const [fallMove, setFallMove] = useState(attempt.fall_move ?? '')
+  const [betaUsed, setBetaUsed] = useState(attempt.beta_used ?? '')
+  const [kneepad, setKneepad] = useState(attempt.kneepad_used ?? false)
+  const [shoes, setShoes] = useState(attempt.shoes ?? '')
+  const [effort, setEffort] = useState(attempt.effort != null ? String(attempt.effort) : '')
+  const [restMinutes, setRestMinutes] = useState(attempt.rest_minutes != null ? String(attempt.rest_minutes) : '')
+  const [notes, setNotes] = useState(attempt.notes ?? '')
+
+  function submit() {
+    onSave({
+      result: result || null,
+      high_point: highPoint.trim() || null,
+      fall_move: fallMove.trim() || null,
+      beta_used: betaUsed.trim() || null,
+      kneepad_used: kneepad,
+      shoes: shoes.trim() || null,
+      effort: effort ? Number(effort) : null,
+      rest_minutes: restMinutes ? Number(restMinutes) : null,
+      notes: notes.trim() || null,
+    })
+  }
+
+  return (
+    <div className="inline-form" style={{ padding: '4px 0' }}>
+      <div className="form-grid">
+        <div className="form-group">
+          <label>Esito</label>
+          <select value={result} onChange={e => setResult(e.target.value)}>
+            {RESULT_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+          </select>
+        </div>
+        <div className="form-group">
+          <label>High point</label>
+          <input value={highPoint} onChange={e => setHighPoint(e.target.value)} placeholder="es. Passo 5" />
+        </div>
+        <div className="form-group">
+          <label>Mossa caduta</label>
+          <input value={fallMove} onChange={e => setFallMove(e.target.value)} placeholder="es. Passo crux" />
+        </div>
+        <div className="form-group">
+          <label>Beta usata</label>
+          <input value={betaUsed} onChange={e => setBetaUsed(e.target.value)} placeholder="es. Sequenza sx" />
+        </div>
+        <div className="form-group">
+          <label>Scarpette</label>
+          <input value={shoes} onChange={e => setShoes(e.target.value)} placeholder="es. Solution" />
+        </div>
+        <div className="form-group">
+          <label>Sforzo (1–10)</label>
+          <input type="number" min={1} max={10} value={effort} onChange={e => setEffort(e.target.value)} placeholder="7" />
+        </div>
+        <div className="form-group">
+          <label>Riposo (min)</label>
+          <input type="number" min={0} value={restMinutes} onChange={e => setRestMinutes(e.target.value)} placeholder="15" />
+        </div>
+        <div className="form-group" style={{ flexDirection: 'row', alignItems: 'center', gap: 8, paddingTop: 16 }}>
+          <input type="checkbox" id={`att-kneepad-${attempt.id}`} checked={kneepad} onChange={e => setKneepad(e.target.checked)} style={{ width: 'auto' }} />
+          <label htmlFor={`att-kneepad-${attempt.id}`} style={{ textTransform: 'none', fontSize: 13, color: 'var(--text)', letterSpacing: 0 }}>Ginocchiera</label>
+        </div>
+      </div>
+      <div className="form-full form-group">
+        <label>Note</label>
+        <textarea value={notes} onChange={e => setNotes(e.target.value)} placeholder="Note sul lavoro…" />
+      </div>
+      <div className="form-actions">
+        <button type="button" className="btn-secondary" onClick={onCancel}>Annulla</button>
+        <button type="button" className="btn-primary" onClick={submit} disabled={isLoading}>
+          {isLoading ? 'Salvataggio…' : 'Salva modifiche'}
+        </button>
+      </div>
+    </div>
+  )
+}
+
 // ═══════════════════════════════ Session card ═════════════════════════════════
 interface SessionCardProps {
   session: SessionWithCrag
@@ -341,17 +434,24 @@ interface SessionCardProps {
   savingAscentEdit: boolean
   removingAscentId: string | null
   projectRouteIds: Set<string>
+  projectByRouteId: Map<string, string>
   activeProjects: ProjectWithRoute[]
   onLogWork: (sessionId: string, sessionDate: string, vars: { projectId: string; routeId: string; currentAttempts: number; highPoint: string | null; effort: number | null; notes: string | null }) => void
   logWorkPending: boolean
   onDeleteAttempt: (a: SessionAttempt) => void
+  editingAttemptId: string | null
+  onStartEditAttempt: (id: string) => void
+  onCancelEditAttempt: () => void
+  onSaveEditAttempt: (a: SessionAttempt, values: AttemptUpdateValues) => void
+  savingAttemptEdit: boolean
 }
 
 function SessionCard({
   session, confirmDelete, setConfirmDelete, onDelete, onEdit, onAddAscent,
   editingAscentId, onStartEditAscent, onCancelEditAscent, onSaveEditAscent, onRemoveAscent,
-  savingAscentEdit, removingAscentId, projectRouteIds,
+  savingAscentEdit, removingAscentId, projectRouteIds, projectByRouteId,
   activeProjects, onLogWork, logWorkPending, onDeleteAttempt,
+  editingAttemptId, onStartEditAttempt, onCancelEditAttempt, onSaveEditAttempt, savingAttemptEdit,
 }: SessionCardProps) {
   const [showNotes, setShowNotes] = useState(false)
   const [showWorkForm, setShowWorkForm] = useState(false)
@@ -458,9 +558,13 @@ function SessionCard({
                     ascent={{
                       id: a.id, date: a.date,
                       ascent_style: a.ascent_style, attempt_count: a.attempt_count,
+                      attempt_bucket: a.attempt_bucket,
                       grade_at_ascent: a.grade_at_ascent,
-                      is_repeat: a.is_repeat, personal_grade: a.personal_grade,
-                      quality: a.quality, effort: a.effort, kneepad_used: a.kneepad_used,
+                      is_repeat: a.is_repeat, draws_mode: a.draws_mode,
+                      quality: a.quality, difficulty_feel: a.difficulty_feel,
+                      style_feel: a.style_feel, proposed_grade: a.proposed_grade,
+                      want_repeat: a.want_repeat,
+                      effort: a.effort, kneepad_used: a.kneepad_used,
                       notes: a.notes, visibility: a.visibility,
                       route: a.route ? { id: a.route.id, name: a.route.name, official_grade: a.route.official_grade } : null,
                     }}
@@ -479,16 +583,17 @@ function SessionCard({
               <div key={a.id} className="session-route-row">
                 <Link to={`/routes/${a.route?.id}`} className="session-route-name">
                   {a.route?.name ?? '—'}
-                  {a.route?.id && projectRouteIds.has(a.route.id) && (
-                    <span
-                      title="Questa via è un tuo progetto"
-                      style={{ fontSize: 11, fontWeight: 700, color: '#C85F3A', border: '1px solid rgba(200,95,58,0.45)', padding: '1px 7px', borderRadius: 999, marginLeft: 8 }}
-                    >
-                      🎯 Progetto
-                    </span>
-                  )}
                 </Link>
                 <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexShrink: 0 }}>
+                  {a.route?.id && projectRouteIds.has(a.route.id) && (
+                    <Link
+                      to={`/projects?focus=${projectByRouteId.get(a.route.id) ?? ''}`}
+                      title="Apri il progetto per questa via"
+                      style={{ fontSize: 11, fontWeight: 700, color: '#C85F3A', border: '1px solid rgba(200,95,58,0.45)', padding: '1px 7px', borderRadius: 999, textDecoration: 'none' }}
+                    >
+                      🎯 Progetto
+                    </Link>
+                  )}
                   {a.grade_at_ascent && <span className="grade-badge">{a.grade_at_ascent}</span>}
                   {style && (
                     <span style={{ fontSize: 11, fontWeight: 800, color, background: `${color}18`, border: `1px solid ${color}44`, padding: '2px 8px', borderRadius: 999 }}>
@@ -515,26 +620,42 @@ function SessionCard({
       {/* Lavoro sui progetti (tentativi) */}
       {session.attempts?.length > 0 && (
         <div className="session-routes-list">
-          {session.attempts.map(a => (
-            <div key={a.id} className="session-route-row">
-              <Link to={`/routes/${a.route?.id}`} className="session-route-name">
-                {a.route?.name ?? '—'}
-                <span
-                  title="Lavorato sul progetto (tentativo, non chiuso)"
-                  style={{ fontSize: 11, fontWeight: 700, color: '#D9902F', border: '1px solid rgba(217,144,47,0.45)', padding: '1px 7px', borderRadius: 999, marginLeft: 8 }}
-                >
-                  🎯 Lavorato
-                </span>
-              </Link>
-              <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexShrink: 0 }}>
-                {a.route?.official_grade && <span className="grade-badge">{a.route.official_grade}</span>}
-                {a.high_point && <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>⛰️ {a.high_point}</span>}
-                {a.effort != null && <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>💪 {a.effort}/10</span>}
-                <button className="btn-secondary" style={{ fontSize: 11, padding: '2px 7px', color: '#FFB0A5' }}
-                  title="Rimuovi lavoro" onClick={() => onDeleteAttempt(a)}>×</button>
+          {session.attempts.map(a => {
+            if (editingAttemptId === a.id) {
+              return (
+                <div key={a.id} style={{ padding: '12px 14px', borderBottom: '1px solid rgba(247,243,234,0.06)' }}>
+                  <AttemptEditForm
+                    attempt={a}
+                    isLoading={savingAttemptEdit}
+                    onSave={values => onSaveEditAttempt(a, values)}
+                    onCancel={onCancelEditAttempt}
+                  />
+                </div>
+              )
+            }
+            return (
+              <div key={a.id} className="session-route-row">
+                <Link to={`/routes/${a.route?.id}`} className="session-route-name">
+                  {a.route?.name ?? '—'}
+                  <span
+                    title="Lavorato sul progetto (tentativo, non chiuso)"
+                    style={{ fontSize: 11, fontWeight: 700, color: '#D9902F', border: '1px solid rgba(217,144,47,0.45)', padding: '1px 7px', borderRadius: 999, marginLeft: 8 }}
+                  >
+                    🎯 Lavorato
+                  </span>
+                </Link>
+                <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexShrink: 0 }}>
+                  {a.route?.official_grade && <span className="grade-badge">{a.route.official_grade}</span>}
+                  {a.high_point && <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>⛰️ {a.high_point}</span>}
+                  {a.effort != null && <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>💪 {a.effort}/10</span>}
+                  <button className="btn-secondary" style={{ fontSize: 11, padding: '2px 7px' }}
+                    title="Modifica lavoro" onClick={() => onStartEditAttempt(a.id)}>✎</button>
+                  <button className="btn-secondary" style={{ fontSize: 11, padding: '2px 7px', color: '#FFB0A5' }}
+                    title="Rimuovi lavoro" onClick={() => onDeleteAttempt(a)}>×</button>
+                </div>
               </div>
-            </div>
-          ))}
+            )
+          })}
         </div>
       )}
 
@@ -578,6 +699,7 @@ export default function SessionsPage() {
   const deleteAscent = useDeleteAscent()
   const logProjectWork = useLogProjectWork()
   const deleteAttempt = useDeleteAttempt()
+  const updateAttempt = useUpdateAttempt()
 
   const [adding, setAdding] = useState(false)
   const [editingSessionId, setEditingSessionId] = useState<string | null>(null)
@@ -594,6 +716,7 @@ export default function SessionsPage() {
   const [savedAscentFor, setSavedAscentFor] = useState<string | null>(null)
   const [editingAscentId, setEditingAscentId] = useState<string | null>(null)
   const [removingAscentId, setRemovingAscentId] = useState<string | null>(null)
+  const [editingAttemptId, setEditingAttemptId] = useState<string | null>(null)
 
   if (!user) return null
 
@@ -682,7 +805,17 @@ export default function SessionsPage() {
 
   const editingSession = sessions?.find(s => s.id === editingSessionId) ?? null
   const projectRouteIds = new Set((projects ?? []).map(p => p.route_id))
+  const projectByRouteId = new Map((projects ?? []).map(p => [p.route_id, p.id]))
   const activeProjects = (projects ?? []).filter(p => p.status === 'active' || p.status === 'paused')
+
+  async function handleSaveEditAttempt(a: SessionAttempt, values: AttemptUpdateValues) {
+    try {
+      await updateAttempt.mutateAsync({ id: a.id, userId: user!.id, values })
+      setEditingAttemptId(null)
+    } catch (e) {
+      setAscentSaveError((e as Error).message)
+    }
+  }
 
   function handleLogWork(
     sessionId: string,
@@ -833,10 +966,16 @@ export default function SessionsPage() {
                   savingAscentEdit={updateAscent.isPending}
                   removingAscentId={removingAscentId}
                   projectRouteIds={projectRouteIds}
+                  projectByRouteId={projectByRouteId}
                   activeProjects={activeProjects}
                   onLogWork={handleLogWork}
                   logWorkPending={logProjectWork.isPending}
                   onDeleteAttempt={handleDeleteAttempt}
+                  editingAttemptId={editingAttemptId}
+                  onStartEditAttempt={setEditingAttemptId}
+                  onCancelEditAttempt={() => setEditingAttemptId(null)}
+                  onSaveEditAttempt={handleSaveEditAttempt}
+                  savingAttemptEdit={updateAttempt.isPending}
                 />
               )}
               {savedAscentFor === s.id && addingAscentTo !== s.id && (

@@ -1,5 +1,5 @@
 import { Fragment, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -297,10 +297,11 @@ interface ProjectCardProps {
   project: ProjectWithRoute
   userId: string
   onConvert: (project: ProjectWithRoute) => void
+  defaultExpanded?: boolean
 }
 
-function ProjectCard({ project, userId, onConvert }: ProjectCardProps) {
-  const [expanded, setExpanded] = useState(false)
+function ProjectCard({ project, userId, onConvert, defaultExpanded }: ProjectCardProps) {
+  const [expanded, setExpanded] = useState(defaultExpanded ?? false)
   const [confirming, setConfirming] = useState<'abandon' | 'delete' | null>(null)
   const updateProject = useUpdateProject()
   const deleteProject = useDeleteProject()
@@ -447,7 +448,11 @@ export default function ProjectsPage() {
   const createAscent = useCreateAscent()
   const updateProject = useUpdateProject()
 
-  const [statusFilter, setStatusFilter] = useState<StatusFilter>('active')
+  // Progetto da aprire direttamente (es. link "🎯 Progetto" da una sessione).
+  const [searchParams] = useSearchParams()
+  const focusId = searchParams.get('focus')
+
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>(focusId ? 'all' : 'active')
   const [addingNew, setAddingNew] = useState(false)
   const [convertingProject, setConvertingProject] = useState<ProjectWithRoute | null>(null)
   const [convertDone, setConvertDone] = useState(false)
@@ -565,6 +570,7 @@ export default function ProjectsPage() {
           project={project}
           userId={user.id}
           onConvert={p => { setConvertingProject(p); setConvertDone(false) }}
+          defaultExpanded={project.id === focusId}
         />
       ))}
     </div>
