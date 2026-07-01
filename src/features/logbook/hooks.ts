@@ -198,14 +198,10 @@ export function useRouteSearch(query: string, limit = 20) {
   return useQuery({
     queryKey: ['route-search', query, limit],
     queryFn: async (): Promise<RouteSearchResult[]> => {
-      const { data, error } = await supabase
-        .from('routes')
-        .select(`
-          id, name, official_grade, grade_numeric, route_type, crag_id,
-          sector:sectors(name, crag:crags(id, name))
-        `)
-        .ilike('name', `%${query}%`)
-        .limit(limit)
+      // Ricerca per similarità (pg_trgm, RPC search_routes): tollera refusi,
+      // normalizza accenti/apostrofi, matcha anche gli alias, ordina per
+      // rilevanza. Vedi migration 042.
+      const { data, error } = await supabase.rpc('search_routes', { q: query, lim: limit })
       if (error) throw error
       return (data ?? []).map((r: unknown) => {
         const row = r as {
@@ -215,7 +211,8 @@ export function useRouteSearch(query: string, limit = 20) {
           grade_numeric: number | null
           route_type: string
           crag_id: string | null
-          sector: { name: string; crag: { id: string; name: string } }
+          crag_name: string | null
+          sector_name: string | null
         }
         return {
           id: row.id,
@@ -223,10 +220,9 @@ export function useRouteSearch(query: string, limit = 20) {
           official_grade: row.official_grade,
           grade_numeric: row.grade_numeric,
           route_type: row.route_type,
-          // routes.crag_id diretto; fallback sulla crag del settore (dati vecchi).
-          crag_id: row.crag_id ?? row.sector?.crag?.id ?? null,
-          crag_name: row.sector?.crag?.name ?? '',
-          sector_name: row.sector?.name ?? '',
+          crag_id: row.crag_id ?? null,
+          crag_name: row.crag_name ?? '',
+          sector_name: row.sector_name ?? '',
         }
       })
     },

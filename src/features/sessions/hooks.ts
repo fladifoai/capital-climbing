@@ -217,14 +217,15 @@ export function useCragSearch(query: string, limit = 15) {
   return useQuery({
     queryKey: ['crag-search', query, limit],
     queryFn: async (): Promise<CragSearchResult[]> => {
-      const { data, error } = await supabase
-        .from('crags')
-        .select('id, name, region, province')
-        .ilike('name', `%${query}%`)
-        .order('name')
-        .limit(limit)
+      // Ricerca per similarità (pg_trgm, RPC search_crags): tollera refusi,
+      // normalizza accenti/apostrofi, matcha anche gli alias, ordina per
+      // rilevanza. Vedi migration 042.
+      const { data, error } = await supabase.rpc('search_crags', { q: query, lim: limit })
       if (error) throw error
-      return (data ?? []) as CragSearchResult[]
+      return (data ?? []).map((c: unknown) => {
+        const row = c as { id: string; name: string; region: string | null; province: string | null }
+        return { id: row.id, name: row.name, region: row.region, province: row.province }
+      })
     },
     enabled: query.length >= 2,
   })
