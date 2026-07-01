@@ -116,6 +116,33 @@ export function useDeleteAttempt() {
   })
 }
 
+// Rileva se esiste già una sessione per (utente, data, falesia): serve al form
+// Nuova salita per avvisare "aggiunta alla sessione esistente" e offrire il
+// "forza nuova sessione". Ritorna la sessione trovata o null.
+export interface ExistingSession {
+  id: string
+  date: string
+  crag: { id: string; name: string } | null
+}
+
+export function useSessionForDateCrag(userId: string, date: string, cragId: string) {
+  return useQuery({
+    queryKey: ['session-for-date-crag', userId, date, cragId],
+    queryFn: async (): Promise<ExistingSession | null> => {
+      const { data, error } = await supabase
+        .from('sessions')
+        .select('id, date, crag:crags(id, name)')
+        .eq('user_id', userId)
+        .eq('date', date)
+        .eq('crag_id', cragId)
+        .limit(1)
+      if (error) throw error
+      return ((data ?? [])[0] as unknown as ExistingSession) ?? null
+    },
+    enabled: !!userId && !!date && !!cragId,
+  })
+}
+
 export interface SessionFormValues {
   date: string
   crag_id: string | null

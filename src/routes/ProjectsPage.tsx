@@ -485,8 +485,9 @@ export default function ProjectsPage() {
     official_grade: convertingProject.route.official_grade,
     grade_numeric: convertingProject.route.grade_numeric,
     route_type: convertingProject.route.route_type,
-    sector_name: convertingProject.route.sector?.name ?? '',
+    crag_id: convertingProject.route.sector?.crag?.id ?? null,
     crag_name: convertingProject.route.sector?.crag?.name ?? '',
+    sector_name: convertingProject.route.sector?.name ?? '',
   } : undefined
 
   return (

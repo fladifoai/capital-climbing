@@ -9,6 +9,7 @@ import {
   type AscentFormValues,
   type RouteSearchResult,
 } from '../features/logbook/hooks'
+import { useCreateSession, useSessionForDateCrag } from '../features/sessions/hooks'
 import RouteNotesForm, {
   hasAnyData,
   toPayload,
@@ -120,6 +121,7 @@ export default function LogNewPage() {
   const createAscent = useCreateAscent()
   const upsertNotes = useUpsertRouteNotes()
   const voteRoute = useVoteRoute()
+  const createSession = useCreateSession()
 
   const { data: preRoute, isLoading: preRouteLoading } = useRoute(preRouteId ?? '')
 
@@ -138,6 +140,17 @@ export default function LogNewPage() {
   const [isRepeat, setIsRepeat] = useState(false)
   const [effort, setEffort] = useState<number | ''>('')
   const dateShortcuts = getDateShortcuts()
+
+  // ── Sessione automatica (utente, data, falesia) ──
+  // Se forceNewSession è true la salita crea una sessione separata anche se
+  // ne esiste già una per quella data+falesia (caso raro: due visite alla
+  // stessa falesia nello stesso giorno).
+  const [forceNewSession, setForceNewSession] = useState(false)
+  const cragId = selectedRoute?.crag_id ?? ''
+  const { data: existingSession } = useSessionForDateCrag(user?.id ?? '', date, cragId)
+
+  // Info complete della via selezionata (grado community, note) per il pannello.
+  const { data: routeInfo } = useRoute(selectedRoute?.id ?? '')
 
   // ── Evaluation ──
   const [quality, setQuality] = useState<number | null>(null)
@@ -174,8 +187,9 @@ export default function LogNewPage() {
         official_grade: preRoute.official_grade,
         grade_numeric: preRoute.grade_numeric,
         route_type: preRoute.route_type,
-        sector_name: preRoute.sector?.name ?? '',
+        crag_id: preRoute.crag_id ?? preRoute.sector?.crag?.id ?? null,
         crag_name: preRoute.sector?.crag?.name ?? '',
+        sector_name: preRoute.sector?.name ?? '',
       })
       setRouteQuery(preRoute.name)
       if (!proposedBase && preRoute.official_grade) setProposedBase(preRoute.official_grade)
@@ -186,14 +200,39 @@ export default function LogNewPage() {
     setSelectedRoute(r)
     setRouteQuery(r.name)
     setShowDropdown(false)
+    setForceNewSession(false)
     if (r.official_grade) setProposedBase(r.official_grade)
   }
 
-  function buildValues(): AscentFormValues {
+  function changeDate(v: string) {
+    setDate(v)
+    setForceNewSession(false)
+  }
+
+  // Risolve il session_id da passare all'ascensione:
+  // - forceNewSession → crea una sessione separata e ne usa l'id;
+  // - altrimenti null → il trigger DB trova/crea la sessione per
+  //   (utente, data, falesia).
+  async function resolveSessionId(): Promise<string | null> {
+    if (!forceNewSession || !user) return null
+    const s = await createSession.mutateAsync({
+      userId: user.id,
+      values: {
+        date,
+        crag_id: cragId || null,
+        partner: null, conditions: null, rock_condition: null,
+        temperature: null, session_rpe: null, rest_days: null,
+        notes: null, visibility: 'private',
+      },
+    })
+    return s.id
+  }
+
+  function buildValues(sessionId: string | null): AscentFormValues {
     const mapped = buildMapped(selectedOption, isRepeat)
     return {
       route_id: selectedRoute!.id,
-      session_id: null,
+      session_id: sessionId,
       date,
       attempt_type: null,
       ascent_style: mapped.ascent_style,
@@ -233,7 +272,8 @@ export default function LogNewPage() {
     if (!user || !selectedRoute) return
     setError('')
     try {
-      await createAscent.mutateAsync({ userId: user.id, values: buildValues(), routeId: selectedRoute.id })
+      const sessionId = await resolveSessionId()
+      await createAscent.mutateAsync({ userId: user.id, values: buildValues(sessionId), routeId: selectedRoute.id })
       await castGradeVote()
       setSaved(true)
     } catch (e) {
@@ -245,7 +285,8 @@ export default function LogNewPage() {
     if (!user || !selectedRoute) return
     setError('')
     try {
-      await createAscent.mutateAsync({ userId: user.id, values: buildValues(), routeId: selectedRoute.id })
+      const sessionId = await resolveSessionId()
+      await createAscent.mutateAsync({ userId: user.id, values: buildValues(sessionId), routeId: selectedRoute.id })
       await castGradeVote()
       if (hasAnyData(notesValues)) {
         await upsertNotes.mutateAsync(toPayload(notesValues, user.id, selectedRoute.id, visibility))
@@ -256,7 +297,7 @@ export default function LogNewPage() {
     }
   }
 
-  const isPending = createAscent.isPending || upsertNotes.isPending || voteRoute.isPending
+  const isPending = createAscent.isPending || upsertNotes.isPending || voteRoute.isPending || createSession.isPending
 
   // ── Success screen ─────────────────────────────────────────────────────────
   if (saved) {
@@ -283,6 +324,7 @@ export default function LogNewPage() {
                 setNotes(''); setQuality(null); setProposedBase(''); setProposedDec('')
                 setDifficultyFeel(''); setStyleFeel(''); setWantRepeat(null); setEffort('')
                 setIsRepeat(false); setSelectedOption('onsight')
+                setForceNewSession(false)
                 setNotesValues(EMPTY_NOTES)
               }}>
                 Aggiungi un'altra
@@ -326,12 +368,25 @@ export default function LogNewPage() {
                   <div className="log-route-preview-sub">
                     {selectedRoute.crag_name} › {selectedRoute.sector_name}
                     {selectedRoute.official_grade && (
-                      <span className="grade-badge" style={{ marginLeft: 8 }}>{selectedRoute.official_grade}</span>
+                      <span className="grade-badge" style={{ marginLeft: 8 }}>
+                        {selectedRoute.official_grade}
+                      </span>
                     )}
+                    {routeInfo?.community_grade_raw &&
+                      routeInfo.community_grade_raw !== selectedRoute.official_grade && (
+                        <span style={{ marginLeft: 8, fontSize: 11, color: 'var(--text-muted)' }}>
+                          community: <strong>{routeInfo.community_grade_raw}</strong>
+                        </span>
+                      )}
                   </div>
+                  {routeInfo?.notes_public && (
+                    <div style={{ marginTop: 6, fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.4 }}>
+                      {routeInfo.notes_public}
+                    </div>
+                  )}
                 </div>
                 <button type="button" className="btn-secondary" style={{ fontSize: 11, padding: '4px 10px' }}
-                  onClick={() => { setSelectedRoute(null); setRouteQuery('') }}>
+                  onClick={() => { setSelectedRoute(null); setRouteQuery(''); setForceNewSession(false) }}>
                   Cambia
                 </button>
               </div>
@@ -375,17 +430,58 @@ export default function LogNewPage() {
 
             {/* Date */}
             <div className="log-q">Quando hai salito?</div>
-            <input type="date" value={date} onChange={e => setDate(e.target.value)}
+            <input type="date" value={date} onChange={e => changeDate(e.target.value)}
               style={{ width: '100%', marginBottom: 4 }} />
             <div className="log-date-shortcuts">
               {dateShortcuts.map(s => (
                 <button key={s.label} type="button"
                   className={`log-date-shortcut${date === s.value ? ' active' : ''}`}
-                  onClick={() => setDate(s.value)}>
+                  onClick={() => changeDate(s.value)}>
                   {s.label}
                 </button>
               ))}
             </div>
+
+            {/* Avviso sessione automatica (utente, data, falesia) */}
+            {selectedRoute && existingSession && !forceNewSession && (
+              <div style={{
+                marginTop: 12, marginBottom: 4, padding: '10px 12px', borderRadius: 8,
+                background: 'rgba(232,93,53,0.10)', border: '1px solid rgba(232,93,53,0.30)',
+                fontSize: 12.5, color: 'var(--text)', lineHeight: 1.5,
+              }}>
+                Verrà aggiunta alla sessione del <strong>{existingSession.date}</strong>
+                {existingSession.crag?.name ? <> a <strong>{existingSession.crag.name}</strong></> : null}.
+                {' '}Non è quella giusta?{' '}
+                <button type="button"
+                  onClick={() => setForceNewSession(true)}
+                  style={{
+                    background: 'none', border: 'none', padding: 0, cursor: 'pointer',
+                    color: 'var(--accent, #E85D35)', fontWeight: 600, textDecoration: 'underline',
+                    fontSize: 12.5,
+                  }}>
+                  Crea nuova sessione
+                </button>
+              </div>
+            )}
+            {selectedRoute && forceNewSession && (
+              <div style={{
+                marginTop: 12, marginBottom: 4, padding: '10px 12px', borderRadius: 8,
+                background: 'rgba(76,175,80,0.10)', border: '1px solid rgba(76,175,80,0.30)',
+                fontSize: 12.5, color: 'var(--text)', lineHeight: 1.5,
+              }}>
+                Verrà creata una <strong>nuova sessione</strong> separata.
+                {' '}
+                <button type="button"
+                  onClick={() => setForceNewSession(false)}
+                  style={{
+                    background: 'none', border: 'none', padding: 0, cursor: 'pointer',
+                    color: 'var(--accent, #E85D35)', fontWeight: 600, textDecoration: 'underline',
+                    fontSize: 12.5,
+                  }}>
+                  Annulla
+                </button>
+              </div>
+            )}
 
             {/* Ascent style */}
             <div className="log-q">Come hai salito?</div>

@@ -190,6 +190,7 @@ export interface RouteSearchResult {
   grade_numeric: number | null
   route_type: string
   sector_name: string
+  crag_id: string | null
   crag_name: string
 }
 
@@ -200,8 +201,8 @@ export function useRouteSearch(query: string, limit = 20) {
       const { data, error } = await supabase
         .from('routes')
         .select(`
-          id, name, official_grade, grade_numeric, route_type,
-          sector:sectors(name, crag:crags(name))
+          id, name, official_grade, grade_numeric, route_type, crag_id,
+          sector:sectors(name, crag:crags(id, name))
         `)
         .ilike('name', `%${query}%`)
         .limit(limit)
@@ -213,7 +214,8 @@ export function useRouteSearch(query: string, limit = 20) {
           official_grade: string | null
           grade_numeric: number | null
           route_type: string
-          sector: { name: string; crag: { name: string } }
+          crag_id: string | null
+          sector: { name: string; crag: { id: string; name: string } }
         }
         return {
           id: row.id,
@@ -221,8 +223,10 @@ export function useRouteSearch(query: string, limit = 20) {
           official_grade: row.official_grade,
           grade_numeric: row.grade_numeric,
           route_type: row.route_type,
-          sector_name: row.sector?.name ?? '',
+          // routes.crag_id diretto; fallback sulla crag del settore (dati vecchi).
+          crag_id: row.crag_id ?? row.sector?.crag?.id ?? null,
           crag_name: row.sector?.crag?.name ?? '',
+          sector_name: row.sector?.name ?? '',
         }
       })
     },
